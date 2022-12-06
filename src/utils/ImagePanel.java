@@ -2,20 +2,19 @@ package utils;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.*;
 
-public class imagePanel extends JPanel {
+public class ImagePanel extends JPanel {
     private BufferedImage dspImg;
     private BufferedImage origImg;
     private int owid, ohei;
     private double aspRate;
 
-    public imagePanel(String path) {
+    public ImagePanel(String path) {
         try {
             dspImg = ImageIO.read(new File(path));
             origImg = ImageIO.read(new File(path));
@@ -38,7 +37,7 @@ public class imagePanel extends JPanel {
         resize(d.width, d.height);
     }
 
-    public imagePanel(String path, int wid, int hei) {
+    public ImagePanel(String path, int wid, int hei) {
         try {
             dspImg = ImageIO.read(new File(path));
             origImg = ImageIO.read(new File(path));

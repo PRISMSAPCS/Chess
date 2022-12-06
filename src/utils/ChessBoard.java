@@ -13,11 +13,12 @@ public class ChessBoard {
     private Piece[][] board;   // first index (0-7) corresponds to numbers (1-8), second index corresponds to letters (a-h)
 
     public ChessBoard() {
+        this.board = new Piece[8][8];
         for(int i = 0; i < 8; i++) {
             board[0][i] = new Piece(SETUP_LAYOUT[i], false);
             board[1][i] = new Piece(PieceType.PAWN, false);
-            board[7][i] = new Piece(PieceType.PAWN, true);
-            board[8][i] = new Piece(SETUP_LAYOUT[i], true);
+            board[6][i] = new Piece(PieceType.PAWN, true);
+            board[7][i] = new Piece(SETUP_LAYOUT[i], true);
         }
     }
 

@@ -11,4 +11,28 @@ public class Piece {
         this.type = type;
         this.color = color;
     }
+
+    public String getIcon() {
+        if(color) {
+            // black pieces
+            return switch(type) {
+                case PAWN -> "♟";
+                case BISHOP -> "♝";
+                case KNIGHT -> "♞";
+                case ROOK -> "♜";
+                case QUEEN -> "♛";
+                case KING -> "♚";
+            };
+        } else {
+            // white pieces
+            return switch(type) {
+                case PAWN -> "♙";
+                case BISHOP -> "♗";
+                case KNIGHT -> "♘";
+                case ROOK -> "♖";
+                case QUEEN -> "♕";
+                case KING -> "♔";
+            };
+        }
+    }
 }
