@@ -100,6 +100,7 @@ public class ImagePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        System.out.println("repaint called");
         super.paintComponent(g);
         Dimension dependW = new Dimension(getWidth(), (int) Math.round((double) getWidth() / aspRate));
         Dimension dependH = new Dimension((int) Math.round((double) getHeight() * aspRate), getHeight());
@@ -116,5 +117,11 @@ public class ImagePanel extends JPanel {
         int hOff = getHeight() - dspImg.getHeight();
 
         g.drawImage(dspImg, (int) Math.round((double) wOff / 2.0), (int) Math.round((double) hOff / 2.0), this);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        System.out.println("getPreferredSize called");
+        return new Dimension(owid, ohei);
     }
 }
