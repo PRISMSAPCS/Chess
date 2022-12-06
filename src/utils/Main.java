@@ -2,6 +2,7 @@ package utils;
 
 public class Main {
     public static void main(String[] args){
-        // test if can push
+        ChessBoard board = new ChessBoard();
+        GUI gui = new GUI(board);
     }
 }
