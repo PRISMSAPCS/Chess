@@ -6,9 +6,8 @@ public class Rook extends Piece {
 	
 	private boolean firstMove;
 	
-	public Rook(boolean col) {
-		this.setName("rook");
-		this.setColor(col);
+	public Rook(boolean color) {
+		super(color);
 		firstMove = true;
 	}
 	
@@ -45,6 +44,6 @@ public class Rook extends Piece {
 
 	@Override
 	public String getIconFile() {
-		return getColor()? "p_w.png": "p_b.png";
+		return getColor()? "r_w.png": "r_b.png";
 	}
 }

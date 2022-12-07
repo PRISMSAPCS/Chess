@@ -17,26 +17,26 @@ public class ChessBoard {
         // this.enPassant[0] = -1;
         // this.enPassant[1] = -1;
         
-    	// board[0][0] = new Rook(false);
+    	board[0][0] = new Rook(false);
     	board[0][1] = new Knight(false);
     	// board[0][2] = new Bishop(false);
-    	// board[0][3] = new Queen(false);
+    	board[0][3] = new Queen(false);
     	board[0][4] = new King(false);
     	// board[0][5] = new Bishop(false);
     	board[0][6] = new Knight(false);
-    	// board[0][7] = new Rook(false);
+    	board[0][7] = new Rook(false);
     	for (int i = 0; i < 8; i++) {
     		board[1][i] = new Pawn(false);
     		board[6][i] = new Pawn(true);
     	}
-    	// board[7][0] = new Rook(true);
+    	board[7][0] = new Rook(true);
     	board[7][1] = new Knight(true);
-    	// board[7][2] = new Bishop(true);
-    	// board[7][3] = new Queen(true);
+    	/// board[7][2] = new Bishop(true);
+    	board[7][3] = new Queen(true);
     	board[7][4] = new King(true);
     	// board[7][5] = new Bishop(true);
     	board[7][6] = new Knight(true);
-    	// board[7][7] = new Rook(true);
+    	board[7][7] = new Rook(true);
     	
     }
     
@@ -47,7 +47,7 @@ public class ChessBoard {
     }
     
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
-    	ArrayList<Move> legalMoves = new ArrayList<Move>();
+    	ArrayList<Move> legalMoves = new ArrayList<>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
     		// copies the board - in this loop, we make the move, then check if the king is in check
