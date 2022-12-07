@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
+	<name>Chess</name>
+=======
 	<name>git_Chess</name>
+>>>>>>> 85d6edccc4da6af64a51e5e837b7b4179a9d905c
 	<comment></comment>
 	<projects>
 	</projects>
