@@ -16,6 +16,7 @@ public class ChessBoard {
         this.board = new Piece[8][8];
         this.enPassant[0] = -1;
         this.enPassant[1] = -1;
+        /*
     	board[0][0] = new Rook(false);
     	board[0][1] = new Knight(false);
     	board[0][2] = new Bishop(false);
@@ -36,36 +37,53 @@ public class ChessBoard {
     	board[7][5] = new Bishop(true);
     	board[7][6] = new Knight(true);
     	board[7][7] = new Rook(true);
+    	*/
     }
     
-    public ArrayList<Move> getLegalMoves(int x, int y) {
-    	ArrayList<int[]> moves = board[x][y].getMoveSet();
+    public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
+    	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
-    		
+    		// copies the board - in this loop, we make the move, then check if the king is in check
     		Piece[][] boardCopy = new Piece[8][8];
     		for (int i = 0; i < 8; i++) {
     			for (int j = 0; j < 8; j++) {
     				boardCopy[i][j] = board[i][j];
     			}
     		}
+    		
+    		// emulate the move
     		boardCopy[x][y] = null;
     		boardCopy[move[0]][move[1]] = board[x][y];
+    		
+    		// find location of king
+    		int kingX = -1;
+    		int kingY = -1;
     		for (int i = 0; i < 8; i++) {
     			for (int j = 0; j < 8; j++) {
-    				if (boardCopy[i][j] != null && boardCopy[i][j].getName().equals("king") && boardCopy[i][j].isColor() == this.move) {
-    					
+    				// checks if piece exists, is a king, and is same color as turn
+    				if (boardCopy[i][j] != null && boardCopy[i][j].getName().equals("king") && boardCopy[i][j].getColor() == this.move) {
+    					kingX = i;
+    					kingY = j;
     				}
     			}
     		}
-    		for (Piece[] row : board) {
-    			for (Piece piece : row) {
-    				if (piece != null && piece.isColor() != this.move) {
-    					ArrayList<int[]> enemyMoves = board[x][y].getMoveSet();
-    					
+    		
+    		boolean leave = false;
+    		for (int i = 0; i < 8; i++) {
+    			for (int j = 0; j < 8; j++) {
+    				Piece piece = boardCopy[i][j];
+    				if (piece != null && piece.getColor() != this.move) {
+    					ArrayList<int[]> enemyMoves = board[x][y].getMoveSet(board, i, j);
+    					for (int[] enemyMove : enemyMoves) {
+    						if (enemyMove[0] == kingX && enemyMove[1] == kingY) {
+    							leave = true;
+    						}
+    					}
     				}
     			}
     		}
     	}
+    	return null;
     }
 
     public Piece[][] getBoard() {

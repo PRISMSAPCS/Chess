@@ -10,7 +10,7 @@ public abstract class Piece {
 		return name;
 	}
 	
-	public ArrayList<int[]> getMoveSet(Piece[][] board){
+	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y){
 		return null;
 	}
 	
@@ -50,5 +50,4 @@ public abstract class Piece {
 	public void setColor(boolean color) {
 		this.color = color;
 	}
-
 }
