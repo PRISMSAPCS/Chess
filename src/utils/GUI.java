@@ -34,12 +34,14 @@ public class GUI {
                 backgroundPanel[i][j].setLayout(new BoxLayout(backgroundPanel[i][j], 0));
                 // i'm assuming that boxlayout will take all the space, so the image is displayed
                 // but still not sure why flowLayout doesn't work when I overloaded getPreferredSize
+                Color curCorlor = ((i + j) % 2 == 0) ? new Color(65, 65, 65) : new Color(220, 220, 220);
                 backgroundPanel[i][j]
-                        .setBackground(((i + j) % 2 == 0) ? new Color(65, 65, 65) : new Color(220, 220, 220));
+                        .setBackground(curCorlor);
 
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
                     chessLabel[i][j] = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
+                    chessLabel[i][j].setBackground(curCorlor);
                     backgroundPanel[i][j].add(chessLabel[i][j]);
                 }
                 this.boardPanel.add(backgroundPanel[i][j], i, j);

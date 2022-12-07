@@ -29,7 +29,7 @@ public class ImagePanel extends JPanel {
 
     public void resize(int wid, int hei) {
         Image tmp = origImg.getScaledInstance(wid, hei, Image.SCALE_SMOOTH);
-        dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_RGB);
+        dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_ARGB);
         dspImg.getGraphics().drawImage(tmp, 0, 0, null);
     }
 
