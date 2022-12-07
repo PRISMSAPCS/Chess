@@ -3,8 +3,6 @@ package utils;
 import java.util.ArrayList;
 
 public class ChessBoard {
-	
-	// test
     public static int WIDTH = 8;
     public static int HEIGHT = 8;
     
