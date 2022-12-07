@@ -6,9 +6,8 @@ public class Knight extends Piece{
 	
 	private boolean firstMove;
 	
-	public Knight(boolean col) {
-		this.setName("knight");
-		this.setColor(col);
+	public Knight(boolean color) {
+		super(color);
 		firstMove = true;
 	}
 	
@@ -19,6 +18,6 @@ public class Knight extends Piece{
 
 	@Override
 	public String getIconFile() {
-		return getColor()? "p_w.png": "p_b.png";
+		return getColor()? "n_w.png": "n_b.png";
 	}
 }

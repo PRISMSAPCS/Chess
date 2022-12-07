@@ -73,10 +73,10 @@ public class GUI {
         backgroundPanel[start[0]][start[1]].removeAll();
     }
 
-    public Move getMove() {
-        popInfo("please select a piece to move");
+    //// public Move getMove() {
+    ////    popInfo("please select a piece to move");
 
-    }
+    //// }
 
     /**
      * piece selected listener (action listener class), when a piece is selected, it

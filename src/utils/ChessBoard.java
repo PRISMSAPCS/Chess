@@ -21,7 +21,7 @@ public class ChessBoard {
     	board[0][1] = new Knight(false);
     	// board[0][2] = new Bishop(false);
     	// board[0][3] = new Queen(false);
-    	// board[0][4] = new King(false);
+    	board[0][4] = new King(false);
     	// board[0][5] = new Bishop(false);
     	board[0][6] = new Knight(false);
     	// board[0][7] = new Rook(false);
@@ -33,7 +33,7 @@ public class ChessBoard {
     	board[7][1] = new Knight(true);
     	// board[7][2] = new Bishop(true);
     	// board[7][3] = new Queen(true);
-    	// board[7][4] = new King(true);
+    	board[7][4] = new King(true);
     	// board[7][5] = new Bishop(true);
     	board[7][6] = new Knight(true);
     	// board[7][7] = new Rook(true);
@@ -41,9 +41,9 @@ public class ChessBoard {
     }
     
     public void submitMove(Move theMove){
-        board[theMove.end[0]][theMove.end[1]] = theMove.piece;
-        board[theMove.start[0]][theMove.start[1]] = null;
-        if(theMove.capture!=null) board[theMove.capture[0]][theMove.capture[1]] = null;
+        board[theMove.getEnd()[0]][theMove.getEnd()[1]] = theMove.getPiece();
+        board[theMove.getStart()[0]][theMove.getStart()[1]] = null;
+        if(theMove.getCapture() !=null) board[theMove.getCapture()[0]][theMove.getCapture()[1]] = null;
     }
     
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
@@ -68,7 +68,7 @@ public class ChessBoard {
     		for (int i = 0; i < 8; i++) {
     			for (int j = 0; j < 8; j++) {
     				// checks if piece exists, is a king, and is same color as turn
-    				if (boardCopy[i][j] != null && boardCopy[i][j].getName().equals("king") && boardCopy[i][j].getColor() == this.move) {
+    				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King && boardCopy[i][j].getColor() == this.move) {
     					kingX = i;
     					kingY = j;
     				}
