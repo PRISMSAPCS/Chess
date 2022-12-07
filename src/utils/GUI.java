@@ -8,7 +8,6 @@ public class GUI {
     private JFrame window;
     private JPanel boardPanel;
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
-    private ImagePanel[][] chessLabel; // pieces laying over background panels
     private ChessBoard board;
 
     /**
@@ -24,7 +23,6 @@ public class GUI {
         this.window.setSize(600, 600);
         this.boardPanel = new JPanel();
         this.boardPanel.setLayout(new GridLayout(ChessBoard.WIDTH, ChessBoard.HEIGHT));
-        this.chessLabel = new ImagePanel[8][8];
         this.backgroundPanel = new JPanel[8][8];
 
         // initialize each block of background and chess pieces
@@ -40,9 +38,10 @@ public class GUI {
 
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
-                    chessLabel[i][j] = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
-                    chessLabel[i][j].setBackground(curCorlor);
-                    backgroundPanel[i][j].add(chessLabel[i][j]);
+                    ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
+                    //// chessLabel.setBackground(curCorlor);
+                    chessLabel.setOpaque(false);
+                    backgroundPanel[i][j].add(chessLabel);
                 }
                 this.boardPanel.add(backgroundPanel[i][j], i, j);
             }
@@ -51,7 +50,24 @@ public class GUI {
         this.window.setVisible(true);
     }
 
-    public static void validateNrepaint(Component comp) {
+    /**
+     * Apply a move to show it on the GUI.
+     * This method would not check if the move is valid.
+     * @author mqcreaple
+     * @param move the move being performed
+     */
+    public void applyMove(Move move) {
+        int[] start = move.getStart();
+        int[] end = move.getEnd();
+        int[] capture = move.getCapture();
+        if(capture != null) {
+            backgroundPanel[capture[0]][capture[1]].removeAll();
+        }
+        backgroundPanel[end[0]][end[1]].add(backgroundPanel[start[0]][start[1]].getComponent(0));
+        backgroundPanel[start[0]][start[1]].removeAll();
+    }
+
+    public static void validateAndRepaint(Component comp) {
         do {
             comp.validate();
             comp.repaint();

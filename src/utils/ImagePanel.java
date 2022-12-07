@@ -121,7 +121,7 @@ public class ImagePanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        System.out.println("getPreferredSize called");
+        //// System.out.println("getPreferredSize called");
         return new Dimension(owid, ohei);
     }
 }
