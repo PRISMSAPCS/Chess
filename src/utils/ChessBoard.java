@@ -23,5 +23,6 @@ public class ChessBoard {
     public Piece[][] getBoard() {
         return board;
         //git test please ignore
+        //testing
     }
 }
