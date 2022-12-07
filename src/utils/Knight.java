@@ -2,12 +2,12 @@ package utils;
 
 import java.util.ArrayList;
 
-public class Pawn extends Piece {
+public class Knight extends Piece{
 	
 	private boolean firstMove;
 	
-	public Pawn(boolean col) {
-		this.setName("pawn");
+	public Knight(boolean col) {
+		this.setName("knight");
 		this.setColor(col);
 		firstMove = true;
 	}
