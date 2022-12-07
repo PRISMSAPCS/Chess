@@ -27,6 +27,12 @@ public class ImagePanel extends JPanel {
         }
     }
 
+    /* 
+     * resize the image displayzed in the image panel
+     * @param wid the width of the image
+     * @param hei the height of the image
+     * @author tzyt
+     */
     public void resize(int wid, int hei) {
         Image tmp = origImg.getScaledInstance(wid, hei, Image.SCALE_SMOOTH);
         dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_ARGB);
@@ -98,6 +104,13 @@ public class ImagePanel extends JPanel {
         this.dspImg = bufImg;
     }
 
+    /*
+     * try to maximize the image into the given space, but keep the aspect ratio
+     * if one given dimension is larger than the image, center the image in this
+     * dimension
+     * 
+     * @author tzyt
+     */
     @Override
     protected void paintComponent(Graphics g) {
         //// System.out.println("repaint called");
