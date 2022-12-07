@@ -40,6 +40,12 @@ public class ChessBoard {
     	
     }
     
+    public void submitMove(Move theMove){
+        board[theMove.end[0]][theMove.end[1]] = theMove.piece;
+        board[theMove.start[0]][theMove.start[1]] = null;
+        if(theMove.capture!=null) board[theMove.capture[0]][theMove.capture[1]] = null;
+    }
+    
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
     	ArrayList<Move> legalMoves = new ArrayList<Move>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
