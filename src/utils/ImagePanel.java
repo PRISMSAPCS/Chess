@@ -100,7 +100,7 @@ public class ImagePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        System.out.println("repaint called");
+        //// System.out.println("repaint called");
         super.paintComponent(g);
         Dimension dependW = new Dimension(getWidth(), (int) Math.round((double) getWidth() / aspRate));
         Dimension dependH = new Dimension((int) Math.round((double) getHeight() * aspRate), getHeight());

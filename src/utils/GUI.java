@@ -32,7 +32,7 @@ public class GUI {
             for (int j = 0; j < ChessBoard.HEIGHT; j++) {
                 backgroundPanel[i][j] = new JPanel();
                 backgroundPanel[i][j].setLayout(new BoxLayout(backgroundPanel[i][j], 0));
-                // i'm assuming that boxlayout will take all the space, so the image is displayed
+                // I'm assuming that boxlayout will take all the space, so the image is displayed
                 // but still not sure why flowLayout doesn't work when I overloaded getPreferredSize
                 Color curCorlor = ((i + j) % 2 == 0) ? new Color(65, 65, 65) : new Color(220, 220, 220);
                 backgroundPanel[i][j]
