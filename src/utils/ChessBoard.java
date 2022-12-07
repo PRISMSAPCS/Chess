@@ -5,16 +5,9 @@ import java.util.ArrayList;
 public class ChessBoard {
     public static int WIDTH = 8;
     public static int HEIGHT = 8;
-<<<<<<< HEAD
-    public Piece.PieceType[] SETUP_LAYOUT = new Piece.PieceType[] {
-            Piece.PieceType.ROOK, Piece.PieceType.KNIGHT, Piece.PieceType.BISHOP, Piece.PieceType.QUEEN,
-            Piece.PieceType.KING, Piece.PieceType.BISHOP, Piece.PieceType.KNIGHT, Piece.PieceType.ROOK
-    };
     
     private int[] enPassant;
     private boolean move; // white = true, black = false
-=======
->>>>>>> 85d6edccc4da6af64a51e5e837b7b4179a9d905c
 
     private Piece[][] board;   // first index (0-7) corresponds to numbers (1-8), second index corresponds to letters (a-h)
     
@@ -23,12 +16,26 @@ public class ChessBoard {
         this.board = new Piece[8][8];
         this.enPassant[0] = -1;
         this.enPassant[1] = -1;
-        for(int i = 0; i < 8; i++) {
-            //// board[0][i] = new Piece(SETUP_LAYOUT[i], false);
-            board[1][i] = new Pawn(true);
-            board[6][i] = new Pawn(false);
-            //// board[7][i] = new Piece(SETUP_LAYOUT[i], true);
-        }
+    	board[0][0] = new Rook(false);
+    	board[0][1] = new Knight(false);
+    	board[0][2] = new Bishop(false);
+    	board[0][3] = new Queen(false);
+    	board[0][4] = new King(false);
+    	board[0][5] = new Bishop(false);
+    	board[0][6] = new Knight(false);
+    	board[0][7] = new Rook(false);
+    	for (int i = 0; i < 8; i++) {
+    		board[1][i] = new Pawn(false);
+    		board[6][i] = new Pawn(true);
+    	}
+    	board[7][0] = new Rook(true);
+    	board[7][1] = new Knight(true);
+    	board[7][2] = new Bishop(true);
+    	board[7][3] = new Queen(true);
+    	board[7][4] = new King(true);
+    	board[7][5] = new Bishop(true);
+    	board[7][6] = new Knight(true);
+    	board[7][7] = new Rook(true);
     }
     
     public ArrayList<Move> getLegalMoves(int x, int y) {
