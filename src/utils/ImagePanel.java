@@ -27,7 +27,7 @@ public class ImagePanel extends JPanel {
         }
     }
 
-    /* 
+    /**
      * resize the image displayzed in the image panel
      * @param wid the width of the image
      * @param hei the height of the image
@@ -104,7 +104,7 @@ public class ImagePanel extends JPanel {
         this.dspImg = bufImg;
     }
 
-    /*
+    /**
      * try to maximize the image into the given space, but keep the aspect ratio
      * if one given dimension is larger than the image, center the image in this
      * dimension

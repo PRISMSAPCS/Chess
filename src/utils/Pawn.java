@@ -6,9 +6,8 @@ public class Pawn extends Piece {
 	
 	private boolean firstMove;
 	
-	public Pawn(boolean col) {
-		this.setName("pawn");
-		this.setColor(col);
+	public Pawn(boolean color) {
+		super(color);
 		firstMove = true;
 	}
 	
