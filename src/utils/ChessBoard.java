@@ -41,6 +41,7 @@ public class ChessBoard {
     }
     
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
+    	ArrayList<Move> legalMoves = new ArrayList<Move>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
     		// copies the board - in this loop, we make the move, then check if the king is in check
@@ -68,12 +69,15 @@ public class ChessBoard {
     			}
     		}
     		
+    		// check if king is in check after piece move
     		boolean leave = false;
     		for (int i = 0; i < 8; i++) {
     			for (int j = 0; j < 8; j++) {
-    				Piece piece = boardCopy[i][j];
-    				if (piece != null && piece.getColor() != this.move) {
-    					ArrayList<int[]> enemyMoves = board[x][y].getMoveSet(board, i, j);
+    				Piece piece = boardCopy[i][j]; // get piece at square
+    				if (piece != null && piece.getColor() != this.move) { // ensure that piece exists, and is opposite color
+    					ArrayList<int[]> enemyMoves = boardCopy[x][y].getMoveSet(boardCopy, i, j); // get moves that this piece can make
+    					
+    					// check if any of these moves can hit the king
     					for (int[] enemyMove : enemyMoves) {
     						if (enemyMove[0] == kingX && enemyMove[1] == kingY) {
     							leave = true;
@@ -82,6 +86,15 @@ public class ChessBoard {
     				}
     			}
     		}
+    		
+    		
+    		// move is not legal
+    		if (leave == true) {
+    			continue;
+    		}
+    		
+    		
+    		
     	}
     	return null;
     }
