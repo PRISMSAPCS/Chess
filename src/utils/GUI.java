@@ -78,8 +78,10 @@ public class GUI {
 
     }
 
-    /*
-     * piece selected listener (action listener class)
+    /**
+     * piece selected listener (action listener class), when a piece is selected, it
+     * will be highlighted, and when it is selected again, it will be deselected
+     * @author tzyt
      */
     private class PieceSelectedListener implements MouseListener {
         private Pair pos;
