@@ -33,6 +33,7 @@ public class Piece {
                 case QUEEN -> "♕";
                 case KING -> "♔";
             };
+            
         }
     }
 }
