@@ -24,11 +24,11 @@ public class Move {
         this.end = new int[] {endX, endY};
         this.capture = null;
     }
-    public Move(Piece piece, int startX, int startY, int endX, int endY, int[] capture) {
+    public Move(Piece piece, int startX, int startY, int endX, int endY, int captureX, int captureY) {
         this.piece = piece;
         this.start = new int[] {startX, startY};
         this.end = new int[] {endX, endY};
-        this.capture = capture;
+        this.capture = new int[] {captureX, captureY};
     }
 
     public Piece getPiece() {
