@@ -4,11 +4,8 @@ import java.util.ArrayList;
 
 public class Knight extends Piece{
 	
-	private boolean firstMove;
-	
 	public Knight(boolean color) {
 		super(color);
-		firstMove = true;
 	}
 
 	@Override

@@ -9,9 +9,9 @@ import java.util.ArrayList;
 
 public class GUI {
     public static final Color WHITE_GRID_COLOR = new Color(240, 240, 235);
-    public static final Color BLACK_GRID_COLOR = new Color(60, 60, 60);
+    public static final Color BLACK_GRID_COLOR = new Color(35, 75, 50);
     public static final Color SELECTED_GRID_COLOR = new Color(255, 220, 0);
-    public static final Color ALLOWED_GRID_COLOR = new Color(155, 150, 39);
+    public static final Color ALLOWED_GRID_COLOR = new Color(41, 169, 169);
     public static final double INTERPOLATE_RATIO = 0.5;
 
     public static Color linearInterpolate(Color c1, Color c2, double ratio) {
@@ -72,7 +72,7 @@ public class GUI {
                     chessLabel.setOpaque(false);
                     backgroundPanel[i][j].add(chessLabel);
                 }
-                this.boardPanel.add(backgroundPanel[i][j], i, j);
+                this.boardPanel.add(backgroundPanel[i][j], ChessBoard.HEIGHT - i - 1, j);
             }
         }
         this.window.add(this.boardPanel);
@@ -87,14 +87,14 @@ public class GUI {
      * @param move the move being performed
      */
     public void applyMove(Move move) {
-        int[] start = move.getStart();
-        int[] end = move.getEnd();
-        int[] capture = move.getCapture();
+        Pair start = move.getStart();
+        Pair end = move.getEnd();
+        Pair capture = move.getCapture();
         if(capture != null) {
-            backgroundPanel[capture[0]][capture[1]].removeAll();
+            backgroundPanel[capture.first][capture.second].removeAll();
         }
-        backgroundPanel[end[0]][end[1]].add(backgroundPanel[start[0]][start[1]].getComponent(0));
-        backgroundPanel[start[0]][start[1]].removeAll();
+        backgroundPanel[end.first][end.second].add(backgroundPanel[start.first][start.second].getComponent(0));
+        backgroundPanel[start.first][start.second].removeAll();
     }
 
     /**
@@ -141,16 +141,16 @@ public class GUI {
 
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
-                List<Move> legalMoves = List.of(
-                        new Move(new Pawn(false), pos.first, pos.second, pos.first + 1, pos.second),
-                        new Move(new Pawn(false), pos.first, pos.second, pos.first + 2, pos.second));
-                for (Move move : legalMoves) {
-                    //// for (Move move : board.getLegalMoves(pos.first, pos.second)) {
-                    int[] end = move.getEnd();
-                    backgroundPanel[end[0]][end[1]].setBackground(
-                            linearInterpolate(backgroundPanel[end[0]][end[1]].getBackground(), ALLOWED_GRID_COLOR,
+                //// List<Move> legalMoves = List.of(
+                ////         new Move(new Pawn(false), pos.first, pos.second, pos.first + 1, pos.second),
+                ////         new Move(new Pawn(false), pos.first, pos.second, pos.first + 2, pos.second));
+                //// for (Move move : legalMoves) {
+                for (Move move : board.getLegalMoves(pos.first, pos.second)) {
+                    Pair end = move.getEnd();
+                    backgroundPanel[end.first][end.second].setBackground(
+                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
                                     INTERPOLATE_RATIO));
-                    currentAllowedMove.add(new Pair(end[0], end[1]));
+                    currentAllowedMove.add(end);
                 }
                 validateAndRepaint(backgroundPanel[pos.first][pos.second]);
 
@@ -187,11 +187,11 @@ public class GUI {
 
     }
 
-    Color getBoardOrigColor(Pair x) {
+    private Color getBoardOrigColor(Pair x) {
         return ((x.first + x.second) % 2 == 0) ? BLACK_GRID_COLOR : WHITE_GRID_COLOR;
     }
 
-    void setOrigBack(Pair... arr) {
+    private void setOrigBack(Pair... arr) {
         for (Pair x : arr)
             backgroundPanel[x.first][x.second].setBackground(getBoardOrigColor(x));
     }

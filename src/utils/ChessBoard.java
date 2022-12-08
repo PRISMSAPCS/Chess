@@ -6,7 +6,7 @@ public class ChessBoard {
     public static int WIDTH = 8;
     public static int HEIGHT = 8;
     
-    private int[] enPassant;
+    private Pair enPassant;
     private boolean move; // white = true, black = false
 
     private Piece[][] board;   // first index (0-7) corresponds to numbers (1-8), second index corresponds to letters (a-h)
@@ -14,51 +14,47 @@ public class ChessBoard {
     public ChessBoard() {
     	this.move = true;
         this.board = new Piece[8][8];
-        this.enPassant[0] = -1;
-        this.enPassant[1] = -1;
+        this.enPassant = new Pair(-1, -1);
         
-    	board[0][0] = new Rook(false);
-    	board[0][1] = new Knight(false);
-    	// board[0][2] = new Bishop(false);
-    	board[0][3] = new Queen(false);
-    	board[0][4] = new King(false);
-    	// board[0][5] = new Bishop(false);
-    	board[0][6] = new Knight(false);
-    	board[0][7] = new Rook(false);
+    	board[0][0] = new Rook(true);
+    	board[0][1] = new Knight(true);
+    	// board[0][2] = new Bishop(true);
+    	board[0][3] = new Queen(true);
+    	board[0][4] = new King(true);
+    	// board[0][5] = new Bishop(true);
+    	board[0][6] = new Knight(true);
+    	board[0][7] = new Rook(true);
     	for (int i = 0; i < 8; i++) {
-    		board[1][i] = new Pawn(false);
-    		board[6][i] = new Pawn(true);
+    		board[1][i] = new Pawn(true);
+    		board[6][i] = new Pawn(false);
     	}
-    	board[7][0] = new Rook(true);
-    	board[7][1] = new Knight(true);
-    	/// board[7][2] = new Bishop(true);
-    	board[7][3] = new Queen(true);
-    	board[7][4] = new King(true);
-    	// board[7][5] = new Bishop(true);
-    	board[7][6] = new Knight(true);
-    	board[7][7] = new Rook(true);
+    	board[7][0] = new Rook(false);
+    	board[7][1] = new Knight(false);
+    	/// board[7][2] = new Bishop(false);
+    	board[7][3] = new Queen(false);
+    	board[7][4] = new King(false);
+    	// board[7][5] = new Bishop(false);
+    	board[7][6] = new Knight(false);
+    	board[7][7] = new Rook(false);
     	
     }
     
     public void submitMove(Move theMove){
-        board[theMove.getEnd()[0]][theMove.getEnd()[1]] = theMove.getPiece();
-        board[theMove.getStart()[0]][theMove.getStart()[1]] = null;
-        if(theMove.getCapture() != null) board[theMove.getEnd()[0]][theMove.getEnd()[1]] = null;
+        board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
+        board[theMove.getStart().first][theMove.getStart().second] = null;
+        if(theMove.getCapture() != null) board[theMove.getEnd().first][theMove.getEnd().second] = null;
     }
     
     private boolean checkLegal(int x, int y, Move move) {
     	// copies the board - in this function, we make the move, then check if the king is in check
-		Piece[][] boardCopy = new Piece[8][8];
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				boardCopy[i][j] = board[i][j];
-			}
-		}
+		Piece[][] boardCopy = board.clone();
 		
 		// emulate the move
 		boardCopy[x][y] = null;
-		boardCopy[move.getEnd()[0]][move.getEnd()[1]] = board[x][y];
-		boardCopy[move.getCapture()[0]][move.getCapture()[1]] = null;
+		boardCopy[move.getEnd().first][move.getEnd().second] = board[x][y];
+		if(move.getCapture() != null) {
+			boardCopy[move.getCapture().first][move.getCapture().second] = null;
+		}
 		
 		// find location of king
 		int kingX = -1;
@@ -79,7 +75,7 @@ public class ChessBoard {
 			for (int j = 0; j < 8; j++) {
 				Piece piece = boardCopy[i][j]; // get piece at square
 				if (piece != null && piece.getColor() != this.move) { // ensure that piece exists, and is opposite color
-					ArrayList<int[]> enemyMoves = boardCopy[x][y].getMoveSet(boardCopy, i, j); // get moves that this piece can make
+					ArrayList<int[]> enemyMoves = boardCopy[i][j].getMoveSet(boardCopy, i, j); // get moves that this piece can make
 					
 					// check if any of these moves can hit the king
 					for (int[] enemyMove : enemyMoves) {
@@ -101,23 +97,23 @@ public class ChessBoard {
     		// create the move object
     		Move toAdd = null;
     		
-    		if (board[x][y] == null) {
+    		if (board[move[0]][move[1]] == null) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
-    		} else if (board[x][y].getColor() != this.move) {
+    		} else if (board[move[0]][move[1]].getColor() != this.move) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
     		}
     		
-    		if (checkLegal(x, y, toAdd) == true) legalMoves.add(toAdd);
+    		if (checkLegal(x, y, toAdd)) legalMoves.add(toAdd);
     	}
     	
     	// checks if piece is a pawn, then checks if en passant pawn is to the left or right of selected pawn
     	if (board[x][y] instanceof Pawn) {
-    		if (x == enPassant[0]) {
+    		if (x == enPassant.first) {
     			// checks to left and right, then checks legality
-    			if (y - enPassant[1] == 1) {
+    			if (y - enPassant.second == 1) {
     				Move temp = new Move(board[x][y], x, y, x + (this.move ? -1 : 1), y - 1, x + (this.move ? -1 : 1), y);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
-    			} else if (y - enPassant[1] == -1) {
+    			} else if (y - enPassant.second == -1) {
     				Move temp = new Move(board[x][y], x, y, x + (this.move ? -1 : 1), y + 1, x + (this.move ? -1 : 1), y);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
     			}

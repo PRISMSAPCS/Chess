@@ -2,17 +2,17 @@ package utils;
 
 public class Move {
     private Piece piece;
-    private int[] start;
-    private int[] end;
-    private int[] capture;   // position of the piece being captured, optional
+    private Pair start;
+    private Pair end;
+    private Pair capture;   // position of the piece being captured, optional
 
-    public Move(Piece piece, int[] start, int[] end) {
+    public Move(Piece piece, Pair start, Pair end) {
         this.piece = piece;
         this.start = start;
         this.end = end;
         this.capture = null;
     }
-    public Move(Piece piece, int[] start, int[] end, int[] capture) {
+    public Move(Piece piece, Pair start, Pair end, Pair capture) {
         this.piece = piece;
         this.start = start;
         this.end = end;
@@ -20,35 +20,35 @@ public class Move {
     }
     public Move(Piece piece, int startX, int startY, int endX, int endY) {
         this.piece = piece;
-        this.start = new int[] {startX, startY};
-        this.end = new int[] {endX, endY};
+        this.start = new Pair(startX, startY);
+        this.end = new Pair(endX, endY);
         this.capture = null;
     }
     public Move(Piece piece, int startX, int startY, int endX, int endY, int captureX, int captureY) {
         this.piece = piece;
-        this.start = new int[] {startX, startY};
-        this.end = new int[] {endX, endY};
-        this.capture = new int[] {captureX, captureY};
+        this.start = new Pair(startX, startY);
+        this.end = new Pair(endX, endY);
+        this.capture = new Pair(captureX, captureY);
     }
 
     public Piece getPiece() {
         return piece;
     }
 
-    public int[] getStart() {
+    public Pair getStart() {
         return start;
     }
 
-    public int[] getEnd() {
+    public Pair getEnd() {
         return end;
     }
 
-    public int[] getCapture() {
+    public Pair getCapture() {
         return capture;
     }
 
     @Override
     public String toString() {
-        return piece + " from " + start[0] + ", " + start[1] + " to " + end[0] + ", " + end[1];
+        return piece + " from " + start.first + ", " + start.second + " to " + end.first + ", " + end.second;
     }
 }
