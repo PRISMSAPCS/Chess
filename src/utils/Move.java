@@ -24,6 +24,12 @@ public class Move {
         this.end = new int[] {endX, endY};
         this.capture = false;
     }
+    public Move(Piece piece, int startX, int startY, int endX, int endY, boolean capture) {
+        this.piece = piece;
+        this.start = new int[] {startX, startY};
+        this.end = new int[] {endX, endY};
+        this.capture = capture;
+    }
 
     public Piece getPiece() {
         return piece;
