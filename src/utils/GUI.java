@@ -101,6 +101,7 @@ public class GUI {
      * @author tzyt
      * 
      * wait until the user selects a piece and a target position, then return the move
+     * returned move is valid according to getLegalMove
      * @return the move that the user selected
      */
     public Move getMove() {
@@ -136,7 +137,7 @@ public class GUI {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (board.getBoard()[pos.first][pos.second] != null && firSelectedPos == null) {
+            if (board.getBoard(pos) != null && firSelectedPos == null) {
                 // if nothing is currently selected, select the piece, and highlight it
 
                 firSelectedPos = pos;
