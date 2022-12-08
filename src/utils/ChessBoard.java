@@ -58,6 +58,15 @@ public class ChessBoard {
     			}
     		}
     		
+    		// create the move object
+    		Move toAdd = null;
+    		
+    		if (board[x][y] == null) {
+    			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
+    		} else if (board[x][y].getColor() != this.move) {
+    			toAdd = new Move(board[x][y], x, y, move[0], move[1], true);
+    		}
+    		
     		// emulate the move
     		boardCopy[x][y] = null;
     		boardCopy[move[0]][move[1]] = board[x][y];
@@ -99,10 +108,9 @@ public class ChessBoard {
     			continue;
     		}
     		
-    		
-    		
+    		legalMoves.add(toAdd);
     	}
-    	return null;
+    	return legalMoves;
     }
 
     public Piece[][] getBoard() {
