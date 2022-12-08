@@ -4,15 +4,15 @@ public class Move {
     private Piece piece;
     private int[] start;
     private int[] end;
-    private boolean capture;   // if this piece captures another piece at the end position
+    private int[] capture;   // position of the piece being captured, optional
 
     public Move(Piece piece, int[] start, int[] end) {
         this.piece = piece;
         this.start = start;
         this.end = end;
-        this.capture = false;
+        this.capture = null;
     }
-    public Move(Piece piece, int[] start, int[] end, boolean capture) {
+    public Move(Piece piece, int[] start, int[] end, int[] capture) {
         this.piece = piece;
         this.start = start;
         this.end = end;
@@ -22,7 +22,7 @@ public class Move {
         this.piece = piece;
         this.start = new int[] {startX, startY};
         this.end = new int[] {endX, endY};
-        this.capture = false;
+        this.capture = null;
     }
 
     public Piece getPiece() {
@@ -37,7 +37,7 @@ public class Move {
         return end;
     }
 
-    public boolean getCapture() {
+    public int[] getCapture() {
         return capture;
     }
 }

@@ -81,7 +81,10 @@ public class GUI {
     public void applyMove(Move move) {
         int[] start = move.getStart();
         int[] end = move.getEnd();
-        backgroundPanel[end[0]][end[1]].removeAll();
+        int[] capture = move.getCapture();
+        if(capture != null) {
+            backgroundPanel[capture[0]][capture[1]].removeAll();
+        }
         backgroundPanel[end[0]][end[1]].add(backgroundPanel[start[0]][start[1]].getComponent(0));
         backgroundPanel[start[0]][start[1]].removeAll();
     }
