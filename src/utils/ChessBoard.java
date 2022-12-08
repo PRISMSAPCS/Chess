@@ -111,4 +111,7 @@ public class ChessBoard {
         //testing
         //final testing
     }
+    public Piece getBoard(Pair pos){
+        return board[pos.first][pos.second];
+    }
 }

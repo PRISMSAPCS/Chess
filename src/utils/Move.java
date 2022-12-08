@@ -40,4 +40,9 @@ public class Move {
     public boolean getCapture() {
         return capture;
     }
+
+    @Override
+    public String toString() {
+        return piece + " from " + start[0] + ", " + start[1] + " to " + end[0] + ", " + end[1];
+    }
 }
