@@ -7,12 +7,12 @@ public class ChessBoard {
     public static int HEIGHT = 8;
     
     private Pair enPassant;
-    private boolean move; // white = true, black = false
+    private boolean side; // white = true, black = false
 
     private Piece[][] board;   // first index (0-7) corresponds to numbers (1-8), second index corresponds to letters (a-h)
     
     public ChessBoard() {
-    	this.move = true;
+    	this.side = true;
         this.board = new Piece[8][8];
         this.enPassant = new Pair(-1, -1);
         
@@ -40,7 +40,7 @@ public class ChessBoard {
 	
 	public ChessBoard(ChessBoard other){
 		// copy constructor
-		this.move = other.move;
+		this.side = other.side;
 		this.board = new Piece[8][8];
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
@@ -52,9 +52,18 @@ public class ChessBoard {
 
 
     public void submitMove(Move theMove){
+		if(theMove.getCapture() != null) {
+			board[theMove.getEnd().first][theMove.getEnd().second] = null;
+		}
         board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
         board[theMove.getStart().first][theMove.getStart().second] = null;
-        if(theMove.getCapture() != null) board[theMove.getEnd().first][theMove.getEnd().second] = null;
+		// change side
+		this.side = !this.side;
+
+		// set the pawn's firstMove field to false
+		if(theMove.getPiece() instanceof Pawn) {
+			((Pawn) theMove.getPiece()).cancelFirstMove();
+		}
     }
     
     private boolean checkLegal(int x, int y, Move move) {
@@ -74,7 +83,7 @@ public class ChessBoard {
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				// checks if piece exists, is a king, and is same color as turn
-				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King && boardCopy[i][j].getColor() == this.move) {
+				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King && boardCopy[i][j].getColor() == this.side) {
 					kingX = i;
 					kingY = j;
 				}
@@ -86,7 +95,7 @@ public class ChessBoard {
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				Piece piece = boardCopy[i][j]; // get piece at square
-				if (piece != null && piece.getColor() != this.move) { // ensure that piece exists, and is opposite color
+				if (piece != null && piece.getColor() != this.side) { // ensure that piece exists, and is opposite color
 					ArrayList<int[]> enemyMoves = boardCopy[i][j].getMoveSet(boardCopy, i, j); // get moves that this piece can make
 					
 					// check if any of these moves can hit the king
@@ -107,14 +116,16 @@ public class ChessBoard {
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
     		// create the move object
-    		Move toAdd = null;
+    		Move toAdd;
     		
     		if (board[move[0]][move[1]] == null) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
-    		} else if (board[move[0]][move[1]].getColor() != this.move) {
+    		} else if (board[move[0]][move[1]].getColor() != this.side) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
-    		}
-    		
+    		} else {
+				continue;
+			}
+
     		if (checkLegal(x, y, toAdd)) legalMoves.add(toAdd);
     	}
     	
@@ -123,10 +134,10 @@ public class ChessBoard {
     		if (x == enPassant.first) {
     			// checks to left and right, then checks legality
     			if (y - enPassant.second == 1) {
-    				Move temp = new Move(board[x][y], x, y, x + (this.move ? -1 : 1), y - 1, x + (this.move ? -1 : 1), y);
+    				Move temp = new Move(board[x][y], x, y, x + (this.side ? -1 : 1), y - 1, x + (this.side ? -1 : 1), y);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
     			} else if (y - enPassant.second == -1) {
-    				Move temp = new Move(board[x][y], x, y, x + (this.move ? -1 : 1), y + 1, x + (this.move ? -1 : 1), y);
+    				Move temp = new Move(board[x][y], x, y, x + (this.side ? -1 : 1), y + 1, x + (this.side ? -1 : 1), y);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
     			}
     		}
@@ -134,6 +145,10 @@ public class ChessBoard {
     	
     	return legalMoves;
     }
+
+	public boolean getSide() {
+		return side;
+	}
 
     public Piece[][] getBoard() {
         return board;

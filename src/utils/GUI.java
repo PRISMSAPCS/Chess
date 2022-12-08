@@ -137,8 +137,8 @@ public class GUI {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (board.getBoard(pos) != null && firSelectedPos == null) {
-                // if nothing is currently selected, select the piece, and highlight it
+            if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
+                // if nothing is currently selected and the clicked piece is on current side, select the piece, and highlight it
 
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
@@ -163,14 +163,13 @@ public class GUI {
                 }
                 firSelectedPos = null;
                 currentAllowedMove.clear();
-            } else {
+            } else if (currentAllowedMove.containsKey(pos)) {
                 // if select a different thing, check if it is a valid move
-                if (currentAllowedMove.containsKey(pos)) {
-                    secSelectedPos = pos;
-                    getMoveSem.release();
-                } else {
-                    popInfo("Not a valid move");
-                }
+                secSelectedPos = pos;
+                getMoveSem.release();
+            } else if(firSelectedPos != null) {
+                // currently selected a piece, but do not click on any valid position
+                popInfo("Not a valid move");
             }
         }
 

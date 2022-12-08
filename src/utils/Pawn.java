@@ -38,6 +38,10 @@ public class Pawn extends Piece {
 		return moves;
 	}
 
+	void cancelFirstMove() {
+		this.firstMove = false;
+	}
+
 	@Override
 	public String getIconFile() {
 		return getColor()? "p_w.png": "p_b.png";
