@@ -4,20 +4,15 @@ public class Move {
     private Piece piece;
     private int[] start;
     private int[] end;
-    /**
-     * Position of the piece being captured in this move.
-     * This field is optional.
-     * Note: 'capture' field is not always equal to 'end' field because of the pawn's capture rule.
-     */
-    private int[] capture;
+    private boolean capture;   // if this piece captures another piece at the end position
 
     public Move(Piece piece, int[] start, int[] end) {
         this.piece = piece;
         this.start = start;
         this.end = end;
-        this.capture = null;
+        this.capture = false;
     }
-    public Move(Piece piece, int[] start, int[] end, int[] capture) {
+    public Move(Piece piece, int[] start, int[] end, boolean capture) {
         this.piece = piece;
         this.start = start;
         this.end = end;
@@ -27,7 +22,7 @@ public class Move {
         this.piece = piece;
         this.start = new int[] {startX, startY};
         this.end = new int[] {endX, endY};
-        this.capture = null;
+        this.capture = false;
     }
 
     public Piece getPiece() {
@@ -42,7 +37,7 @@ public class Move {
         return end;
     }
 
-    public int[] getCapture() {
+    public boolean getCapture() {
         return capture;
     }
 }

@@ -10,15 +10,11 @@ public class Pawn extends Piece {
 		super(color);
 		firstMove = true;
 	}
-	
+
+	@Override
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
-		ArrayList<int[]> moves = new ArrayList();
-		int colorMult = 0;
-		//gives direction for color
-		if(this.getColor()==true) {
-			colorMult = 1;
-		}
-		else {colorMult =-1;}
+		ArrayList<int[]> moves = new ArrayList<>();
+		int colorMult = this.getColor()? 1: -1;     // y direction this pawn moves
 		//checks forward moves
 		if((y+colorMult+1<board[0].length&&y+colorMult>=0)&&board[x][y+colorMult]==null) {
 			int[] temp = {x,y+colorMult};

@@ -10,9 +10,7 @@ public abstract class Piece {
 		this.color = color;
 	}
 	
-	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y){
-		return null;
-	}
+	public abstract ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y);
 	
 	public abstract String getIconFile();
 

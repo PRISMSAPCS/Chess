@@ -10,9 +10,11 @@ public class Knight extends Piece{
 		super(color);
 		firstMove = true;
 	}
-	
+
+	@Override
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
-		ArrayList<int[]> moves = new ArrayList();
+		ArrayList<int[]> moves = new ArrayList<>();
+		// TODO
 		return moves;
 	}
 

@@ -2,10 +2,11 @@ package utils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
 import java.awt.event.*;
 
 public class GUI {
+    public static final Color WHITE_GRID_COLOR = new Color(235, 235, 230);
+    public static final Color BLACK_GRID_COLOR = new Color(60, 60, 60);
     private JFrame window;
     private JPanel boardPanel;
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
@@ -37,9 +38,8 @@ public class GUI {
                 // displayed
                 // but still not sure why flowLayout doesn't work when I overloaded
                 // getPreferredSiz
-                Color curColor = ((i + j) % 2 == 0) ? new Color(65, 65, 65) : new Color(220, 220, 220);
-                backgroundPanel[i][j]
-                        .setBackground(curColor);
+                Color curColor = ((i + j) % 2 == 0) ? BLACK_GRID_COLOR : WHITE_GRID_COLOR;
+                backgroundPanel[i][j].setBackground(curColor);
                 backgroundPanel[i][j].addMouseListener(new PieceSelectedListener(new Pair(i, j)));
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
@@ -65,10 +65,7 @@ public class GUI {
     public void applyMove(Move move) {
         int[] start = move.getStart();
         int[] end = move.getEnd();
-        int[] capture = move.getCapture();
-        if (capture != null) {
-            backgroundPanel[capture[0]][capture[1]].removeAll();
-        }
+        backgroundPanel[end[0]][end[1]].removeAll();
         backgroundPanel[end[0]][end[1]].add(backgroundPanel[start[0]][start[1]].getComponent(0));
         backgroundPanel[start[0]][start[1]].removeAll();
     }
@@ -100,8 +97,8 @@ public class GUI {
                     validateAndRepaint(backgroundPanel[pos.first][pos.second]);
                 } else {
                     // reset the background color of the previously selected piece
-                    Color posColor = ((curSelectedPos.first + curSelectedPos.second) % 2 == 0) ? new Color(65, 65, 65)
-                            : new Color(220, 220, 220);
+                    Color posColor = ((curSelectedPos.first + curSelectedPos.second) % 2 == 0) ? BLACK_GRID_COLOR
+                            : WHITE_GRID_COLOR;
                     backgroundPanel[curSelectedPos.first][curSelectedPos.second].setBackground(posColor);
                     validateAndRepaint(backgroundPanel[curSelectedPos.first][curSelectedPos.second]);
                     // if the same piece is selected, deselect it

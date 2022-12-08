@@ -43,7 +43,7 @@ public class ChessBoard {
     public void submitMove(Move theMove){
         board[theMove.getEnd()[0]][theMove.getEnd()[1]] = theMove.getPiece();
         board[theMove.getStart()[0]][theMove.getStart()[1]] = null;
-        if(theMove.getCapture() !=null) board[theMove.getCapture()[0]][theMove.getCapture()[1]] = null;
+        if(theMove.getCapture()) board[theMove.getEnd()[0]][theMove.getEnd()[1]] = null;
     }
     
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
