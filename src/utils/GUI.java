@@ -3,16 +3,31 @@ package utils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
 
 public class GUI {
-    public static final Color WHITE_GRID_COLOR = new Color(235, 235, 230);
+    public static final Color WHITE_GRID_COLOR = new Color(240, 240, 235);
     public static final Color BLACK_GRID_COLOR = new Color(60, 60, 60);
+    public static final Color SELECTED_GRID_COLOR = new Color(255, 220, 0);
+    public static final Color ALLOWED_GRID_COLOR = new Color(155, 150, 39);
+    public static final double INTERPOLATE_RATIO = 0.5;
+
+    public static Color linearInterpolate(Color c1, Color c2, double ratio) {
+        return new Color(
+                (int) (c1.getRed() * ratio + c2.getRed() * (1 - ratio)),
+                (int) (c1.getGreen() * ratio + c2.getGreen() * (1 - ratio)),
+                (int) (c1.getBlue() * ratio + c2.getBlue() * (1 - ratio))
+        );
+    }
+
     private JFrame window;
     private JPanel boardPanel;
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
     private ChessBoard board;
     private JButton submitButton;
-    Pair curSelectedPos; // the position of the currently selected piece
+    Pair curSelectedPos;                // the position of the currently selected piece
+    List<Pair> currentAllowedMove;      // all grids that changed color after selecting a piece
 
     /**
      * Initialize GUI class.
@@ -22,6 +37,7 @@ public class GUI {
      */
     public GUI(ChessBoard board) {
         this.board = board;
+        this.currentAllowedMove = new ArrayList<>();
         this.window = new JFrame();
         this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.window.setSize(600, 600);
@@ -78,11 +94,10 @@ public class GUI {
     /**
      * piece selected listener (action listener class), when a piece is selected, it
      * will be highlighted, and when it is selected again, it will be deselected
-     * @author tzyt
+     * @author tzyt, mqcreaple
      */
     private class PieceSelectedListener implements MouseListener {
         private Pair pos;
-        public static final Color highLightingColor = Color.pink;
         public PieceSelectedListener(Pair pos) {
             this.pos = pos;
         }
@@ -93,23 +108,17 @@ public class GUI {
                 // if nothing is currently selected, select the piece, and highlight it
                 if (curSelectedPos == null) {
                     curSelectedPos = pos;
-                    backgroundPanel[pos.first][pos.second].setBackground(highLightingColor);
-                    validateAndRepaint(backgroundPanel[pos.first][pos.second]);
-                } else {
-                    // reset the background color of the previously selected piece
-                    Color posColor = ((curSelectedPos.first + curSelectedPos.second) % 2 == 0) ? BLACK_GRID_COLOR
-                            : WHITE_GRID_COLOR;
-                    backgroundPanel[curSelectedPos.first][curSelectedPos.second].setBackground(posColor);
-                    validateAndRepaint(backgroundPanel[curSelectedPos.first][curSelectedPos.second]);
-                    // if the same piece is selected, deselect it
-                    if (curSelectedPos.equals(pos)) {
-                        curSelectedPos = null;
-                    } else {
-                        // if a different piece is selected, select it and highlight it
-                        curSelectedPos = pos;
-                        backgroundPanel[pos.first][pos.second].setBackground(highLightingColor);
+                    backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
+                    for(Move move : board.getLegalMoves(pos.first, pos.second)) {
+                        int[] end = move.getEnd();
+                        backgroundPanel[end[0]][end[1]].setBackground(
+                                linearInterpolate(backgroundPanel[end[0]][end[1]].getBackground(), ALLOWED_GRID_COLOR, INTERPOLATE_RATIO)
+                        );
+                        currentAllowedMove.add(new Pair(end[0], end[1]));
                     }
                     validateAndRepaint(backgroundPanel[pos.first][pos.second]);
+                } else {
+                    // TODO
                 }
             }
         }

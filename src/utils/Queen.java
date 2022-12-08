@@ -69,6 +69,6 @@ public class Queen extends Piece {
 
 	@Override
 	public String getIconFile() {
-		return getColor()? "p_w.png": "p_b.png";
+		return getColor()? "q_w.png": "q_b.png";
 	}
 }
