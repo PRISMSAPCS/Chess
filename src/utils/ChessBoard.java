@@ -38,7 +38,20 @@ public class ChessBoard {
     	board[7][7] = new Rook(false);
     	
     }
-    
+	
+	public ChessBoard(ChessBoard other){
+		// copy constructor
+		this.move = other.move;
+		this.board = new Piece[8][8];
+		for(int i = 0; i < 8; i++){
+			for(int j = 0; j < 8; j++){
+				if(other.board[i][j] != null) this.board[i][j] = other.board[i][j].clone();
+			}
+		}
+		this.enPassant = new Pair(other.enPassant.first, other.enPassant.second);
+	}
+
+
     public void submitMove(Move theMove){
         board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
         board[theMove.getStart().first][theMove.getStart().second] = null;
@@ -47,7 +60,7 @@ public class ChessBoard {
     
     private boolean checkLegal(int x, int y, Move move) {
     	// copies the board - in this function, we make the move, then check if the king is in check
-		Piece[][] boardCopy = board.clone();
+		Piece[][] boardCopy = (new ChessBoard(this)).getBoard();
 		
 		// emulate the move
 		boardCopy[x][y] = null;
@@ -132,4 +145,5 @@ public class ChessBoard {
     public Piece getBoard(Pair pos){
         return board[pos.first][pos.second];
     }
+
 }
