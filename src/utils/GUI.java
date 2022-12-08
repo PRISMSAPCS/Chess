@@ -3,7 +3,8 @@ package utils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 
@@ -29,11 +30,10 @@ public class GUI {
     Pair firSelectedPos; // the position of the currently selected piece
     Pair secSelectedPos; // the position of the second selected piece, the first one is the position of
                          // piece, second position is the target position
-    List<Pair> currentAllowedMove; // all grids that changed color after selecting a piece
+    Map<Pair, Move> currentAllowedMove; // all grids that changed color after selecting a piece
 
     /**
      * Initialize GUI class.
-     * 
      * @author mqcreaple
      * @param board The initial chess board.
      */
@@ -45,7 +45,7 @@ public class GUI {
         }
 
         this.board = board;
-        this.currentAllowedMove = new ArrayList<>();
+        this.currentAllowedMove = new HashMap<>();
         this.window = new JFrame();
         this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.window.setSize(600, 600);
@@ -109,15 +109,15 @@ public class GUI {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Move move = new Move(board.getBoard(firSelectedPos), firSelectedPos.first, firSelectedPos.second,
-                secSelectedPos.first, secSelectedPos.second);
+        Move move = currentAllowedMove.get(secSelectedPos);
         // reset color
-        for (Pair pos : currentAllowedMove) {
+        for (Pair pos : currentAllowedMove.keySet()) {
             setOrigBack(pos);
         }
         setOrigBack(firSelectedPos, secSelectedPos);
         firSelectedPos = null;
         secSelectedPos = null;
+        currentAllowedMove.clear();
         return move;
     }
 
@@ -150,21 +150,21 @@ public class GUI {
                     backgroundPanel[end.first][end.second].setBackground(
                             linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
                                     INTERPOLATE_RATIO));
-                    currentAllowedMove.add(end);
+                    currentAllowedMove.put(end, move);
                 }
                 validateAndRepaint(backgroundPanel[pos.first][pos.second]);
 
             } else if (firSelectedPos != null && firSelectedPos == pos) {
                 // if select the same thing, deselect it
                 setOrigBack(firSelectedPos);
-                for (Pair p : currentAllowedMove) {
+                for (Pair p : currentAllowedMove.keySet()) {
                     setOrigBack(p);
                 }
                 firSelectedPos = null;
-                currentAllowedMove = new ArrayList<>();
+                currentAllowedMove.clear();
             } else {
                 // if select a different thing, check if it is a valid move
-                if (currentAllowedMove.contains(pos)) {
+                if (currentAllowedMove.containsKey(pos)) {
                     secSelectedPos = pos;
                     getMoveSem.release();
                 } else {

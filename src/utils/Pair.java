@@ -17,8 +17,14 @@ public class Pair{
         Pair p = (Pair) o;
         return p.first == first && p.second == second;
     }
+
     @Override
     public String toString() {
         return "(" + first + ", " + second + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return 19260817 * Integer.hashCode(first) + Integer.hashCode(second);
     }
 }

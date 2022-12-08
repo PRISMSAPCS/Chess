@@ -5,7 +5,9 @@ public class Main {
         ChessBoard board = new ChessBoard();
         GUI gui = new GUI(board);
         while(true){
-            System.out.println(gui.getMove());
+            Move move = gui.getMove();
+            board.submitMove(move);
+            gui.applyMove(move);
         }
     }
 }

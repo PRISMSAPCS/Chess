@@ -36,7 +36,6 @@ public class ChessBoard {
     	// board[7][5] = new Bishop(false);
     	board[7][6] = new Knight(false);
     	board[7][7] = new Rook(false);
-    	
     }
 	
 	public ChessBoard(ChessBoard other){
