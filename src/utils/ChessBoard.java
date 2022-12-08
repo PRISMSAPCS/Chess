@@ -48,7 +48,7 @@ public class ChessBoard {
     
     public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
     	ArrayList<Move> legalMoves = new ArrayList<>();
-    	ArrayList<int[]> moves = board[y][x].getMoveSet(board, y, x);
+    	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
     		// copies the board - in this loop, we make the move, then check if the king is in check
     		Piece[][] boardCopy = new Piece[8][8];
@@ -61,15 +61,15 @@ public class ChessBoard {
     		// create the move object
     		Move toAdd = null;
     		
-    		if (board[y][x] == null) {
-    			toAdd = new Move(board[y][x], y, x, move[1], move[0]);
-    		} else if (board[y][x].getColor() != this.move) {
-    			toAdd = new Move(board[y][x], y, x, move[1], move[0], true);
+    		if (board[x][y] == null) {
+    			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
+    		} else if (board[x][y].getColor() != this.move) {
+    			toAdd = new Move(board[x][y], x, y, move[0], move[1], true);
     		}
     		
     		// emulate the move
-    		boardCopy[y][x] = null;
-    		boardCopy[move[0]][move[1]] = board[y][x];
+    		boardCopy[x][y] = null;
+    		boardCopy[move[0]][move[1]] = board[x][y];
     		
     		// find location of king
     		int kingX = -1;
@@ -78,8 +78,8 @@ public class ChessBoard {
     			for (int j = 0; j < 8; j++) {
     				// checks if piece exists, is a king, and is same color as turn
     				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King && boardCopy[i][j].getColor() == this.move) {
-    					kingY = i;
-    					kingX = j;
+    					kingX = i;
+    					kingY = j;
     				}
     			}
     		}
@@ -94,7 +94,7 @@ public class ChessBoard {
     					
     					// check if any of these moves can hit the king
     					for (int[] enemyMove : enemyMoves) {
-    						if (enemyMove[0] == kingY && enemyMove[1] == kingX) {
+    						if (enemyMove[0] == kingX && enemyMove[1] == kingY) {
     							leave = true;
     						}
     					}
