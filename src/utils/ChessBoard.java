@@ -125,7 +125,7 @@ public class ChessBoard {
     		// create the move object
     		Move toAdd;
     		
-    		if) (board[move[0]][move[1]] == null) {
+    		if (board[move[0]][move[1]] == null) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
     		} else if (board[move[0]][move[1]].getColor() != this.side) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
@@ -212,7 +212,7 @@ public class ChessBoard {
     		}
     	}
     	
-    	Eval.flip(this.side);
+    	Eval.flip();
     	for (int row = 0; row < 8; row++) {
     		for (int column = 0; column < 8; column++) {
     			if (board[row][column].getColor() == this.side) {
@@ -243,6 +243,8 @@ public class ChessBoard {
     			}
     		}
     	}
+    	
+    	Eval.flip();
     	
     	return (this.side) ? points : points * -1;
     }
