@@ -66,6 +66,8 @@ public class ChessBoard {
 		this.side = !this.side;
 		
 		// set enPassant array
+		enPassant.first = -1;
+		enPassant.second = -1;
 		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true) {
 			enPassant.first = theMove.getEnd().first;
 			enPassant.second = theMove.getEnd().second;
