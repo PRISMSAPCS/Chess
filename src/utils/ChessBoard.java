@@ -141,10 +141,10 @@ public class ChessBoard {
     		if (x == enPassant.first) {
     			// checks to left and right, then checks legality
     			if (y - enPassant.second == 1) {
-    				Move temp = new Move(board[x][y], x, y, x + (this.side ? -1 : 1), y - 1, x + (this.side ? -1 : 1), y);
+    				Move temp = new Move(board[x][y], x, y, x + (this.side ? 1 : -1), y - 1, x, y - 1);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
     			} else if (y - enPassant.second == -1) {
-    				Move temp = new Move(board[x][y], x, y, x + (this.side ? -1 : 1), y + 1, x + (this.side ? -1 : 1), y);
+    				Move temp = new Move(board[x][y], x, y, x + (this.side ? 1 : -1), y + 1, x, y + 1);
     				if (checkLegal(x, y, temp)) legalMoves.add(temp);
     			}
     		}
