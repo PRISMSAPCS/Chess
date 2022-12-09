@@ -164,6 +164,24 @@ public class ChessBoard {
         return allLegalMoves.get(rnd);
     }
     
+    public int evaluate() {
+    	int points = 0;
+    	//eval.setSide(this.side);
+    	for (int row = 0; row < 8; row++) {
+    		for (int column = 0; column < 8; column++) {
+    			if (board[row][column].getColor() == this.side) {
+    				Piece piece = board[row][column];
+    				if (piece instanceof Pawn) {
+    					points += 100;
+    					//points += eval.pawn[row][column];
+    				}
+    			}
+    		}
+    	}
+    	
+    	return points;
+    }
+    
 	public boolean getSide() {
 		return side;
 	}
