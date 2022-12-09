@@ -12,7 +12,8 @@ public class Rook extends Piece {
 	}
 	
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
-		ArrayList<int[]> moves = new ArrayList();
+		ArrayList<int[]> moves = new ArrayList<>();
+		// TODO (check for capturing enemy pieces)
 
 		for(int i = 1; i <= 8; i++) {
 			if(x + i >= board[0].length || board[x + i][y] != null)

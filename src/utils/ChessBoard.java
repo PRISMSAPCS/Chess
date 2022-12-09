@@ -18,10 +18,10 @@ public class ChessBoard {
         
     	board[0][0] = new Rook(true);
     	board[0][1] = new Knight(true);
-    	// board[0][2] = new Bishop(true);
+    	board[0][2] = new Bishop(true);
     	board[0][3] = new Queen(true);
     	board[0][4] = new King(true);
-    	// board[0][5] = new Bishop(true);
+    	board[0][5] = new Bishop(true);
     	board[0][6] = new Knight(true);
     	board[0][7] = new Rook(true);
     	for (int i = 0; i < 8; i++) {
@@ -30,10 +30,10 @@ public class ChessBoard {
     	}
     	board[7][0] = new Rook(false);
     	board[7][1] = new Knight(false);
-    	/// board[7][2] = new Bishop(false);
+    	board[7][2] = new Bishop(false);
     	board[7][3] = new Queen(false);
     	board[7][4] = new King(false);
-    	// board[7][5] = new Bishop(false);
+    	board[7][5] = new Bishop(false);
     	board[7][6] = new Knight(false);
     	board[7][7] = new Rook(false);
     }

@@ -1,8 +1,14 @@
 package utils;
 
+import java.util.ArrayList;
+
 public class Bishop extends Piece {
-  
-     public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
+
+	public Bishop(boolean color) {
+		super(color);
+	}
+
+	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		for(int i = 1; i <= 8; i++) {
@@ -32,5 +38,10 @@ public class Bishop extends Piece {
 		
 		return moves;
 	}
-	
+
+	@Override
+	public String getIconFile() {
+		return getColor()? "b_w.png": "b_b.png";
+	}
+
 }

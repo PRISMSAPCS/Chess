@@ -142,10 +142,6 @@ public class GUI {
 
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
-                //// List<Move> legalMoves = List.of(
-                ////         new Move(new Pawn(false), pos.first, pos.second, pos.first + 1, pos.second),
-                ////         new Move(new Pawn(false), pos.first, pos.second, pos.first + 2, pos.second));
-                //// for (Move move : legalMoves) {
                 for (Move move : board.getLegalMoves(pos.first, pos.second)) {
                     Pair end = move.getEnd();
                     backgroundPanel[end.first][end.second].setBackground(
