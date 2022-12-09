@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class ChessBoard {
     public static int WIDTH = 8;
@@ -145,7 +146,24 @@ public class ChessBoard {
     	
     	return legalMoves;
     }
-
+    
+    public Move chooseRandomMove() {
+    	ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+    	for (int i = 0; i < 8; i++) {
+    		for (int j = 0; j < 8; j++) {
+    			if (board[i][j].getColor() == this.side) {
+    				ArrayList<Move> temp = getLegalMoves(i, j);
+    				for (Move x : temp) {
+    					allLegalMoves.add(x);
+    				}
+    			}
+    		}
+    	}
+    	
+    	int rnd = new Random().nextInt(allLegalMoves.size());
+        return allLegalMoves.get(rnd);
+    }
+    
 	public boolean getSide() {
 		return side;
 	}
