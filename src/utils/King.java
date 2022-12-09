@@ -15,8 +15,11 @@ public class King extends Piece {
         MOVE_SET[7] = new int[] {-1, -1};
     }
 
+    private boolean firstMove;
+
     public King(boolean color) {
         super(color);
+        firstMove = true;
     }
 
     @Override
@@ -29,7 +32,18 @@ public class King extends Piece {
                 ans.add(new int[] {x + MOVE_SET[i][0], y + MOVE_SET[i][1]});
             }
         }
+
+        if(firstMove){
+
+        }
+
+
+
         return ans;
+    }
+
+    void cancelFirstMove(){
+        this.firstMove = false;
     }
 
     @Override
