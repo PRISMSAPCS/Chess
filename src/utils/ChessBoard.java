@@ -164,23 +164,51 @@ public class ChessBoard {
         return allLegalMoves.get(rnd);
     }
     
-    public int evaluate() {
+    /* public int evaluate() {
+    	boolean middlegame = true;
+    	for (Piece[] x : board) {
+    		for (Piece y : x) {
+    			if (y instanceof Queen) {
+    				middlegame = false;
+    			}
+    		}
+    	}
+    	
     	int points = 0;
-    	//eval.setSide(this.side);
+    	Eval.flip(this.side);
     	for (int row = 0; row < 8; row++) {
     		for (int column = 0; column < 8; column++) {
     			if (board[row][column].getColor() == this.side) {
     				Piece piece = board[row][column];
     				if (piece instanceof Pawn) {
     					points += 100;
-    					//points += eval.pawn[row][column];
+    					points += Eval.pawn[row][column];
+    				} else if (piece instanceof Knight) {
+    					points += 320;
+    					points += Eval.knight[row][column];
+    				} else if (piece instanceof Bishop) {
+    					points += 330;
+    					points += Eval.bishop[row][column];
+    				} else if (piece instanceof Rook) {
+    					points += 500;
+    					points += Eval.rook[row][column];
+    				} else if (piece instanceof Queen) {
+    					points += 900;
+    					points += Eval.queen[row][column];
+    				} else if (piece instanceof King) {
+    					points += 20000;
+    					if (middlegame) {
+    						points += Eval.kingmid[row][column];
+    					} else {
+    						points += Eval.kingend[row][column];
+    					}
     				}
     			}
     		}
     	}
     	
     	return points;
-    }
+    } */
     
 	public boolean getSide() {
 		return side;
