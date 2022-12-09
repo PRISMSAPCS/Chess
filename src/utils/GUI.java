@@ -128,6 +128,7 @@ public class GUI {
      * 
      * @author tzyt, mqcreaple
      */
+    
     private class PieceSelectedListener implements MouseListener {
         private Pair pos;
 
@@ -163,7 +164,27 @@ public class GUI {
                 // if select a different thing, check if it is a valid move
                 secSelectedPos = pos;
                 getMoveSem.release();
-            } else if(firSelectedPos != null) {
+            } else if (firSelectedPos != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
+            	// if select a same color, change to that one
+            	
+            	setOrigBack(firSelectedPos);
+                for (Pair p : currentAllowedMove.keySet()) {
+                    setOrigBack(p);
+                }
+                firSelectedPos = null;
+                currentAllowedMove.clear();
+            	
+            	firSelectedPos = pos;
+                backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
+                for (Move move : board.getLegalMoves(pos.first, pos.second)) {
+                    Pair end = move.getEnd();
+                    backgroundPanel[end.first][end.second].setBackground(
+                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
+                                    INTERPOLATE_RATIO));
+                    currentAllowedMove.put(end, move);
+                }
+                validateAndRepaint(backgroundPanel[pos.first][pos.second]);
+            }else if(firSelectedPos != null) {
                 // currently selected a piece, but do not click on any valid position
                 popInfo("Not a valid move");
             }
