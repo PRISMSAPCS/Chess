@@ -68,4 +68,8 @@ public class Bishop extends Piece {
 		return getColor()? "b_w.png": "b_b.png";
 	}
 
+	@Override
+	public String toString() {
+		return "bishop";
+	}
 }

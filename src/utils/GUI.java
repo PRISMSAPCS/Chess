@@ -93,8 +93,14 @@ public class GUI {
         if(capture != null) {
             backgroundPanel[capture.first][capture.second].removeAll();
         }
-        backgroundPanel[end.first][end.second].add(backgroundPanel[start.first][start.second].getComponent(0));
+        backgroundPanel[end.first][end.second].add(
+                (move instanceof PromotionMove)
+                        ? new ImagePanel("resource/" + board.getBoard(end).getIconFile())
+                        : backgroundPanel[start.first][start.second].getComponent(0)
+        );
+        // TODO (after promotion, the background color of a piece will have error)
         backgroundPanel[start.first][start.second].removeAll();
+        validateAndRepaint(backgroundPanel[end.first][end.second]);
     }
 
     /**
@@ -230,5 +236,18 @@ public class GUI {
 
     public static void popInfo(String str) {
         JOptionPane.showMessageDialog(null, str);
+    }
+
+    /**
+     * @author mqcreaple
+     * Get the user input of the choice on what a pawn promote to.
+     * @return a new piece chosen by user to replace the pawn.
+     */
+    public static Piece getPromotion(boolean color) {
+        JList<Piece> list = new JList<>(new Piece[] {new Queen(color), new Rook(color), new Bishop(color), new Knight(color)});
+        while(list.getSelectedValue() == null) {
+            JOptionPane.showInputDialog(null, list, "promotion", JOptionPane.QUESTION_MESSAGE);
+        }
+        return list.getSelectedValue();
     }
 }

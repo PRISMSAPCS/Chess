@@ -58,4 +58,9 @@ public class Rook extends Piece {
 	public String getIconFile() {
 		return getColor()? "r_w.png": "r_b.png";
 	}
+
+	@Override
+	public String toString() {
+		return "rook";
+	}
 }

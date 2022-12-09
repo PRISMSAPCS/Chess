@@ -89,4 +89,9 @@ public class Queen extends Piece {
 	public String getIconFile() {
 		return getColor()? "q_w.png": "q_b.png";
 	}
+
+	@Override
+	public String toString() {
+		return "queen";
+	}
 }

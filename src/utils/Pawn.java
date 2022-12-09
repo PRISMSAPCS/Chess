@@ -17,10 +17,10 @@ public class Pawn extends Piece {
 		ArrayList<int[]> moves = new ArrayList<>();
 		int colorMult = this.getColor()? 1: -1;     // y direction this pawn moves
 		//checks forward moves
-		if((x+colorMult+1<ChessBoard.WIDTH&&x+colorMult>=0)&&board[x+colorMult][y]==null) {
+		if((x+colorMult<ChessBoard.WIDTH&&x+colorMult>=0)&&board[x+colorMult][y]==null) {
 			int[] temp = {x+colorMult,y};
 			moves.add(temp);
-			if((x+(2*colorMult)+1<board[0].length&&x+(2*colorMult)>=0)&&board[x+2*colorMult][y]==null && firstMove ) {
+			if((x+(2*colorMult)<board[0].length&&x+(2*colorMult)>=0)&&board[x+2*colorMult][y]==null && firstMove ) {
 				int[] temp2 = {x+2*colorMult, y};
 				moves.add(temp2);
 			}
@@ -50,5 +50,10 @@ public class Pawn extends Piece {
 	@Override
 	public String getIconFile() {
 		return getColor()? "p_w.png": "p_b.png";
+	}
+
+	@Override
+	public String toString() {
+		return "pawn";
 	}
 }

@@ -58,9 +58,13 @@ public class ChessBoard {
 		}
         board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
         board[theMove.getStart().first][theMove.getStart().second] = null;
-        if (theMove.getCapture() != null) {
-        	board[theMove.getCapture().first][theMove.getCapture().second] = null;
-        }
+
+		// check for promotion
+		// @author mqcreaple
+		if(theMove instanceof PromotionMove) {
+			Piece newPiece = GUI.getPromotion(theMove.getPiece().getColor());
+			board[theMove.getEnd().first][theMove.getEnd().second] = newPiece;
+		}
         
 		// change side
 		this.side = !this.side;
@@ -132,9 +136,17 @@ public class ChessBoard {
     		Move toAdd;
     		
     		if (board[move[0]][move[1]] == null) {
-    			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
+				if(board[x][y] instanceof Pawn && (move[0] == 0 || move[0] == ChessBoard.WIDTH - 1)) {
+					toAdd = new PromotionMove(board[x][y], x, y, move[0], move[1]);
+				} else {
+					toAdd = new Move(board[x][y], x, y, move[0], move[1]);
+				}
     		} else if (board[move[0]][move[1]].getColor() != this.side) {
-    			toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
+				if(board[x][y] instanceof Pawn && (move[0] == 0 || move[0] == ChessBoard.WIDTH - 1)) {
+					toAdd = new PromotionMove(board[x][y], x, y, move[0], move[1], move[0], move[1]);
+				} else {
+					toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
+				}
     		} else {
 				continue;
 			}

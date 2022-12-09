@@ -30,4 +30,9 @@ public class Knight extends Piece {
 	public String getIconFile() {
 		return getColor()? "n_w.png": "n_b.png";
 	}
+
+	@Override
+	public String toString() {
+		return "knight";
+	}
 }
