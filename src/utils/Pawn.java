@@ -39,8 +39,12 @@ public class Pawn extends Piece {
 		return moves;
 	}
 
-	void cancelFirstMove() {
+	public void cancelFirstMove() {
 		this.firstMove = false;
+	}
+	
+	public boolean getFirstMove() {
+		return firstMove;
 	}
 
 	@Override
