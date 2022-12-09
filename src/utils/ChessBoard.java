@@ -60,14 +60,20 @@ public class ChessBoard {
         board[theMove.getStart().first][theMove.getStart().second] = null;
 		// change side
 		this.side = !this.side;
-
+		
+		// set enPassant array
+		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true) {
+			enPassant.first = theMove.getEnd().first;
+			enPassant.second = theMove.getEnd().second;
+		}
+		
 		// set the pawn's firstMove field to false
 		if(theMove.getPiece() instanceof Pawn) {
 			((Pawn) theMove.getPiece()).cancelFirstMove();
 		}
     }
     
-    private boolean checkLegal(int x, int y, Move move) {
+    private boolean checkLegal(int x, int y, Move move) { // Author: Daniel - checks if a move is legal
     	// copies the board - in this function, we make the move, then check if the king is in check
 		Piece[][] boardCopy = (new ChessBoard(this)).getBoard();
 		
@@ -112,14 +118,14 @@ public class ChessBoard {
 		return !leave;
     }
     
-    public ArrayList<Move> getLegalMoves(int x, int y) { // returns an ArrayList of legal moves
+    public ArrayList<Move> getLegalMoves(int x, int y) { // Author: Daniel - returns an ArrayList of legal moves
     	ArrayList<Move> legalMoves = new ArrayList<>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
     	for (int[] move : moves) {
     		// create the move object
     		Move toAdd;
     		
-    		if (board[move[0]][move[1]] == null) {
+    		if) (board[move[0]][move[1]] == null) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1]);
     		} else if (board[move[0]][move[1]].getColor() != this.side) {
     			toAdd = new Move(board[x][y], x, y, move[0], move[1], move[0], move[1]);
@@ -147,7 +153,7 @@ public class ChessBoard {
     	return legalMoves;
     }
     
-    public Move chooseRandomMove() {
+    public Move chooseRandomMove() { // Author: Daniel - gets a random legal move
     	ArrayList<Move> allLegalMoves = new ArrayList<Move>();
     	for (int i = 0; i < 8; i++) {
     		for (int j = 0; j < 8; j++) {
@@ -164,7 +170,7 @@ public class ChessBoard {
         return allLegalMoves.get(rnd);
     }
     
-    /* public int evaluate() {
+    public int evaluate() { // Author: Daniel - evaluates a position
     	boolean middlegame = true;
     	for (Piece[] x : board) {
     		for (Piece y : x) {
@@ -175,7 +181,6 @@ public class ChessBoard {
     	}
     	
     	int points = 0;
-    	Eval.flip(this.side);
     	for (int row = 0; row < 8; row++) {
     		for (int column = 0; column < 8; column++) {
     			if (board[row][column].getColor() == this.side) {
@@ -207,8 +212,40 @@ public class ChessBoard {
     		}
     	}
     	
-    	return points;
-    } */
+    	Eval.flip(this.side);
+    	for (int row = 0; row < 8; row++) {
+    		for (int column = 0; column < 8; column++) {
+    			if (board[row][column].getColor() == this.side) {
+    				Piece piece = board[row][column];
+    				if (piece instanceof Pawn) {
+    					points -= 100;
+    					points -= Eval.pawn[row][column];
+    				} else if (piece instanceof Knight) {
+    					points -= 320;
+    					points -= Eval.knight[row][column];
+    				} else if (piece instanceof Bishop) {
+    					points -= 330;
+    					points -= Eval.bishop[row][column];
+    				} else if (piece instanceof Rook) {
+    					points -= 500;
+    					points -= Eval.rook[row][column];
+    				} else if (piece instanceof Queen) {
+    					points -= 900;
+    					points -= Eval.queen[row][column];
+    				} else if (piece instanceof King) {
+    					points -= 20000;
+    					if (middlegame) {
+    						points -= Eval.kingmid[row][column];
+    					} else {
+    						points -= Eval.kingend[row][column];
+    					}
+    				}
+    			}
+    		}
+    	}
+    	
+    	return (this.side) ? points : points * -1;
+    }
     
 	public boolean getSide() {
 		return side;
