@@ -7,6 +7,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.*;
+import externals.imgscalr.*;
 
 public class ImagePanel extends JPanel {
     private BufferedImage dspImg;
@@ -34,12 +35,13 @@ public class ImagePanel extends JPanel {
      * @author tzyt
      */
     public void resize(int wid, int hei) {
-        Image tmp = origImg.getScaledInstance(wid, hei, Image.SCALE_SMOOTH);
-        dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_ARGB);
-        dspImg.getGraphics().drawImage(tmp, 0, 0, null);
+        dspImg = Scalr.resize(origImg, Scalr.Method.AUTOMATIC, wid, hei, Scalr.OP_ANTIALIAS);
+        // Image tmp = origImg.getScaledInstance(wid, hei, Image.SCALE_SMOOTH);
+        // dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_ARGB);
+        // dspImg.getGraphics().drawImage(tmp, 0, 0, null);
     }
 
-    public void resize(Dimension d) {
+    public void esize(Dimension d) {
         resize(d.width, d.height);
     }
 
