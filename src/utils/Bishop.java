@@ -3,8 +3,7 @@ package utils;
 public class Bishop extends Piece {
   
      public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
-     
-	     ArrayList<int[]> moves = new ArrayList<>();
+       ArrayList<int[]> moves = new ArrayList<>();
        int dx,dy;
        int[][] positions = {{1,2},{2,1},{1,-2},{-2,1},{2,-1},{-1,2},{-1,-2},{-2,-1}}
        for(int i=0;i<8;i++){
@@ -19,6 +18,6 @@ public class Bishop extends Piece {
        }
 		
 		
-	return moves;
+     return moves;
   }
 }
