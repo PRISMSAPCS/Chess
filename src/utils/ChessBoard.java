@@ -58,6 +58,10 @@ public class ChessBoard {
 		}
         board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
         board[theMove.getStart().first][theMove.getStart().second] = null;
+        if (theMove.getCapture() != null) {
+        	board[theMove.getCapture().first][theMove.getCapture().second] = null;
+        }
+        
 		// change side
 		this.side = !this.side;
 		
