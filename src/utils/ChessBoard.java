@@ -131,6 +131,13 @@ public class ChessBoard {
     public ArrayList<Move> getLegalMoves(int x, int y) { // Author: Daniel - returns an ArrayList of legal moves
     	ArrayList<Move> legalMoves = new ArrayList<>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
+		//castle logic, special. Author: Kevin
+		if(board[x][y].getFirstMove() && board[x][y] instanceof King){
+			if(board[x+3][y].getFirstMove()){
+				
+			}
+		}
+
     	for (int[] move : moves) {
     		// create the move object
     		Move toAdd;

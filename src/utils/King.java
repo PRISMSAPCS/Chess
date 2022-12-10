@@ -33,18 +33,16 @@ public class King extends Piece {
             }
         }
 
-        if(firstMove){
-
-        }
-
-
-
         return ans;
     }
 
     void cancelFirstMove(){
         this.firstMove = false;
     }
+
+    public boolean getFirstMove() {
+		return firstMove;
+	}
 
     @Override
     public String getIconFile() {

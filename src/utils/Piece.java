@@ -26,6 +26,10 @@ public abstract class Piece implements Cloneable {
 		this.color = color;
 	}
 
+	public boolean getFirstMove(){
+		return false;
+	}
+
 	@Override
 	public Piece clone() {
 		try {

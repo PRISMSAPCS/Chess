@@ -54,6 +54,10 @@ public class Rook extends Piece {
 		this.firstMove = false;
 	}
 
+	public boolean getFirstMove(){
+		return this.firstMove;
+	}
+
 	@Override
 	public String getIconFile() {
 		return getColor()? "r_w.png": "r_b.png";
