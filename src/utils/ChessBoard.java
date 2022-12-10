@@ -267,6 +267,43 @@ public class ChessBoard {
     	return (this.side) ? points : points * -1;
     }
     
+    public boolean checked(boolean color) { // author: Benjamin Li, return false if king's not checked, return true if king's checked
+    	int kx = 0, ky = 0;
+    	for(int i = 0; i < 8; i++) {
+    		for(int j = 0; j < 8; j++) {
+    			if(board[i][j] != null && board[i][j].getColor() == color && board[i][j].getIconFile().equals(board[i][j].getColor()? "k_w.png": "k_b.png")) {
+    				kx = i;
+    				ky = j;
+    			}
+    		}
+    	}
+    	for(int i = 0; i < 8; i++) {
+    		for(int j = 0; j < 8; j++) {
+    			if(board[i][j] != null && board[i][j].getColor() != color) {
+    				ArrayList<int[]> moves = board[i][j].getMoveSet(board, i, j);
+    		    	for (int[] move : moves) { 
+    		    		if(move[0] == kx && move[1] == ky)
+    		    			return true;
+    		    	}
+    			}
+    		}
+    	}
+    	return false;
+    }
+    
+    public int gameOver(boolean color) { // author: Benjamin Li,return 0 for not game over, 1 for checkmate, and 2 for stalemate
+    	
+    	for(int i = 0; i < 8; i++) {
+    		for(int j = 0; j < 8; j++) {
+    			if(board[i][j] != null && board[i][j].getColor() == color && !getLegalMoves(i,j).isEmpty())
+    				return 0;
+    		}
+    	}
+    	if(checked(color))
+    		return 1;
+    	return 2;
+    }
+    
 	public boolean getSide() {
 		return side;
 	}
