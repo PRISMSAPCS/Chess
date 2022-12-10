@@ -90,6 +90,8 @@ public class GUI {
         Pair start = move.getStart();
         Pair end = move.getEnd();
         Pair capture = move.getCapture();
+        Pair start2 = move.getStart2();
+        Pair end2 = move.getEnd2();
         if(capture != null) {
             backgroundPanel[capture.first][capture.second].removeAll();
         }
@@ -98,9 +100,19 @@ public class GUI {
                         ? new ImagePanel("resource/" + board.getBoard(end).getIconFile())
                         : backgroundPanel[start.first][start.second].getComponent(0)
         );
+
+        
+        if(end2 != null) backgroundPanel[end2.first][end2.second].add(
+                (move instanceof PromotionMove)
+                        ? new ImagePanel("resource/" + board.getBoard(end2).getIconFile())
+                        : backgroundPanel[start2.first][start2.second].getComponent(0)
+        );
         // TODO (after promotion, the background color of a piece will have error)
         backgroundPanel[start.first][start.second].removeAll();
         validateAndRepaint(backgroundPanel[end.first][end.second]);
+
+        if(start2 != null) backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
+        if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
     }
 
     /**
@@ -171,6 +183,7 @@ public class GUI {
                 secSelectedPos = pos;
                 getMoveSem.release();
             } else if (firSelectedPos != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
+                //TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
             	// if select a same color, change to that one
             	
             	setOrigBack(firSelectedPos);

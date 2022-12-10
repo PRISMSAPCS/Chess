@@ -59,6 +59,11 @@ public class ChessBoard {
         board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
         board[theMove.getStart().first][theMove.getStart().second] = null;
 
+		if(theMove.getPiece2() != null){
+			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
+        	board[theMove.getStart2().first][theMove.getStart2().second] = null;
+		}
+
 		// check for promotion
 		// @author mqcreaple
 		if(theMove instanceof PromotionMove) {
@@ -80,6 +85,19 @@ public class ChessBoard {
 		// set the pawn's firstMove field to false
 		if(theMove.getPiece() instanceof Pawn) {
 			((Pawn) theMove.getPiece()).cancelFirstMove();
+		}
+
+		//set king and rook firstmove to false
+		if(theMove.getPiece() instanceof King) {
+			((King) theMove.getPiece()).cancelFirstMove();
+		}
+		if(theMove.getPiece() instanceof Rook) {
+			((Rook) theMove.getPiece()).cancelFirstMove();
+		}
+		if(theMove.getPiece2() != null){
+			if(theMove.getPiece2() instanceof Rook) {
+				((Rook) theMove.getPiece2()).cancelFirstMove();
+			}
 		}
     }
     
@@ -133,8 +151,28 @@ public class ChessBoard {
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
 		//castle logic, special. Author: Kevin
 		if(board[x][y].getFirstMove() && board[x][y] instanceof King){
-			if(board[x+3][y].getFirstMove()){
-				
+			boolean validCastle = true;
+			if(board[x][y+3].getFirstMove()){
+				for(int i = y; i < y + 3; i++){
+					if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
+						validCastle = true;
+					}else{
+						validCastle = false;
+						break;
+					}
+				}
+				if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y+2, board[x][y+3], x, y+3, x, y+1));
+			}
+			if(board[x][y-4].getFirstMove()){
+				for(int i = y; i > y-4; i--){
+					if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
+						validCastle = true;
+					}else{
+						validCastle = false;
+						break;
+					}
+				}
+				if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y-2, board[x][y-4], x, y-4, x, y-1));
 			}
 		}
 
