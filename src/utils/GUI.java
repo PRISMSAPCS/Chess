@@ -205,7 +205,7 @@ public class GUI {
                 validateAndRepaint(backgroundPanel[pos.first][pos.second]);
             }else if(firSelectedPos != null) {
                 // currently selected a piece, but do not click on any valid position
-                popInfo("Not a valid move");
+                // popInfo("Not a valid move");
             }
         }
 
