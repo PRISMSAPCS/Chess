@@ -85,15 +85,10 @@ public class Eval {
 	
 	//flips one piece (is the one piece real?)
 	public static void flipA(int[][] input) {
-		int[][] temp = new int[8][8];
-		temp[0] = input[7];
-		temp[1] = input[6];
-		temp[2] = input[5];
-		temp[3] = input[4];
-		temp[4] = input[3];
-		temp[5] = input[2];
-		temp[6] = input[1];
-		temp[7] = input[0];
-		input = temp;
+		for (int i = 0; i < 4; i++) {
+			int[] temp = input[i].clone();
+			input[i] = input[7 - i];
+			input[7 - i] = temp;
+		}
 	}
 }

@@ -99,6 +99,8 @@ public class ChessBoard {
 				((Rook) theMove.getPiece2()).cancelFirstMove();
 			}
 		}
+		
+		System.out.println(evaluate());
     }
     
     private boolean checkLegal(int x, int y, Move move) { // Author: Daniel - checks if a move is legal
@@ -233,7 +235,7 @@ public class ChessBoard {
         return allLegalMoves.get(rnd);
     }
     
-    public int evaluate() { // Author: Daniel - evaluates a position
+    public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
     	boolean middlegame = true;
     	for (Piece[] x : board) {
     		for (Piece y : x) {
@@ -246,7 +248,7 @@ public class ChessBoard {
     	int points = 0;
     	for (int row = 0; row < 8; row++) {
     		for (int column = 0; column < 8; column++) {
-    			if (board[row][column].getColor() == this.side) {
+    			if (board[row][column] != null && board[row][column].getColor() == this.side) {
     				Piece piece = board[row][column];
     				if (piece instanceof Pawn) {
     					points += 100;
@@ -278,7 +280,7 @@ public class ChessBoard {
     	Eval.flip();
     	for (int row = 0; row < 8; row++) {
     		for (int column = 0; column < 8; column++) {
-    			if (board[row][column].getColor() == this.side) {
+    			if (board[row][column] != null && board[row][column].getColor() != this.side) {
     				Piece piece = board[row][column];
     				if (piece instanceof Pawn) {
     					points -= 100;
@@ -307,9 +309,7 @@ public class ChessBoard {
     		}
     	}
     	
-    	Eval.flip();
-    	
-    	return (this.side) ? points : points * -1;
+    	return (this.side) ? points : (points * -1);
     }
     
     public boolean checked(boolean color) { // author: Benjamin Li, return false if king's not checked, return true if king's checked
