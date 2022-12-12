@@ -95,18 +95,15 @@ public class GUI {
         if(capture != null) {
             backgroundPanel[capture.first][capture.second].removeAll();
         }
-        backgroundPanel[end.first][end.second].add(
-                (move instanceof PromotionMove)
-                        ? new ImagePanel("resource/" + board.getBoard(end).getIconFile())
-                        : backgroundPanel[start.first][start.second].getComponent(0)
-        );
+        ImagePanel endLabel = new ImagePanel("resource/" + board.getBoard(end).getIconFile());
+        endLabel.setOpaque(false);
+        backgroundPanel[end.first][end.second].add(endLabel);
 
-        
-        if(end2 != null) backgroundPanel[end2.first][end2.second].add(
-                (move instanceof PromotionMove)
-                        ? new ImagePanel("resource/" + board.getBoard(end2).getIconFile())
-                        : backgroundPanel[start2.first][start2.second].getComponent(0)
-        );
+        if(end2 != null) {
+            ImagePanel end2Label = new ImagePanel("resource/" + board.getBoard(end2).getIconFile());
+            end2Label.setOpaque(false);
+            backgroundPanel[end2.first][end2.second].add(end2Label);
+        }
         // TODO (after promotion, the background color of a piece will have error)
         backgroundPanel[start.first][start.second].removeAll();
         validateAndRepaint(backgroundPanel[end.first][end.second]);
