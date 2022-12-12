@@ -13,7 +13,9 @@ public class Pawn extends Piece {
 	}
 
 	@Override
+	//returns array of potential coordinates of moves
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
+		//moves list of potential spaces the pawn can move to
 		ArrayList<int[]> moves = new ArrayList<>();
 		int colorMult = this.getColor()? 1: -1;     // y direction this pawn moves
 		//checks forward moves

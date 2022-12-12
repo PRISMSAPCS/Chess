@@ -1,0 +1,16 @@
+added eval class
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Fri Dec 9 14:19:13 2022 -0500
+#
+# On branch dev
+# Your branch is ahead of 'origin/dev' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	new file:   src/utils/Eval.java
+#	modified:   src/utils/Pawn.java
+#
+

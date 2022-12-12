@@ -2,7 +2,8 @@
 package utils;
 
 public class Eval {
-	public static boolean side = true;
+	//public static boolean side = true;
+	//all of the positional advantage 2d arrays 
 	public static int[][] pawn = 
 			{{0,  0,  0,  0,  0,  0,  0,  0}
 			,{50, 50, 50, 50, 50, 50, 50, 50}
@@ -74,6 +75,7 @@ public class Eval {
 			,{-50,-30,-30,-30,-30,-30,-30,-50}};
 			
 	public static void flip() {
+		//flips all the 2d arrays
 		flipA(pawn);
 		flipA(knight);
 		flipA(bishop);
