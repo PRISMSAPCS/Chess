@@ -218,6 +218,10 @@ public class ChessBoard {
     	return legalMoves;
     }
     
+    public ArrayList<Move> getLegalMoves(Pair pos) {
+    	return getLegalMoves(pos.first, pos.second);
+    }
+    
     public Move chooseRandomMove() { // Author: Daniel - gets a random legal move
     	ArrayList<Move> allLegalMoves = new ArrayList<Move>();
     	for (int i = 0; i < 8; i++) {
@@ -347,6 +351,47 @@ public class ChessBoard {
     	if(checked(color))
     		return 1;
     	return 2;
+    }
+    
+    public ArrayList<Pair> spacesThreat(Pair pos) {
+    	ArrayList<Move> a = getLegalMoves(pos);
+    	ArrayList<Pair> toReturn = new ArrayList<Pair>();
+    	for (Move x : a) {
+    		if (x.getCapture() != null) {
+    			toReturn.add(x.getCapture());
+    		} else {
+    			toReturn.add(x.getEnd());
+    		}
+    	}
+    	return toReturn;
+    }
+    
+    public ArrayList<Pair> spacesThreat(int row, int column) {
+    	return spacesThreat(new Pair(row, column));
+    }
+    
+    public ArrayList<Pair> piecesThreatened(Pair pos) {
+    	ArrayList<Pair> toReturn = new ArrayList<Pair>();
+    	for (int row = 0; row < 8; row++) {
+    		for (int column = 0; column < 8; column++) {
+    			if (board[row][column] != null && board[row][column].getColor() != this.side) {
+    				ArrayList<Move> a = getLegalMoves(row, column);
+    				for (Move x : a) {
+    					if (x.getCapture().equals(pos)) {
+    						toReturn.add(new Pair(row, column));
+    					} else if (x.getEnd().equals(pos)) {
+    						toReturn.add(new Pair(row, column));
+    					}
+    				}
+    			}
+    		}
+    	}
+    	
+    	return toReturn;
+    }
+    
+    public ArrayList<Pair> piecesThreatened(int row, int column) {
+    	return piecesThreatened(new Pair(row, column));
     }
     
 	public boolean getSide() {
