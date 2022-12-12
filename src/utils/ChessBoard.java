@@ -109,10 +109,10 @@ public class ChessBoard {
 		
 		// emulate the move
 		boardCopy[x][y] = null;
-		boardCopy[move.getEnd().first][move.getEnd().second] = board[x][y];
 		if(move.getCapture() != null) {
 			boardCopy[move.getCapture().first][move.getCapture().second] = null;
 		}
+		boardCopy[move.getEnd().first][move.getEnd().second] = board[x][y];
 		
 		// find location of king
 		int kingX = -1;
