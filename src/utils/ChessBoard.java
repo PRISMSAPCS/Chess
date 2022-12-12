@@ -169,7 +169,7 @@ public class ChessBoard {
 					}
 				}
 
-				if(board[x][y+3] instanceof Rook){
+				if(board[x][y-4] instanceof Rook){
 					if(board[x][y-4].getFirstMove()){
 						for(int i = y; i > y-4; i--){
 							if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
