@@ -153,7 +153,14 @@ public class GUI {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
+        	if(board.gameOver(board.getSide()) == 1) {
+        		if(board.getSide() == true)
+        			popInfo("Game Over! Black Win!");
+        		else 
+        			popInfo("Game Over! White Win!");
+        	}else if(board.gameOver(board.getSide()) == 2) {
+        		popInfo("Game Over! Stalemate");
+        	} else if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
                 // if nothing is currently selected and the clicked piece is on current side, select the piece, and highlight it
 
                 firSelectedPos = pos;
