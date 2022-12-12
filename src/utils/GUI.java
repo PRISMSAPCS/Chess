@@ -182,7 +182,7 @@ public class GUI {
                 // if select a different thing, check if it is a valid move
                 secSelectedPos = pos;
                 getMoveSem.release();
-            } else if (firSelectedPos != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
+            } else if (firSelectedPos != null && board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
                 //TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
             	// if select a same color, change to that one
             	
