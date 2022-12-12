@@ -152,29 +152,36 @@ public class ChessBoard {
     	ArrayList<Move> legalMoves = new ArrayList<>();
     	ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
 		//castle logic, special. Author: Kevin
-		if(board[x][y].getFirstMove() && board[x][y] instanceof King){
-			boolean validCastle = true;
-			if(board[x][y+3].getFirstMove()){
-				for(int i = y; i < y + 3; i++){
-					if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
-						validCastle = true;
-					}else{
-						validCastle = false;
-						break;
+		if(board[x][y] instanceof King){
+			if(board[x][y].getFirstMove()){
+				boolean validCastle = true;
+				if(board[x][y+3] instanceof Rook){
+					if(board[x][y+3].getFirstMove()){
+						for(int i = y; i < y + 3; i++){
+							if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
+								validCastle = true;
+							}else{
+								validCastle = false;
+								break;
+							}
+						}
+						if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y+2, board[x][y+3], x, y+3, x, y+1));
 					}
 				}
-				if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y+2, board[x][y+3], x, y+3, x, y+1));
-			}
-			if(board[x][y-4].getFirstMove()){
-				for(int i = y; i > y-4; i--){
-					if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
-						validCastle = true;
-					}else{
-						validCastle = false;
-						break;
+
+				if(board[x][y+3] instanceof Rook){
+					if(board[x][y-4].getFirstMove()){
+						for(int i = y; i > y-4; i--){
+							if((board[x][i] == null || board[x][i] instanceof King) && (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))){
+								validCastle = true;
+							}else{
+								validCastle = false;
+								break;
+							}
+						}
+						if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y-2, board[x][y-4], x, y-4, x, y-1));
 					}
 				}
-				if(validCastle) legalMoves.add(new Move(board[x][y], x, y, x, y-2, board[x][y-4], x, y-4, x, y-1));
 			}
 		}
 
