@@ -323,7 +323,7 @@ public class ChessBoard {
     	return (this.side) ? points : (points * -1);
     }
     
-    public boolean checked(boolean color) { // author: Benjamin Li, return false if king's not checked, return true if king's checked
+    public boolean checked(boolean color) { // author: Benjamin, return false if king's not checked, return true if king's checked
     	int kx = 0, ky = 0;
     	for(int i = 0; i < 8; i++) {
     		for(int j = 0; j < 8; j++) {
@@ -347,7 +347,7 @@ public class ChessBoard {
     	return false;
     }
     
-    public int gameOver(boolean color) { // author: Benjamin Li,return 0 for not game over, 1 for checkmate, and 2 for stalemate
+    public int gameOver(boolean color) { // author: Benjamin, return 0 for not game over, 1 for checkmate, and 2 for stalemate
     	
     	for(int i = 0; i < 8; i++) {
     		for(int j = 0; j < 8; j++) {
@@ -400,6 +400,26 @@ public class ChessBoard {
     public ArrayList<Pair> piecesThreatened(int row, int column) {
     	return piecesThreatened(new Pair(row, column));
     }
+
+    
+    
+    public ArrayList<Pair> piecesThreatening(Pair pos) {
+    	ArrayList<Pair> moves = null;
+    	for(Move move: getLegalMoves(pos.first,pos.second)) {
+    		if(board[move.getEnd().first][move.getEnd().second] != null) {
+    			moves.add(new Pair(move.getEnd().first, move.getEnd().second));
+    		}
+    	}
+    	return moves;
+    }
+
+    public ArrayList<Pair> piecesThreatening(int row, int column) {
+    	return piecesThreatening(new Pair(row, column));
+    }
+
+    
+    
+
     
 	public boolean getSide() {
 		return side;
