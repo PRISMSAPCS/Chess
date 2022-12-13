@@ -1,7 +1,10 @@
 package utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 public class ChessBoard {
     public static int WIDTH = 8;
@@ -418,8 +421,174 @@ public class ChessBoard {
     }
 
     
+    public void simulatePlay(String fileName) { // simulate a game according to game log, TODO En passant, adding way to actually run it
+    	File log = new File(fileName);
+    	try {
+			Scanner myScanner = new Scanner(log);
+			boolean side = false;
+	    	while(myScanner.hasNext()) {
+	    		String next = myScanner.next();
+	    		if (next.charAt(next.length() - 1) != '.') {
+	    			if(side == true)
+	    				side = false;
+	    			else
+	    				side = true;
+	    			if(next.charAt(1) == 'x') 
+	    				next = next.substring(0,1) + next.substring(2);
+	    			if(next.charAt(next.length() - 1) == '+' || next.charAt(next.length() - 1) == '#')
+	    				next = next.substring(0, next.length() - 1);
+	    			if(!isLowerCaseLetter(next.charAt(0)) && !isUpperCaseLetter(next.charAt(0)))
+	    				continue;
+	    			else if(next.charAt(0) == 'K' || next.charAt(0) == 'Q' || next.charAt(0) == 'R' || next.charAt(0) == 'B' || next.charAt(0) == 'N') {
+	    				int x = 0, y = 0;
+	    				if(next.length() == 3) {
+	    					for(Pair pos: piecesThreatening(new Pair(next.charAt(2) - '1', next.charAt(1) - 'a'))) {
+	    						switch(next.charAt(0)) {
+	    							case 'K':
+	    								if(board[pos.first][pos.second] instanceof King) {
+	    									x = pos.first;
+	    									y = pos.second;
+	    								}
+	    								break;
+	    							case 'Q':
+	    								if(board[pos.first][pos.second] instanceof Queen) {
+	    									x = pos.first;
+	    									y = pos.second;
+	    								}
+	    								break;
+	    							case 'R':
+	    								if(board[pos.first][pos.second] instanceof Rook) {
+	    									x = pos.first;
+	    									y = pos.second;
+	    								}
+	    								break;
+	    							case 'B':
+	    								if(board[pos.first][pos.second] instanceof Bishop) {
+	    									x = pos.first;
+	    									y = pos.second;
+	    								}
+	    								break;
+	    							case 'N':
+	    								if(board[pos.first][pos.second] instanceof Knight) {
+	    									x = pos.first;
+	    									y = pos.second;
+	    								}
+	    								break;
+	    						}
+	    					}
+	    					submitMove(new Move(board[x][y], x, y, next.charAt(2) - '1', next.charAt(1) - 'a'));
+	    				} else if(next.length() == 4) {
+	    					for(Pair pos: piecesThreatening(new Pair(next.charAt(3) - '1', next.charAt(2) - 'a'))) {
+	    						if((isLowerCaseLetter(next.charAt(2)) && pos.second != next.charAt(2) - 'a')||(isNumber(next.charAt(2))&& pos.first != next.charAt(2) - '1'))
+	    							continue;
+	    	    				switch(next.charAt(0)) {
+	    	    					case 'K':
+	    	    					if(board[pos.first][pos.second] instanceof King) {
+	    	    							x = pos.first;
+	    	    							y = pos.second;
+	    	    						}
+	    	    						break;
+	    	    					case 'Q':
+	    	    						if(board[pos.first][pos.second] instanceof Queen) {
+	    	    							x = pos.first;
+	    	    							y = pos.second;
+	    	    						}
+	    	    						break;
+	    	    					case 'R':
+	    	    						if(board[pos.first][pos.second] instanceof Rook) {
+	    	    							x = pos.first;
+	    	    							y = pos.second;
+	    	    						}
+	    	    						break;
+	    	    					case 'B':
+	    	    						if(board[pos.first][pos.second] instanceof Bishop) {
+	    	    							x = pos.first;
+	    	    							y = pos.second;
+	    	    						}
+	    	    						break;
+	    	    					case 'N':
+	    	    						if(board[pos.first][pos.second] instanceof Knight) {
+	    	    							x = pos.first;
+	    	    							y = pos.second;
+	    	    						}
+	    	    						break;
+	    	    				}
+	    	    			}
+	    	    			submitMove(new Move(board[x][y], x, y, next.charAt(3) - '1', next.charAt(2) - 'a'));
+	    				} else {
+	    					submitMove(new Move(board[next.charAt(2) - '0'][next.charAt(1) - 'a'], next.charAt(2) - '0', next.charAt(1) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a'));
+	    				}
+	    			} else if(next.indexOf(0) == 'O') {
+	    				if(next.length() == 3) {
+	    					if(side == true) {
+	    						submitMove(new Move(board[0][4], 0, 4, 0, 6, board[0][7], 0, 7, 0, 5));
+	    					} else {
+	    						submitMove(new Move(board[7][4], 7, 4, 7, 6, board[7][7], 7, 7, 7, 5));
+	    					}
+	    				} else {
+	    					if(side == true) {
+	    						submitMove(new Move(board[0][4], 0, 4, 0, 2, board[0][7], 0, 7, 0, 5));
+	    					} else {
+	    						submitMove(new Move(board[7][4], 7, 4, 7, 2, board[7][7], 7, 7, 7, 5));
+	    					}
+	    				}
+	    			}else {
+	    				if(next.contains("=") == false) {
+	    					if(next.length() == 2) {
+	    						if(side == true) {
+	    							submitMove(new Move(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+	    						} else {
+	    							submitMove(new Move(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+	    						}
+	    					} else {
+	    						if(side == true) {
+	    							submitMove(new Move(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+	    						} else {
+	    							submitMove(new Move(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+	    						}
+	    					}
+	    				} else {
+	    					if(next.length() == 4) {
+	    						if(side == true) {
+	    							submitMove(new PromotionMove(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+	    						} else {
+	    							submitMove(new PromotionMove(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+	    						}
+	    					} else {
+	    						if(side == true) {
+	    							submitMove(new PromotionMove(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+	    						} else {
+	    							submitMove(new PromotionMove(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+	    						}
+	    					}
+	    				}
+	    			}
+	    			
+	    		}
+	    	}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     
-
+    boolean isNumber(char c) {
+    	if(c >= '0' && c <= '9')
+    		return true;
+    	return false;
+    }
+    
+    boolean isLowerCaseLetter(char c) {
+    	if(c >= 'a' && c <= 'z')
+    		return true;
+    	return false;
+    }
+    
+    boolean isUpperCaseLetter(char c) {
+    	if(c >= 'A' && c <= 'Z')
+    		return true;
+    	return false;
+    }
     
 	public boolean getSide() {
 		return side;
