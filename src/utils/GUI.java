@@ -110,6 +110,18 @@ public class GUI {
 
         if(start2 != null) backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
         if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
+        
+        
+        //test if game over
+        if(board.gameOver(board.getSide()) == 1) {
+    		if(board.getSide() == true)
+    			popInfo("Game Over! Black Win!");
+    		else 
+    			popInfo("Game Over! White Win!");
+    	}else if(board.gameOver(board.getSide()) == 2) {
+    		popInfo("Game Over! Stalemate");
+    	}
+        
     }
 
     /**
@@ -153,14 +165,7 @@ public class GUI {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-        	if(board.gameOver(board.getSide()) == 1) {
-        		if(board.getSide() == true)
-        			popInfo("Game Over! Black Win!");
-        		else 
-        			popInfo("Game Over! White Win!");
-        	}else if(board.gameOver(board.getSide()) == 2) {
-        		popInfo("Game Over! Stalemate");
-        	} else if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
+        	if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
                 // if nothing is currently selected and the clicked piece is on current side, select the piece, and highlight it
 
                 firSelectedPos = pos;
