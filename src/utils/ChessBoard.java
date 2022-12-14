@@ -571,17 +571,32 @@ public class ChessBoard {
 								}
 							}
 						} else {
+							Piece newPiece = null;
+							switch (next.charAt(next.indexOf("=") + 1)) {
+								case 'Q':
+									newPiece = new King(side);
+									break;
+								case 'R':
+									newPiece = new Rook(side);
+									break;
+								case 'N':
+									newPiece = new Knight(side);
+									break;
+								case 'B':
+									newPiece = new Bishop(side);
+									break;
+							}
 							if(next.length() == 4) {
 								if(side == true) {
-									submitMove(new PromotionMove(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+									submitMove(new PromotionMove(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
 								} else {
-									submitMove(new PromotionMove(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+									submitMove(new PromotionMove(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
 								}
 							} else {
 								if(side == true) {
-									submitMove(new PromotionMove(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+									submitMove(new PromotionMove(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
 								} else {
-									submitMove(new PromotionMove(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+									submitMove(new PromotionMove(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
 								}
 							}
 						}
