@@ -170,7 +170,7 @@ public class GUI {
 
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
-                for (Move move : board.getLegalMoves(pos.first, pos.second)) {
+                for (Move move : board.getLegalMoves(pos.first, pos.second, false)) {
                     Pair end = move.getEnd();
                     backgroundPanel[end.first][end.second].setBackground(
                             linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
@@ -204,7 +204,7 @@ public class GUI {
             	
             	firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
-                for (Move move : board.getLegalMoves(pos.first, pos.second)) {
+                for (Move move : board.getLegalMoves(pos.first, pos.second, false)) {
                     Pair end = move.getEnd();
                     backgroundPanel[end.first][end.second].setBackground(
                             linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
