@@ -459,8 +459,9 @@ public class ChessBoard {
 	}
 
 
-	public void simulatePlay(String fileName) { // simulate a game according to game log, TODO En passant, adding way to actually run it
+	public ArrayList<Move> simulatePlay(String fileName) { // simulate a game according to game log, TODO En passant, adding way to actually run it
 		File log = new File(fileName);
+		ArrayList<Move> moves = null;
 		try {
 			Scanner myScanner = new Scanner(log);
 			boolean side = false;
@@ -514,7 +515,7 @@ public class ChessBoard {
 										break;
 								}
 							}
-							submitMove(new Move(board[x][y], x, y, next.charAt(2) - '1', next.charAt(1) - 'a'));
+							moves.add(new Move(board[x][y], x, y, next.charAt(2) - '1', next.charAt(1) - 'a'));
 						} else if(next.length() == 4) {
 							for(Pair pos: piecesThreatening(new Pair(next.charAt(3) - '1', next.charAt(2) - 'a'))) {
 								if((isLowerCaseLetter(next.charAt(2)) && pos.second != next.charAt(2) - 'a')||(isNumber(next.charAt(2))&& pos.first != next.charAt(2) - '1'))
@@ -552,37 +553,37 @@ public class ChessBoard {
 										break;
 								}
 							}
-							submitMove(new Move(board[x][y], x, y, next.charAt(3) - '1', next.charAt(2) - 'a'));
+							moves.add(new Move(board[x][y], x, y, next.charAt(3) - '1', next.charAt(2) - 'a'));
 						} else {
-							submitMove(new Move(board[next.charAt(2) - '0'][next.charAt(1) - 'a'], next.charAt(2) - '0', next.charAt(1) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a'));
+							moves.add(new Move(board[next.charAt(2) - '0'][next.charAt(1) - 'a'], next.charAt(2) - '0', next.charAt(1) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a'));
 						}
 					} else if(next.indexOf(0) == 'O') {
 						if(next.length() == 3) {
 							if(side == true) {
-								submitMove(new Move(board[0][4], 0, 4, 0, 6, board[0][7], 0, 7, 0, 5));
+								moves.add(new Move(board[0][4], 0, 4, 0, 6, board[0][7], 0, 7, 0, 5));
 							} else {
-								submitMove(new Move(board[7][4], 7, 4, 7, 6, board[7][7], 7, 7, 7, 5));
+								moves.add(new Move(board[7][4], 7, 4, 7, 6, board[7][7], 7, 7, 7, 5));
 							}
 						} else {
 							if(side == true) {
-								submitMove(new Move(board[0][4], 0, 4, 0, 2, board[0][7], 0, 7, 0, 5));
+								moves.add(new Move(board[0][4], 0, 4, 0, 2, board[0][7], 0, 7, 0, 5));
 							} else {
-								submitMove(new Move(board[7][4], 7, 4, 7, 2, board[7][7], 7, 7, 7, 5));
+								moves.add(new Move(board[7][4], 7, 4, 7, 2, board[7][7], 7, 7, 7, 5));
 							}
 						}
 					}else {
 						if(next.contains("=") == false) {
 							if(next.length() == 2) {
 								if(side == true) {
-									submitMove(new Move(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+									moves.add(new Move(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
 								} else {
-									submitMove(new Move(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
+									moves.add(new Move(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a'));
 								}
 							} else {
 								if(side == true) {
-									submitMove(new Move(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+									moves.add(new Move(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
 								} else {
-									submitMove(new Move(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
+									moves.add(new Move(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a'));
 								}
 							}
 						} else {
@@ -603,15 +604,15 @@ public class ChessBoard {
 							}
 							if(next.length() == 4) {
 								if(side == true) {
-									submitMove(new PromotionMove(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
+									moves.add(new PromotionMove(board[next.charAt(1) - '1' - 1][next.charAt(0) - 'a'], next.charAt(1) - '1' - 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
 								} else {
-									submitMove(new PromotionMove(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
+									moves.add(new PromotionMove(board[next.charAt(1) - '1' + 1][next.charAt(0) - 'a'], next.charAt(1) - '1' + 1, next.charAt(0) - 'a', next.charAt(1) - '1', next.charAt(0) - 'a', newPiece));
 								}
 							} else {
 								if(side == true) {
-									submitMove(new PromotionMove(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
+									moves.add(new PromotionMove(board[next.charAt(2) - '1' - 1][next.charAt(0) - 'a'], next.charAt(2) - '1' - 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
 								} else {
-									submitMove(new PromotionMove(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
+									moves.add(new PromotionMove(board[next.charAt(2) - '1' + 1][next.charAt(0) - 'a'], next.charAt(2) - '1' + 1, next.charAt(0) - 'a', next.charAt(2) - '1', next.charAt(1) - 'a', newPiece));
 								}
 							}
 						}
@@ -623,6 +624,7 @@ public class ChessBoard {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return moves;
 	}
 
 	boolean isNumber(char c) {
