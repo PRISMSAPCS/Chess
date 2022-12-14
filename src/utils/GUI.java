@@ -15,7 +15,7 @@ public class GUI {
     public static final Color ALLOWED_GRID_COLOR = new Color(41, 169, 169);
     public static final double INTERPOLATE_RATIO = 0.5;
 
-    public static Color linearInterpolate(Color c1, Color c2, double ratio) {
+    private static Color linearInterpolate(Color c1, Color c2, double ratio) {
         return new Color(
                 (int) (c1.getRed() * ratio + c2.getRed() * (1 - ratio)),
                 (int) (c1.getGreen() * ratio + c2.getGreen() * (1 - ratio)),
@@ -68,13 +68,13 @@ public class GUI {
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
                     ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
-                    //// chessLabel.setBackground(curCorlor);
                     chessLabel.setOpaque(false);
                     backgroundPanel[i][j].add(chessLabel);
                 }
                 this.boardPanel.add(backgroundPanel[i][j], ChessBoard.HEIGHT - i - 1, j);
             }
         }
+        drawBoard();
         this.window.add(this.boardPanel);
         this.window.setVisible(true);
     }
@@ -104,7 +104,6 @@ public class GUI {
             end2Label.setOpaque(false);
             backgroundPanel[end2.first][end2.second].add(end2Label);
         }
-        // TODO (after promotion, the background color of a piece will have error)
         backgroundPanel[start.first][start.second].removeAll();
         validateAndRepaint(backgroundPanel[end.first][end.second]);
 
@@ -121,7 +120,20 @@ public class GUI {
     	}else if(board.gameOver(board.getSide()) == 2) {
     		popInfo("Game Over! Stalemate");
     	}
-        
+    }
+
+    public void drawBoard() {
+        for(int i = 0; i < ChessBoard.WIDTH; i++) {
+            for(int j = 0; j < ChessBoard.HEIGHT; j++) {
+                if (board.getBoard()[i][j] != null) {
+                    backgroundPanel[i][j].removeAll();
+                    // set corresponding image to label on index (i, j)
+                    ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
+                    chessLabel.setOpaque(false);
+                    backgroundPanel[i][j].add(chessLabel);
+                }
+            }
+        }
     }
 
     /**
