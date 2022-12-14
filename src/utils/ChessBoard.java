@@ -434,7 +434,7 @@ public class ChessBoard {
 	    			else
 	    				side = true;
 	    			if(next.charAt(1) == 'x') 
-	    				next = next.substring(0,1) + next.substring(2);
+	    				next = next.substring(0,next.indexOf('x')) + next.substring(next.indexOf('x') + 1);
 	    			if(next.charAt(next.length() - 1) == '+' || next.charAt(next.length() - 1) == '#')
 	    				next = next.substring(0, next.length() - 1);
 	    			if(!isLowerCaseLetter(next.charAt(0)) && !isUpperCaseLetter(next.charAt(0)))
