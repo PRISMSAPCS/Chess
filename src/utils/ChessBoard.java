@@ -12,6 +12,7 @@ public class ChessBoard {
     
     private Pair enPassant;
     private boolean side; // white = true, black = false
+    private int moveRule;
 
     private Piece[][] board;   // first index (0-7) corresponds to numbers (1-8), second index corresponds to letters (a-h)
     
@@ -19,6 +20,7 @@ public class ChessBoard {
     	this.side = true;
         this.board = new Piece[8][8];
         this.enPassant = new Pair(-1, -1);
+        this.moveRule = 0;
         
     	board[0][0] = new Rook(true);
     	board[0][1] = new Knight(true);
@@ -46,6 +48,7 @@ public class ChessBoard {
 		// copy constructor
 		this.side = other.side;
 		this.board = new Piece[8][8];
+		this.moveRule = other.getMoveRule();
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
 				if(other.board[i][j] != null) this.board[i][j] = other.board[i][j].clone();
@@ -60,6 +63,16 @@ public class ChessBoard {
 	 * @param theMove Move object being performed
 	 */
 	public void submitMove(Move theMove) {
+		// update move rule
+		if (theMove.getPiece() instanceof Pawn) {
+			moveRule = 0;
+		} else if (theMove.getCapture() != null || (board[theMove.getEnd().first][theMove.getEnd().second] != null && board[theMove.getEnd().first][theMove.getEnd().second].getColor() != this.side)) {
+			moveRule = 0;
+		}
+		if (this.side == true) {
+			moveRule++;
+		}
+		
 		if(theMove.getCapture() != null) {
 			board[theMove.getEnd().first][theMove.getEnd().second] = null;
 		}
@@ -112,7 +125,7 @@ public class ChessBoard {
 				((Rook) theMove.getPiece2()).cancelFirstMove();
 			}
 		}
-
+		
 		System.out.println(evaluate());
     }
     
@@ -374,7 +387,9 @@ public class ChessBoard {
 	}
 
 	public int gameOver(boolean color) { // author: Benjamin, return 0 for not game over, 1 for checkmate, and 2 for stalemate
-
+		if (moveRule >= 50) {
+			return 2;
+		}
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
 				if(board[i][j] != null && board[i][j].getColor() == color && !getLegalMoves(i, j, true).isEmpty())
@@ -625,6 +640,10 @@ public class ChessBoard {
 	}
 	public Piece getBoard(Pair pos){
 		return board[pos.first][pos.second];
+	}
+	
+	public int getMoveRule() {
+		return moveRule;
 	}
 
 }
