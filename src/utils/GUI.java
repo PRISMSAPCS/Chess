@@ -125,8 +125,8 @@ public class GUI {
     public void drawBoard() {
         for(int i = 0; i < ChessBoard.WIDTH; i++) {
             for(int j = 0; j < ChessBoard.HEIGHT; j++) {
+                backgroundPanel[i][j].removeAll();
                 if (board.getBoard()[i][j] != null) {
-                    backgroundPanel[i][j].removeAll();
                     // set corresponding image to label on index (i, j)
                     ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
                     chessLabel.setOpaque(false);
