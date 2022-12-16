@@ -13,6 +13,7 @@ public class Main {
             if(board.gameOver(board.getSide())>0) {
             	System.out.println("Game Over");
             	board.restart();
+            	System.out.println(board.gameOver(board.getSide()));
             	gui.drawBoard();
             }
         }
