@@ -74,7 +74,6 @@ public class ChessBoard {
 	 */
 	public void submitMove(Move theMove) {
 		ChessBoard oldBoard = new ChessBoard(this);
-
 		// update move rule
 		if (theMove.getPiece() instanceof Pawn) {
 			moveRule = 0;
@@ -101,11 +100,11 @@ public class ChessBoard {
 		if (theMove instanceof PromotionMove) {
 			if (((PromotionMove) theMove).getPromoteTo() != null) {
 				// automatically select the piece
-				board[theMove.getStart().first][theMove.getStart().second] = ((PromotionMove) theMove).getPromoteTo();
+				board[theMove.getEnd().first][theMove.getEnd().second] = ((PromotionMove) theMove).getPromoteTo();
 			} else {
 				Piece newPiece = GUI.getPromotion(theMove.getPiece().getColor());
 				((PromotionMove) theMove).setPromoteTo(newPiece);
-				board[theMove.getStart().first][theMove.getStart().second] = newPiece;
+				board[theMove.getEnd().first][theMove.getEnd().second] = newPiece;
 			}
 		}
 		if (logging)
