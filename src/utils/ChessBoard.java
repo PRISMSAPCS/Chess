@@ -73,8 +73,8 @@ public class ChessBoard {
 	 * @param theMove Move object being performed
 	 */
 	public void submitMove(Move theMove) {
-		if (logging)
-			logger.logMove(theMove, this);
+		ChessBoard oldBoard = new ChessBoard(this);
+
 		// update move rule
 		if (theMove.getPiece() instanceof Pawn) {
 			moveRule = 0;
@@ -96,20 +96,20 @@ public class ChessBoard {
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
-
 		// check for promotion
 		// @author mqcreaple
 		if (theMove instanceof PromotionMove) {
 			if (((PromotionMove) theMove).getPromoteTo() != null) {
 				// automatically select the piece
-				board[theMove.getEnd().first][theMove.getEnd().second] = ((PromotionMove) theMove).getPromoteTo();
+				board[theMove.getStart().first][theMove.getStart().second] = ((PromotionMove) theMove).getPromoteTo();
 			} else {
 				Piece newPiece = GUI.getPromotion(theMove.getPiece().getColor());
 				((PromotionMove) theMove).setPromoteTo(newPiece);
-				board[theMove.getEnd().first][theMove.getEnd().second] = newPiece;
+				board[theMove.getStart().first][theMove.getStart().second] = newPiece;
 			}
 		}
-
+		if (logging)
+			logger.logMove(theMove, oldBoard);
 		// change side
 		this.side = !this.side;
 

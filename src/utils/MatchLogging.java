@@ -34,7 +34,6 @@ public class MatchLogging {
     }
 
     void logMove(Move m, ChessBoard b) {
-
         boolean captured = b.getBoard(m.getEnd()) != null;
         // the ending position of the piece being captured
         try {
@@ -43,7 +42,10 @@ public class MatchLogging {
                 // write round number
             }
 
-            if (b.getBoard(m.getStart()) instanceof Pawn) {
+            if(m instanceof PromotionMove){
+                PromotionMove pm = (PromotionMove) m;
+                out.append(m.getEnd().toChessNote() + "=" + pieceToChar.get(pm.getPromoteTo().getClass()) + " ");
+            } else if (b.getBoard(m.getStart()) instanceof Pawn) {
                 // if move a pawn, no need to specify the piece
                 // if captured, need to specify the column of the pawn
                 if (captured) {
@@ -54,7 +56,7 @@ public class MatchLogging {
                 // if move a piece other than pawn, need to specify the piece
                 // if captures, add x after the piece's original position
                 out.append(pieceToChar.get(b.getBoard(m.getStart()).getClass()));
-                out.append(m.getStart().toChessNote() + " ");
+                out.append(m.getStart().toChessNote());
                 if (captured) {
                     out.append("x");
                 }
@@ -67,6 +69,15 @@ public class MatchLogging {
         }
         movCnt++;
 
+    }
+
+    void endGame(){
+        try{
+            out.close();
+        } catch (Exception e) {
+            System.out.println("Error in closing file for MatchLogging");
+            e.printStackTrace();
+        }
     }
 
     private int movCnt; // count of moves, not rounds
