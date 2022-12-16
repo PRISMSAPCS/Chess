@@ -272,6 +272,14 @@ public class GUI {
         JOptionPane.showMessageDialog(null, str);
     }
 
+    public static String getValidStrIpt(String prompt){
+        String ipt = JOptionPane.showInputDialog(prompt);
+        while(ipt == null || ipt.isBlank()){
+            ipt = JOptionPane.showInputDialog(prompt);
+        }
+        return ipt;
+    }
+
     /**
      * @author mqcreaple
      * Get the user input of the choice on what a pawn promote to.

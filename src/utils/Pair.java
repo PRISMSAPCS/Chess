@@ -6,6 +6,22 @@ public class Pair {
         this.first = first;
         this.second = second;
     }
+    
+    public String toChessNote(){
+        String s = "";
+        s += (char)(first + '1');
+        s += (char)(second + 'a');
+        return s;
+    }
+
+    public char getCol(){
+        return (char)(first + '1');
+    }
+
+    public char getRow(){
+        return (char)(second + 'a');
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {
