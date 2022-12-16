@@ -8,6 +8,11 @@ public class Main {
             Move move = gui.getMove();
             board.submitMove(move);
             gui.applyMove(move);
+            if(board.gameOver(board.getSide())>0) {
+            	System.out.println("Game Over");
+            	board.restart();
+            	gui.drawBoard();
+            }
         }
     }
 }
