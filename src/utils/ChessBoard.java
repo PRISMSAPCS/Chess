@@ -117,7 +117,7 @@ public class ChessBoard {
 		enPassant.first = -1;
 		enPassant.second = -1;
 		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true
-				&& theMove.getEnd().first == 3 || theMove.getEnd().first == 4) {
+				&& (theMove.getEnd().first == 3 || theMove.getEnd().first == 4)) {
 			enPassant.first = theMove.getEnd().first;
 			enPassant.second = theMove.getEnd().second;
 		}
