@@ -23,7 +23,7 @@ public class GUI {
     }
 
     private JFrame window;
-    private JPanel boardPanel;
+    private JPanel boardPanel;          // panel of the whole board. Each grid (`backgroundPanel`) is a child of this panel.
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
     private ChessBoard board;
     private Semaphore getMoveSem = new Semaphore(1); // used for getmove to wait for user input
@@ -109,17 +109,6 @@ public class GUI {
 
         if(start2 != null) backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
         if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
-        
-        
-        //test if game over
-        if(board.gameOver(board.getSide()) == 1) {
-    		if(board.getSide() == true)
-    			popInfo("Game Over! Black Win!");
-    		else 
-    			popInfo("Game Over! White Win!");
-    	}else if(board.gameOver(board.getSide()) == 2) {
-    		popInfo("Game Over! Stalemate");
-    	}
     }
 
     public void drawBoard() {
@@ -132,6 +121,8 @@ public class GUI {
                     chessLabel.setOpaque(false);
                     backgroundPanel[i][j].add(chessLabel);
                 }
+                backgroundPanel[i][j].revalidate();
+                backgroundPanel[i][j].repaint();
             }
         }
     }

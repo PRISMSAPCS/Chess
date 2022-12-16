@@ -11,6 +11,12 @@ public class Main {
             board.submitMove(move);
             gui.applyMove(move);
             if(board.gameOver(board.getSide())>0) {
+                //test if game over
+                if(board.gameOver(board.getSide()) == 1) {
+                    GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Win!");
+                } else if(board.gameOver(board.getSide()) == 2) {
+                    GUI.popInfo("Game Over! Stalemate");
+                }
             	board.restart();
             	gui.drawBoard();
             }
