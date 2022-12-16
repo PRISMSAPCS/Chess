@@ -87,7 +87,7 @@ public class ChessBoard {
 		}
 
 		if (theMove.getCapture() != null) {
-			board[theMove.getEnd().first][theMove.getEnd().second] = null;
+			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
 		board[theMove.getStart().first][theMove.getStart().second] = null;
