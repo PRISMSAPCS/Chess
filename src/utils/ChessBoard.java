@@ -87,7 +87,7 @@ public class ChessBoard {
 		}
 
 		if (theMove.getCapture() != null) {
-			board[theMove.getEnd().first][theMove.getEnd().second] = null;
+			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
 		board[theMove.getStart().first][theMove.getStart().second] = null;
@@ -117,7 +117,7 @@ public class ChessBoard {
 		enPassant.first = -1;
 		enPassant.second = -1;
 		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true
-				&& theMove.getEnd().first == 3 || theMove.getEnd().first == 4) {
+				&& (theMove.getEnd().first == 3 || theMove.getEnd().first == 4)) {
 			enPassant.first = theMove.getEnd().first;
 			enPassant.second = theMove.getEnd().second;
 		}
@@ -190,7 +190,34 @@ public class ChessBoard {
 
 		return !leave;
 	}
-
+    //restarts board
+    public void restart() {
+    	this.side = true;
+        this.board = new Piece[8][8];
+        this.enPassant = new Pair(-1, -1);
+        this.moveRule = 0;
+        
+    	board[0][0] = new Rook(true);
+    	board[0][1] = new Knight(true);
+    	board[0][2] = new Bishop(true);
+    	board[0][3] = new Queen(true);
+    	board[0][4] = new King(true);
+    	board[0][5] = new Bishop(true);
+    	board[0][6] = new Knight(true);
+    	board[0][7] = new Rook(true);
+    	for (int i = 0; i < 8; i++) {
+    		board[1][i] = new Pawn(true);
+    		board[6][i] = new Pawn(false);
+    	}
+    	board[7][0] = new Rook(false);
+    	board[7][1] = new Knight(false);
+    	board[7][2] = new Bishop(false);
+    	board[7][3] = new Queen(false);
+    	board[7][4] = new King(false);
+    	board[7][5] = new Bishop(false);
+    	board[7][6] = new Knight(false);
+    	board[7][7] = new Rook(false);
+    }
 	/**
 	 * Get all the possible legal moves of piece on position (x, y).
 	 * 
