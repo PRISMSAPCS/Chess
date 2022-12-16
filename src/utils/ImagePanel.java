@@ -35,7 +35,7 @@ public class ImagePanel extends JPanel {
      * @author tzyt
      */
     public void resize(int wid, int hei) {
-        dspImg = Scalr.resize(origImg, Scalr.Method.ULTRA_QUALITY, wid, hei, Scalr.OP_ANTIALIAS);
+        dspImg = Scalr.resize(origImg, Scalr.Method.QUALITY, wid, hei, Scalr.OP_ANTIALIAS);
         // Image tmp = origImg.getScaledInstance(wid, hei, Image.SCALE_SMOOTH);
         // dspImg = new BufferedImage(wid, hei, BufferedImage.TYPE_INT_ARGB);
         // dspImg.getGraphics().drawImage(tmp, 0, 0, null);
