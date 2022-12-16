@@ -9,8 +9,8 @@ public class Pair {
     
     public String toChessNote(){
         String s = "";
-        s += (char)(first + '1');
         s += (char)(second + 'a');
+        s += (char)(first + '1');
         return s;
     }
 
