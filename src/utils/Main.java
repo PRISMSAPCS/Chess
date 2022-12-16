@@ -13,12 +13,12 @@ public class Main {
             if(board.gameOver(board.getSide())>0) {
                 //test if game over
                 if(board.gameOver(board.getSide()) == 1) {
-                    GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Win!");
+                    GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Wins!");
                 } else if(board.gameOver(board.getSide()) == 2) {
                     GUI.popInfo("Game Over! Stalemate");
                 }
-            	board.restart();
-            	gui.drawBoard();
+//            	board.restart();
+//            	gui.drawBoard();
             }
         }
     }

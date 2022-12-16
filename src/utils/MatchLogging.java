@@ -57,7 +57,7 @@ public class MatchLogging {
             } else if (b.getBoard(m.getStart()) instanceof Pawn) {
                 // if move a pawn, no need to specify the piece
                 // if captured, need to specify the column of the pawn
-                if (captured) {
+                if (captured || m.getCapture() != null) {
                     out.append(m.getStart().getCol() + "x");
                 }
                 out.append(m.getEnd().toChessNote() + " ");
