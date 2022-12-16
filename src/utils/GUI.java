@@ -265,7 +265,7 @@ public class GUI {
 
     public static String getValidStrIpt(String prompt){
         String ipt = JOptionPane.showInputDialog(prompt);
-        while(ipt == null || ipt.isBlank()){
+        while(ipt == null || ipt.equals("")){
             ipt = JOptionPane.showInputDialog(prompt);
         }
         return ipt;

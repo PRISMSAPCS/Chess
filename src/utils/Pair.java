@@ -15,11 +15,11 @@ public class Pair {
     }
 
     public char getCol(){
-        return (char)(first + 'a');
+        return (char)(second + 'a');
     }
 
     public char getRow(){
-        return (char)(second + '1');
+        return (char)(first + '1');
     }
 
     @Override

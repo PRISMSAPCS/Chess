@@ -42,8 +42,17 @@ public class MatchLogging {
                 // write round number
             }
 
-            if(m instanceof PromotionMove){
+            if (m.getEnd2() != null) {
+            	if (m.getEnd().second == 2) {
+            		out.append("O-O-O");
+            	} else {
+            		out.append("O-O");
+            	}
+            } else if (m instanceof PromotionMove){
                 PromotionMove pm = (PromotionMove) m;
+                if (captured) {
+                	out.append(m.getStart().getCol() + "x");
+                }
                 out.append(m.getEnd().toChessNote() + "=" + pieceToChar.get(pm.getPromoteTo().getClass()) + " ");
             } else if (b.getBoard(m.getStart()) instanceof Pawn) {
                 // if move a pawn, no need to specify the piece
