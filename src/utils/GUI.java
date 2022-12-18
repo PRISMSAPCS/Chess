@@ -32,6 +32,9 @@ public class GUI {
                          // piece, second position is the target position
     Map<Pair, Move> currentAllowedMove; // all grids that changed color after selecting a piece
 
+    private JFrame buttonWindow;
+    private JPanel buttonPanel;
+    private JButton button;
     /**
      * Initialize GUI class.
      * @author mqcreaple
@@ -52,6 +55,11 @@ public class GUI {
         this.boardPanel = new JPanel();
         this.boardPanel.setLayout(new GridLayout(ChessBoard.WIDTH, ChessBoard.HEIGHT));
         this.backgroundPanel = new JPanel[8][8];
+        this.buttonWindow = new JFrame();
+        this.buttonWindow.setSize(200, 200);
+        this.buttonPanel = new JPanel();
+        this.button = new JButton("Proceed");
+        button.setSize(200, 200);
 
         // initialize each block of background and chess pieces
         for (int i = 0; i < ChessBoard.WIDTH; i++) {
@@ -77,6 +85,17 @@ public class GUI {
         drawBoard();
         this.window.add(this.boardPanel);
         this.window.setVisible(true);
+        
+        this.buttonWindow.add(this.buttonPanel);
+        this.buttonPanel.add(this.button);
+        this.buttonWindow.setVisible(false);
+        
+        button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				board.setProceed(true);
+			}
+		});
     }
 
     /**
@@ -283,4 +302,10 @@ public class GUI {
         }
         return list.getSelectedValue();
     }
+    
+    public void enableButton(boolean visibility) {
+    	this.button.setVisible(visibility);
+    	this.buttonWindow.setVisible(visibility);
+    }
+    
 }

@@ -23,6 +23,11 @@ public class PromotionMove extends Move {
     public PromotionMove(Piece piece, int startX, int startY, int endX, int endY, int captureX, int captureY) {
         super(piece, startX, startY, endX, endY, captureX, captureY);
     }
+    
+    public PromotionMove(Piece piece, int startX, int startY, int endX, int endY, int captureX, int captureY, Piece promotoTo) {
+        super(piece, startX, startY, endX, endY, captureX, captureY);
+        this.setPromoteTo(promotoTo);
+    }
 
     public Piece getPromoteTo() {
         return promoteTo;
