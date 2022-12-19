@@ -677,9 +677,9 @@ public class ChessBoard {
 						}
 					} else {
 						if (side == true) {
-							curMove = new Move(board[0][4], 0, 4, 0, 2, board[0][7], 0, 7, 0, 5);
+							curMove = new Move(board[0][4], 0, 4, 0, 2, board[0][7], 0, 0, 0, 3);
 						} else {
-							curMove = new Move(board[7][4], 7, 4, 7, 2, board[7][7], 7, 7, 7, 5);
+							curMove = new Move(board[7][4], 7, 4, 7, 2, board[7][7], 7, 0, 7, 3);
 						}
 					}
 				} else {

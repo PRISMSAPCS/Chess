@@ -44,9 +44,9 @@ public class MatchLogging {
 
             if (m.getEnd2() != null) {
             	if (m.getEnd().second == 2) {
-            		out.append("O-O-O");
+            		out.append("O-O-O ");
             	} else {
-            		out.append("O-O");
+            		out.append("O-O ");
             	}
             } else if (m instanceof PromotionMove){
                 PromotionMove pm = (PromotionMove) m;
