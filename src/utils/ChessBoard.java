@@ -658,11 +658,11 @@ public class ChessBoard {
 							curMove = new Move(board[x][y], x, y, next.charAt(3) - '1', next.charAt(2) - 'a');
 					} else {
 						if(hasCapture == true)
-							curMove = new Move(board[next.charAt(2) - '0'][next.charAt(1) - 'a'], next.charAt(2) - '0',
-									next.charAt(1) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a');
+							curMove = new Move(board[next.charAt(2) - '1'][next.charAt(1) - 'a'], next.charAt(2) - '1',
+									next.charAt(1) - 'a', next.charAt(4) - '1', next.charAt(3) - 'a', next.charAt(4) - '1', next.charAt(3) - 'a');
 						else
-							curMove = new Move(board[next.charAt(2) - '0'][next.charAt(1) - 'a'], next.charAt(2) - '0',
-									next.charAt(1) - 'a', next.charAt(4) - '0', next.charAt(3) - 'a');
+							curMove = new Move(board[next.charAt(2) - '1'][next.charAt(1) - 'a'], next.charAt(2) - '1',
+									next.charAt(1) - 'a', next.charAt(4) - '1', next.charAt(3) - 'a');
 					}
 				} else if (next.charAt(0) == 'O' && next.charAt(1) == '-') {
 					if (side == true)
