@@ -1,4 +1,5 @@
 .idea/
 out/
 bin/
+log.pgn
 .DS_Store

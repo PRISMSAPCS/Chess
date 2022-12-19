@@ -25,6 +25,7 @@ public class GUI {
     private JFrame window;
     private JPanel boardPanel;          // panel of the whole board. Each grid (`backgroundPanel`) is a child of this panel.
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
+    private JProgressBar evaluationBar;
     private ChessBoard board;
     private Semaphore getMoveSem = new Semaphore(1); // used for getmove to wait for user input
     Pair firSelectedPos; // the position of the currently selected piece
@@ -82,8 +83,14 @@ public class GUI {
                 this.boardPanel.add(backgroundPanel[i][j], ChessBoard.HEIGHT - i - 1, j);
             }
         }
+        // add evaluation bar
+        evaluationBar = new JProgressBar(JProgressBar.VERTICAL, -250, 250);
+
         drawBoard();
-        this.window.add(this.boardPanel);
+
+        this.window.getContentPane().setLayout(new BoxLayout(this.window.getContentPane(), BoxLayout.X_AXIS));
+        this.window.getContentPane().add(this.boardPanel);
+        this.window.getContentPane().add(evaluationBar);
         this.window.setVisible(true);
         
         this.buttonWindow.add(this.buttonPanel);
@@ -128,9 +135,13 @@ public class GUI {
 
         if(start2 != null) backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
         if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
+
+        // set evaluation bar
+        evaluationBar.setValue(board.evaluate());
     }
 
     public void drawBoard() {
+        // set the chess piece on each grid
         for(int i = 0; i < ChessBoard.WIDTH; i++) {
             for(int j = 0; j < ChessBoard.HEIGHT; j++) {
                 backgroundPanel[i][j].removeAll();
@@ -144,6 +155,9 @@ public class GUI {
                 backgroundPanel[i][j].repaint();
             }
         }
+
+        // set evaluation bar
+        evaluationBar.setValue(board.evaluate());
     }
 
     /**

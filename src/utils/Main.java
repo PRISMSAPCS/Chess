@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -13,7 +14,7 @@ public class Main {
         }
         ChessBoard board = new ChessBoard();
         GUI gui = new GUI(board);
-        if(list.getSelectedValue() == "Play Game") {
+        if(Objects.equals(list.getSelectedValue(), "Play Game")) {
             board.enableLogging();
 	        while(true) {
 	
