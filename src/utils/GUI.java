@@ -13,6 +13,7 @@ public class GUI {
     public static final Color BLACK_GRID_COLOR = new Color(35, 75, 50);
     public static final Color SELECTED_GRID_COLOR = new Color(255, 220, 0);
     public static final Color ALLOWED_GRID_COLOR = new Color(41, 169, 169);
+    public static final Color MOVE_GRID_COLOR = new Color(210, 210, 0);
     public static final double INTERPOLATE_RATIO = 0.5;
 
     private static Color linearInterpolate(Color c1, Color c2, double ratio) {
@@ -113,6 +114,7 @@ public class GUI {
      * @param move the move being performed
      */
     public void applyMove(Move move) {
+    	setAllOrigBack();
         Pair start = move.getStart();
         Pair end = move.getEnd();
         Pair capture = move.getCapture();
@@ -124,16 +126,22 @@ public class GUI {
         ImagePanel endLabel = new ImagePanel("resource/" + board.getBoard(end).getIconFile());
         endLabel.setOpaque(false);
         backgroundPanel[end.first][end.second].add(endLabel);
+        backgroundPanel[end.first][end.second].setBackground(MOVE_GRID_COLOR);
 
         if(end2 != null) {
             ImagePanel end2Label = new ImagePanel("resource/" + board.getBoard(end2).getIconFile());
             end2Label.setOpaque(false);
             backgroundPanel[end2.first][end2.second].add(end2Label);
+            backgroundPanel[end2.first][end2.second].setBackground(MOVE_GRID_COLOR);
         }
         backgroundPanel[start.first][start.second].removeAll();
+        backgroundPanel[start.first][start.second].setBackground(MOVE_GRID_COLOR);
         validateAndRepaint(backgroundPanel[end.first][end.second]);
 
-        if(start2 != null) backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
+        if(start2 != null) {
+        	backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
+        	backgroundPanel[start2.first][start2.second].setBackground(MOVE_GRID_COLOR);
+        }
         if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
 
         // set evaluation bar
@@ -275,6 +283,12 @@ public class GUI {
     private void setOrigBack(Pair... arr) {
         for (Pair x : arr)
             backgroundPanel[x.first][x.second].setBackground(getBoardOrigColor(x));
+    }
+    
+    private void setAllOrigBack() {
+    	for(int i = 0; i < 8; i++)
+    		for(int j = 0; j < 8; j++)
+    			setOrigBack(new Pair(i,j));
     }
 
     /**
