@@ -329,7 +329,7 @@ public class ChessBoard {
 		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
-				if (board[i][j].getColor() == this.side) {
+				if (board[i][j] != null && board[i][j].getColor() == this.side) {
 					ArrayList<Move> temp = getLegalMoves(i, j, true);
 					for (Move x : temp) {
 						allLegalMoves.add(x);
