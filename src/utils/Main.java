@@ -1,7 +1,6 @@
 package utils;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import javax.swing.JList;
 import javax.swing.JOptionPane;
