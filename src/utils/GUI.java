@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 
-public class GUI {
+public class GUI implements CanGetMove {
     public static final Color WHITE_GRID_COLOR = new Color(240, 240, 235);
     public static final Color BLACK_GRID_COLOR = new Color(35, 75, 50);
     public static final Color SELECTED_GRID_COLOR = new Color(255, 220, 0);
