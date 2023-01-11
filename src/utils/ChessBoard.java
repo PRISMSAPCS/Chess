@@ -7,6 +7,15 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class ChessBoard {
+	private class unMove {
+		public Piece piece;
+		public Pair location;
+		public unMove(Piece Piece, Pair Location) {
+			piece = Piece;
+			location = Location;
+		}
+	}
+	
 	public static int WIDTH = 8;
 	public static int HEIGHT = 8;
 
@@ -17,7 +26,9 @@ public class ChessBoard {
 	private MatchLogging logger;
 	private Piece[][] board; // first index (0-7) corresponds to numbers (1-8), second index corresponds to
 								// letters (a-h)
-
+	private ArrayList<ArrayList<unMove>> undoMoveStack;
+	private ArrayList<Integer> undoMoveRuleStack;
+	private ArrayList<Pair> undoEnPassantStack;
     private boolean proceed = false;
     private boolean loadingSimulation = false;
 
@@ -47,6 +58,9 @@ public class ChessBoard {
 		board[7][5] = new Bishop(false);
 		board[7][6] = new Knight(false);
 		board[7][7] = new Rook(false);
+		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
+		this.undoMoveRuleStack = new ArrayList<Integer>();
+		this.undoEnPassantStack = new ArrayList<Pair>();
 	}
 
 	public ChessBoard(ChessBoard other) {
@@ -61,10 +75,15 @@ public class ChessBoard {
 			}
 		}
 		this.enPassant = new Pair(other.enPassant.first, other.enPassant.second);
+		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
+		this.undoMoveRuleStack = new ArrayList<Integer>();
+		this.undoEnPassantStack = new ArrayList<Pair>();
 	}
 
-	public void enableLogging(String whiteName, String blackName) {
+	public void enableLogging() {
 		this.logging = true;
+		String whiteName = GUI.getValidStrIpt("Enter white side's name");
+		String blackName = GUI.getValidStrIpt("Enter black side's name");
 		logger = new MatchLogging("./log.pgn", whiteName, blackName);
 	}
 
@@ -76,6 +95,7 @@ public class ChessBoard {
 	public void submitMove(Move theMove) {
 		ChessBoard oldBoard = new ChessBoard(this);
 		// update move rule
+		undoMoveRuleStack.add(moveRule);
 		if (theMove.getPiece() instanceof Pawn) {
 			moveRule = 0;
 		} else if (theMove.getCapture() != null || (board[theMove.getEnd().first][theMove.getEnd().second] != null
@@ -85,17 +105,34 @@ public class ChessBoard {
 		if (this.side == true) {
 			moveRule++;
 		}
-
+		
+		ArrayList<unMove> toAdd = new ArrayList<unMove>();
 		if (theMove.getCapture() != null) {
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
+		if (board[theMove.getEnd().first][theMove.getEnd().second] != null) {
+			toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second].clone(), theMove.getEnd()));
+		} else {
+			toAdd.add(new unMove(null, theMove.getEnd()));
+		}
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
 		board[theMove.getStart().first][theMove.getStart().second] = null;
-
+		
 		if (theMove.getPiece2() != null) {
+			if (board[theMove.getEnd2().first][theMove.getEnd2().second] != null) {
+				toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second].clone(), theMove.getEnd2()));
+			} else {
+				toAdd.add(new unMove(null, theMove.getEnd2()));
+			}
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
+		
+		undoMoveStack.add(toAdd);
+		
 		// check for promotion
 		// @author mqcreaple
 		if (theMove instanceof PromotionMove) {
@@ -114,6 +151,7 @@ public class ChessBoard {
 		this.side = !this.side;
 
 		// set enPassant array
+		undoEnPassantStack.add(enPassant);
 		enPassant.first = -1;
 		enPassant.second = -1;
 		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true
@@ -330,6 +368,9 @@ public class ChessBoard {
 				if (board[i][j] != null && board[i][j].getColor() == this.side) {
 					ArrayList<Move> temp = getLegalMoves(i, j, true);
 					for (Move x : temp) {
+						if (x instanceof PromotionMove) {
+							((PromotionMove) x).setPromoteTo(new Queen(this.side));
+						}
 						allLegalMoves.add(x);
 					}
 				}
@@ -458,7 +499,21 @@ public class ChessBoard {
 			return 1;
 		return 2;
 	}
-
+	
+	public void undoMove() {
+		int last = undoMoveStack.size() - 1;
+		ArrayList<unMove> moves = undoMoveStack.remove(last);
+		moveRule = undoMoveRuleStack.remove(last);
+		enPassant = undoEnPassantStack.remove(last);
+		side = !side;
+		for (int i = moves.size() - 1; i >= 0; i--) {
+			unMove toUndo = moves.get(i);
+			Pair location = toUndo.location;
+			Piece piece = toUndo.piece;
+			board[location.first][location.second] = piece; 
+		}
+	}
+	
 	public ArrayList<Pair> spacesThreat(Pair pos) {
 		ArrayList<Move> a = getLegalMoves(pos, true);
 		ArrayList<Pair> toReturn = new ArrayList<Pair>();
