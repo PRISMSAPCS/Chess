@@ -140,8 +140,8 @@ public class ChessBoard {
 			}
 		}
 
-		if(this.loadingSimulation == false)
-			System.out.println(evaluate());
+		// if(this.loadingSimulation == false)
+		// 	System.out.println(evaluate());
 	}
 
 	private boolean checkLegal(int x, int y, Move move) { // Author: Daniel - checks if a move is legal

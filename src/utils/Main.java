@@ -83,6 +83,8 @@ public class Main {
 			//* 1. remove comment of the following code
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
+			GUI gui = new GUI(board, true);
+			normalGame(board, gui, new MinMaxBot[] {new MinMaxBot(board), new MinMaxBot(board)});
 		}
     }
 }
