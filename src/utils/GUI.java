@@ -193,6 +193,11 @@ public class GUI implements CanGetMove {
         return move;
     }
 
+    @Override
+    public String getName() {
+        return GUI.getValidStrIpt("Please give the side's name:");
+    }
+
     /**
      * piece selected listener (action listener class), when a piece is selected, it
      * will be highlighted, and when it is selected again, it will be deselected

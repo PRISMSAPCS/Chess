@@ -13,7 +13,9 @@ public class Main {
 	 * @param moveSource sources of moving. An array with 2 elements, represents the two sides of players
 	 */
 	public static void normalGame(ChessBoard board, GUI gui, CanGetMove[] moveSource) {
-		board.enableLogging();
+		String whiteName = moveSource[0].getName();
+		String blackName = moveSource[1].getName();
+		board.enableLogging(whiteName, blackName);
 		while(true) {
 			Move move = moveSource[board.getSide()? 1: 0].getMove();
 			board.submitMove(move);
@@ -22,8 +24,10 @@ public class Main {
 				//test if game over
 				if(board.gameOver(board.getSide()) == 1) {
 					GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Wins!");
+					break;
 				} else if(board.gameOver(board.getSide()) == 2) {
 					GUI.popInfo("Game Over! Stalemate");
+					break;
 				}
 				//            	board.restart();
 				//            	gui.drawBoard();
@@ -74,7 +78,7 @@ public class Main {
 			//* USAGE:
 			//* 1. remove comment of the following code
 			//* 2. replace all YourChessBot with the class name of your own chess bot
-			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(true, board), new YourChessBot(false, board)});
+			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 		}
     }
 }
