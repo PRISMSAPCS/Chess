@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
+import utils.bot.MinMaxBot;
+
 public class Main {
 	/**
 	 * Play a normal game with 2 players on a board
@@ -65,16 +67,20 @@ public class Main {
             JOptionPane.showInputDialog(null, list, "Choose the game mode", JOptionPane.QUESTION_MESSAGE);
         }
         ChessBoard board = new ChessBoard();
-		GUI gui = new GUI(board);
+		
         if(list.getSelectedValue().equals("Play Game")) {
+			GUI gui = new GUI(board, false);
 			normalGame(board, gui, new GUI[] {gui, gui});
         } else if(list.getSelectedValue().equals("Simulate Game")) {
+			GUI gui = new GUI(board, false);
         	replayGame(board, gui, "./log.pgn");
         } else {
 			//* USAGE:
 			//* 1. remove comment of the following code
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(true, board), new YourChessBot(false, board)});
+			GUI gui = new GUI(board, true);
+			normalGame(board, gui, new MinMaxBot[] {new MinMaxBot(board), new MinMaxBot(board)});
 		}
     }
 }

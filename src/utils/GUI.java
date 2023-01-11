@@ -37,18 +37,20 @@ public class GUI implements CanGetMove {
     private JFrame buttonWindow;
     private JPanel buttonPanel;
     private JButton button;
+    private boolean isBot;
+
     /**
      * Initialize GUI class.
      * @author mqcreaple
      * @param board The initial chess board.
      */
-    public GUI(ChessBoard board) {
+    public GUI(ChessBoard board, boolean isBot) {
         try {
             getMoveSem.acquire();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        this.isBot = isBot;
         this.board = board;
         this.currentAllowedMove = new HashMap<>();
         this.window = new JFrame();
@@ -72,9 +74,11 @@ public class GUI implements CanGetMove {
                 // displayed
                 // but still not sure why flowLayout doesn't work when I overloaded
                 // getPreferredSiz
-                Color curColor = ((i + j) % 2 == 0) ? BLACK_GRID_COLOR : WHITE_GRID_COLOR;
                 setOrigBack(new Pair(i, j));
-                backgroundPanel[i][j].addMouseListener(new PieceSelectedListener(new Pair(i, j)));
+                
+                if (!isBot)
+                    backgroundPanel[i][j].addMouseListener(new PieceSelectedListener(new Pair(i, j)));
+                
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
                     ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
