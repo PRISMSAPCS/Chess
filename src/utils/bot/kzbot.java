@@ -16,10 +16,12 @@ public class kzbot extends ChessBot{
     public Move getMove(){
         Move finalMove = null;
         ChessBoard b1 = new ChessBoard(super.getBoard());
-        
-        for (Piece[] row : b1.getBoard()){
-            for (Piece p : row){
-                if(p.getColor() == b1.getSide()){
+        Piece[][] pl = b1.getBoard();
+        moveArray
+
+        for (int y=0; y<pl.length; y++){
+            for (int x=0; x<pl[y].length; y++){
+                if(pl[y][x].getColor() == b1.getSide()){
 
                 }
             }
