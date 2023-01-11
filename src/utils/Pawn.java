@@ -28,7 +28,7 @@ public class Pawn extends Piece {
 			}
 		}
 		//checks cross attacks
-		if(x+colorMult+1<board[0].length||x+colorMult>=0) {
+		if(x+colorMult<board[0].length&&x+colorMult>=0) {
 			if((y+1<board.length&&y>=0)&&board[x+colorMult][y+1]!=null&&board[x+colorMult][y+1].getColor()!=this.getColor()) {
 				int[] temp = {x+colorMult,y+1};
 				moves.add(temp);

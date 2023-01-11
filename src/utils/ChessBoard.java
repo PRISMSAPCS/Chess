@@ -87,6 +87,11 @@ public class ChessBoard {
 		logger = new MatchLogging("./log.pgn", whiteName, blackName);
 	}
 
+	public void enableLogging(String whiteName, String blackName) {
+		this.logging = true;
+		logger = new MatchLogging("./log.pgn", whiteName, blackName);
+	}
+
 	/**
 	 * Submit a move and perform the move on the board.
 	 * 
