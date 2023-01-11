@@ -63,10 +63,8 @@ public class ChessBoard {
 		this.enPassant = new Pair(other.enPassant.first, other.enPassant.second);
 	}
 
-	public void enableLogging() {
+	public void enableLogging(String whiteName, String blackName) {
 		this.logging = true;
-		String whiteName = GUI.getValidStrIpt("Enter white side's name");
-		String blackName = GUI.getValidStrIpt("Enter black side's name");
 		logger = new MatchLogging("./log.pgn", whiteName, blackName);
 	}
 

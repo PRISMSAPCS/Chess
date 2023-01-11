@@ -24,7 +24,8 @@ public class GUI implements CanGetMove {
     }
 
     private JFrame window;
-    private JPanel boardPanel;          // panel of the whole board. Each grid (`backgroundPanel`) is a child of this panel.
+    private JPanel boardPanel; // panel of the whole board. Each grid (`backgroundPanel`) is a child of this
+                               // panel.
     private JPanel[][] backgroundPanel; // black-and-white-alternating blocks in background
     private JProgressBar evaluationBar;
     private ChessBoard board;
@@ -41,6 +42,7 @@ public class GUI implements CanGetMove {
 
     /**
      * Initialize GUI class.
+     * 
      * @author mqcreaple
      * @param board The initial chess board.
      */
@@ -75,10 +77,10 @@ public class GUI implements CanGetMove {
                 // but still not sure why flowLayout doesn't work when I overloaded
                 // getPreferredSiz
                 setOrigBack(new Pair(i, j));
-                
+
                 if (!isBot)
                     backgroundPanel[i][j].addMouseListener(new PieceSelectedListener(new Pair(i, j)));
-                
+
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
                     ImagePanel chessLabel = new ImagePanel("resource/" + board.getBoard()[i][j].getIconFile());
@@ -97,17 +99,17 @@ public class GUI implements CanGetMove {
         this.window.getContentPane().add(this.boardPanel);
         this.window.getContentPane().add(evaluationBar);
         this.window.setVisible(true);
-        
+
         this.buttonWindow.add(this.buttonPanel);
         this.buttonPanel.add(this.button);
         this.buttonWindow.setVisible(false);
-        
+
         button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				board.setProceed(true);
-			}
-		});
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                board.setProceed(true);
+            }
+        });
     }
 
     /**
@@ -118,13 +120,13 @@ public class GUI implements CanGetMove {
      * @param move the move being performed
      */
     public void applyMove(Move move) {
-    	setAllOrigBack();
+        setAllOrigBack();
         Pair start = move.getStart();
         Pair end = move.getEnd();
         Pair capture = move.getCapture();
         Pair start2 = move.getStart2();
         Pair end2 = move.getEnd2();
-        if(capture != null) {
+        if (capture != null) {
             backgroundPanel[capture.first][capture.second].removeAll();
         }
         ImagePanel endLabel = new ImagePanel("resource/" + board.getBoard(end).getIconFile());
@@ -132,7 +134,7 @@ public class GUI implements CanGetMove {
         backgroundPanel[end.first][end.second].add(endLabel);
         backgroundPanel[end.first][end.second].setBackground(MOVE_GRID_COLOR);
 
-        if(end2 != null) {
+        if (end2 != null) {
             ImagePanel end2Label = new ImagePanel("resource/" + board.getBoard(end2).getIconFile());
             end2Label.setOpaque(false);
             backgroundPanel[end2.first][end2.second].add(end2Label);
@@ -142,11 +144,12 @@ public class GUI implements CanGetMove {
         backgroundPanel[start.first][start.second].setBackground(MOVE_GRID_COLOR);
         validateAndRepaint(backgroundPanel[end.first][end.second]);
 
-        if(start2 != null) {
-        	backgroundPanel[start2.first][start2.second].removeAll(); //castle, update rook position
-        	backgroundPanel[start2.first][start2.second].setBackground(MOVE_GRID_COLOR);
+        if (start2 != null) {
+            backgroundPanel[start2.first][start2.second].removeAll(); // castle, update rook position
+            backgroundPanel[start2.first][start2.second].setBackground(MOVE_GRID_COLOR);
         }
-        if(end2 != null) validateAndRepaint(backgroundPanel[end2.first][end2.second]);
+        if (end2 != null)
+            validateAndRepaint(backgroundPanel[end2.first][end2.second]);
 
         // set evaluation bar
         evaluationBar.setValue(board.evaluate());
@@ -154,8 +157,8 @@ public class GUI implements CanGetMove {
 
     public void drawBoard() {
         // set the chess piece on each grid
-        for(int i = 0; i < ChessBoard.WIDTH; i++) {
-            for(int j = 0; j < ChessBoard.HEIGHT; j++) {
+        for (int i = 0; i < ChessBoard.WIDTH; i++) {
+            for (int j = 0; j < ChessBoard.HEIGHT; j++) {
                 backgroundPanel[i][j].removeAll();
                 if (board.getBoard()[i][j] != null) {
                     // set corresponding image to label on index (i, j)
@@ -175,8 +178,9 @@ public class GUI implements CanGetMove {
     /**
      * @author tzyt
      * 
-     * wait until the user selects a piece and a target position, then return the move
-     * returned move is valid according to getLegalMove
+     *         wait until the user selects a piece and a target position, then
+     *         return the move
+     *         returned move is valid according to getLegalMove
      * @return the move that the user selected
      */
     public Move getMove() {
@@ -197,13 +201,18 @@ public class GUI implements CanGetMove {
         return move;
     }
 
+    @Override
+    public String getName() {
+        return GUI.getValidStrIpt("Please give the side's name:");
+    }
+
     /**
      * piece selected listener (action listener class), when a piece is selected, it
      * will be highlighted, and when it is selected again, it will be deselected
      * 
      * @author tzyt, mqcreaple
      */
-    
+
     private class PieceSelectedListener implements MouseListener {
         private Pair pos;
 
@@ -213,15 +222,18 @@ public class GUI implements CanGetMove {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-        	if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide() && firSelectedPos == null) {
-                // if nothing is currently selected and the clicked piece is on current side, select the piece, and highlight it
+            if (board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getSide()
+                    && firSelectedPos == null) {
+                // if nothing is currently selected and the clicked piece is on current side,
+                // select the piece, and highlight it
 
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
                 for (Move move : board.getLegalMoves(pos.first, pos.second, false)) {
                     Pair end = move.getEnd();
                     backgroundPanel[end.first][end.second].setBackground(
-                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
+                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(),
+                                    ALLOWED_GRID_COLOR,
                                     INTERPOLATE_RATIO));
                     currentAllowedMove.put(end, move);
                 }
@@ -239,28 +251,30 @@ public class GUI implements CanGetMove {
                 // if select a different thing, check if it is a valid move
                 secSelectedPos = pos;
                 getMoveSem.release();
-            } else if (firSelectedPos != null && board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
-                //TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
-            	// if select a same color, change to that one
-            	
-            	setOrigBack(firSelectedPos);
+            } else if (firSelectedPos != null && board.getBoard(pos) != null
+                    && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
+                // TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
+                // if select a same color, change to that one
+
+                setOrigBack(firSelectedPos);
                 for (Pair p : currentAllowedMove.keySet()) {
                     setOrigBack(p);
                 }
                 firSelectedPos = null;
                 currentAllowedMove.clear();
-            	
-            	firSelectedPos = pos;
+
+                firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
                 for (Move move : board.getLegalMoves(pos.first, pos.second, false)) {
                     Pair end = move.getEnd();
                     backgroundPanel[end.first][end.second].setBackground(
-                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(), ALLOWED_GRID_COLOR,
+                            linearInterpolate(backgroundPanel[end.first][end.second].getBackground(),
+                                    ALLOWED_GRID_COLOR,
                                     INTERPOLATE_RATIO));
                     currentAllowedMove.put(end, move);
                 }
                 validateAndRepaint(backgroundPanel[pos.first][pos.second]);
-            }else if(firSelectedPos != null) {
+            } else if (firSelectedPos != null) {
                 // currently selected a piece, but do not click on any valid position
                 // popInfo("Not a valid move");
             }
@@ -288,11 +302,11 @@ public class GUI implements CanGetMove {
         for (Pair x : arr)
             backgroundPanel[x.first][x.second].setBackground(getBoardOrigColor(x));
     }
-    
+
     private void setAllOrigBack() {
-    	for(int i = 0; i < 8; i++)
-    		for(int j = 0; j < 8; j++)
-    			setOrigBack(new Pair(i,j));
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+                setOrigBack(new Pair(i, j));
     }
 
     /**
@@ -314,9 +328,9 @@ public class GUI implements CanGetMove {
         JOptionPane.showMessageDialog(null, str);
     }
 
-    public static String getValidStrIpt(String prompt){
+    public static String getValidStrIpt(String prompt) {
         String ipt = JOptionPane.showInputDialog(prompt);
-        while(ipt == null || ipt.equals("")){
+        while (ipt == null || ipt.equals("")) {
             ipt = JOptionPane.showInputDialog(prompt);
         }
         return ipt;
@@ -324,20 +338,21 @@ public class GUI implements CanGetMove {
 
     /**
      * @author mqcreaple
-     * Get the user input of the choice on what a pawn promote to.
+     *         Get the user input of the choice on what a pawn promote to.
      * @return a new piece chosen by user to replace the pawn.
      */
     public static Piece getPromotion(boolean color) {
-        JList<Piece> list = new JList<>(new Piece[] {new Queen(color), new Rook(color), new Bishop(color), new Knight(color)});
-        while(list.getSelectedValue() == null) {
+        JList<Piece> list = new JList<>(
+                new Piece[] { new Queen(color), new Rook(color), new Bishop(color), new Knight(color) });
+        while (list.getSelectedValue() == null) {
             JOptionPane.showInputDialog(null, list, "promotion", JOptionPane.QUESTION_MESSAGE);
         }
         return list.getSelectedValue();
     }
-    
+
     public void enableButton(boolean visibility) {
-    	this.button.setVisible(visibility);
-    	this.buttonWindow.setVisible(visibility);
+        this.button.setVisible(visibility);
+        this.buttonWindow.setVisible(visibility);
     }
-    
+
 }
