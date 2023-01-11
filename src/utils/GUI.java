@@ -226,7 +226,7 @@ public class GUI implements CanGetMove {
                     && firSelectedPos == null) {
                 // if nothing is currently selected and the clicked piece is on current side,
                 // select the piece, and highlight it
-
+        		setAllOrigBack();
                 firSelectedPos = pos;
                 backgroundPanel[pos.first][pos.second].setBackground(SELECTED_GRID_COLOR);
                 for (Move move : board.getLegalMoves(pos.first, pos.second, false)) {
@@ -241,7 +241,7 @@ public class GUI implements CanGetMove {
 
             } else if (firSelectedPos != null && firSelectedPos == pos) {
                 // if select the same thing, deselect it
-                setOrigBack(firSelectedPos);
+            	setAllOrigBack();
                 for (Pair p : currentAllowedMove.keySet()) {
                     setOrigBack(p);
                 }
@@ -249,14 +249,14 @@ public class GUI implements CanGetMove {
                 currentAllowedMove.clear();
             } else if (currentAllowedMove.containsKey(pos)) {
                 // if select a different thing, check if it is a valid move
+            	setAllOrigBack();
                 secSelectedPos = pos;
                 getMoveSem.release();
-            } else if (firSelectedPos != null && board.getBoard(pos) != null
-                    && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
-                // TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
-                // if select a same color, change to that one
-
-                setOrigBack(firSelectedPos);
+            } else if (firSelectedPos != null && board.getBoard(pos) != null && board.getBoard(pos).getColor() == board.getBoard(firSelectedPos).getColor()) {
+                //TODO: Throws nonfatal exception here if clicked on null peice. Need to fix
+            	// if select a same color, change to that one
+            	
+            	setOrigBack(firSelectedPos);
                 for (Pair p : currentAllowedMove.keySet()) {
                     setOrigBack(p);
                 }
