@@ -7,4 +7,5 @@ package utils;
  */
 public interface CanGetMove {
     Move getMove();
+    String getName();
 }
