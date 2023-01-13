@@ -389,6 +389,25 @@ public class ChessBoard {
 		return allLegalMoves.get(rnd);
 	}
 
+	public ArrayList<Move> getAllLegalMoves() {
+		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] != null && board[i][j].getColor() == this.side) {
+					ArrayList<Move> temp = getLegalMoves(i, j, true);
+					for (Move x : temp) {
+						if (x instanceof PromotionMove) {
+							((PromotionMove) x).setPromoteTo(new Queen(this.side));
+						}
+						allLegalMoves.add(x);
+					}
+				}
+			}
+		}
+
+		return allLegalMoves;
+	}
+
 	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
 		boolean middlegame = true;
 		for (Piece[] x : board) {
