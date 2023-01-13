@@ -113,26 +113,19 @@ public class ChessBoard {
 		
 		ArrayList<unMove> toAdd = new ArrayList<unMove>();
 		if (theMove.getCapture() != null) {
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		if (board[theMove.getEnd().first][theMove.getEnd().second] != null) {
-			toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second].clone(), theMove.getEnd()));
-		} else {
-			toAdd.add(new unMove(null, theMove.getEnd()));
-		}
+		
+		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
 		if (theMove.getPiece2() != null) {
-			if (board[theMove.getEnd2().first][theMove.getEnd2().second] != null) {
-				toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second].clone(), theMove.getEnd2()));
-			} else {
-				toAdd.add(new unMove(null, theMove.getEnd2()));
-			}
+			toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second], theMove.getEnd2()));
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
 		
@@ -165,22 +158,9 @@ public class ChessBoard {
 			enPassant.second = theMove.getEnd().second;
 		}
 
-		// set the pawn's firstMove field to false
-		if (theMove.getPiece() instanceof Pawn) {
-			((Pawn) theMove.getPiece()).cancelFirstMove();
-		}
-
-		// set king and rook firstmove to false
-		if (theMove.getPiece() instanceof King) {
-			((King) theMove.getPiece()).cancelFirstMove();
-		}
-		if (theMove.getPiece() instanceof Rook) {
-			((Rook) theMove.getPiece()).cancelFirstMove();
-		}
+		theMove.getPiece().updateMoveCounter();
 		if (theMove.getPiece2() != null) {
-			if (theMove.getPiece2() instanceof Rook) {
-				((Rook) theMove.getPiece2()).cancelFirstMove();
-			}
+			theMove.getPiece2().updateMoveCounter();
 		}
 
 		// if(this.loadingSimulation == false)
@@ -385,6 +365,25 @@ public class ChessBoard {
 		int rnd = new Random().nextInt(allLegalMoves.size());
 		return allLegalMoves.get(rnd);
 	}
+	
+	public ArrayList<Move> getAllLegalMoves() {
+		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] != null && board[i][j].getColor() == this.side) {
+					ArrayList<Move> temp = getLegalMoves(i, j, true);
+					for (Move x : temp) {
+						if (x instanceof PromotionMove) {
+							((PromotionMove) x).setPromoteTo(new Queen(this.side));
+						}
+						allLegalMoves.add(x);
+					}
+				}
+			}
+		}
+
+		return allLegalMoves;
+	}
 
 	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
 		boolean middlegame = true;
@@ -515,6 +514,9 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
+			if (piece != null) {
+				piece.undoMoveCounter();
+			}
 			board[location.first][location.second] = piece; 
 		}
 	}

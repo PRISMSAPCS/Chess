@@ -4,12 +4,8 @@ package utils;
 import java.util.ArrayList;
 
 public class Pawn extends Piece {
-	
-	private boolean firstMove;
-	
 	public Pawn(boolean color) {
 		super(color);
-		firstMove = true;
 	}
 
 	@Override
@@ -22,7 +18,7 @@ public class Pawn extends Piece {
 		if((x+colorMult<ChessBoard.WIDTH&&x+colorMult>=0)&&board[x+colorMult][y]==null) {
 			int[] temp = {x+colorMult,y};
 			moves.add(temp);
-			if((x+(2*colorMult)<board[0].length&&x+(2*colorMult)>=0)&&board[x+2*colorMult][y]==null && firstMove ) {
+			if((x+(2*colorMult)<board[0].length&&x+(2*colorMult)>=0)&&board[x+2*colorMult][y]==null && super.getFirstMove()) {
 				int[] temp2 = {x+2*colorMult, y};
 				moves.add(temp2);
 			}
@@ -39,14 +35,6 @@ public class Pawn extends Piece {
 			}
 		}
 		return moves;
-	}
-
-	public void cancelFirstMove() {
-		this.firstMove = false;
-	}
-	
-	public boolean getFirstMove() {
-		return firstMove;
 	}
 
 	@Override

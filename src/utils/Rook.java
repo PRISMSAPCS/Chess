@@ -3,12 +3,8 @@ package utils;
 import java.util.ArrayList;
 
 public class Rook extends Piece {
-	
-	private boolean firstMove;
-	
 	public Rook(boolean color) {
 		super(color);
-		firstMove = true;
 	}
 	
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y) {
@@ -48,14 +44,6 @@ public class Rook extends Piece {
 		}
 		
 		return moves;
-	}
-
-	void cancelFirstMove(){
-		this.firstMove = false;
-	}
-
-	public boolean getFirstMove(){
-		return this.firstMove;
 	}
 
 	@Override

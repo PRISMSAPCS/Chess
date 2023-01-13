@@ -22,6 +22,7 @@ public class Main {
 			Move move = moveSource[board.getSide()? 1: 0].getMove();
 			board.submitMove(move);
 			gui.applyMove(move);
+			
 			if(board.gameOver(board.getSide())>0) {
 				//test if game over
 				if(board.gameOver(board.getSide()) == 1) {

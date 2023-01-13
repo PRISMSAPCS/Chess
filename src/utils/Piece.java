@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public abstract class Piece implements Cloneable {
 	private boolean color; // true=white, false=black
+	private int moveCounter;
 
 	public Piece(boolean color) {
 		this.color = color;
@@ -26,8 +27,16 @@ public abstract class Piece implements Cloneable {
 		this.color = color;
 	}
 
-	public boolean getFirstMove(){
-		return false;
+	public boolean getFirstMove() {
+		return (moveCounter == 0) ? true : false;
+	}
+	
+	public void updateMoveCounter() {
+		moveCounter++;
+	}
+	
+	public void undoMoveCounter() {
+		moveCounter--;
 	}
 
 	@Override

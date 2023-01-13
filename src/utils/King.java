@@ -15,11 +15,8 @@ public class King extends Piece {
         MOVE_SET[7] = new int[] {-1, -1};
     }
 
-    private boolean firstMove;
-
     public King(boolean color) {
         super(color);
-        firstMove = true;
     }
 
     @Override
@@ -35,14 +32,6 @@ public class King extends Piece {
 
         return ans;
     }
-
-    void cancelFirstMove(){
-        this.firstMove = false;
-    }
-
-    public boolean getFirstMove() {
-		return firstMove;
-	}
 
     @Override
     public String getIconFile() {
