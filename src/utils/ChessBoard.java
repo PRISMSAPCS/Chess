@@ -3,6 +3,7 @@ package utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -26,6 +27,8 @@ public class ChessBoard {
 	private MatchLogging logger;
 	private Piece[][] board; // first index (0-7) corresponds to numbers (1-8), second index corresponds to
 								// letters (a-h)
+	private Pair[] kingPos;  // position of each sides' kings; Author: @MqCreaple
+
 	private ArrayList<ArrayList<unMove>> undoMoveStack;
 	private ArrayList<Integer> undoMoveRuleStack;
 	private ArrayList<Pair> undoEnPassantStack;
@@ -35,6 +38,7 @@ public class ChessBoard {
 	public ChessBoard() {
 		this.side = true;
 		this.board = new Piece[8][8];
+		this.kingPos = new Pair[2];
 		this.enPassant = new Pair(-1, -1);
 		this.moveRule = 0;
 
@@ -43,6 +47,7 @@ public class ChessBoard {
 		board[0][2] = new Bishop(true);
 		board[0][3] = new Queen(true);
 		board[0][4] = new King(true);
+		kingPos[1] = new Pair(0, 4);
 		board[0][5] = new Bishop(true);
 		board[0][6] = new Knight(true);
 		board[0][7] = new Rook(true);
@@ -55,6 +60,7 @@ public class ChessBoard {
 		board[7][2] = new Bishop(false);
 		board[7][3] = new Queen(false);
 		board[7][4] = new King(false);
+		kingPos[0] = new Pair(7, 4);
 		board[7][5] = new Bishop(false);
 		board[7][6] = new Knight(false);
 		board[7][7] = new Rook(false);
@@ -67,6 +73,7 @@ public class ChessBoard {
 		// copy constructor
 		this.side = other.side;
 		this.board = new Piece[8][8];
+		this.kingPos = Arrays.copyOf(other.kingPos, other.kingPos.length);
 		this.moveRule = other.getMoveRule();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
@@ -80,16 +87,13 @@ public class ChessBoard {
 		this.undoEnPassantStack = new ArrayList<Pair>();
 	}
 
-	public void enableLogging() {
-		this.logging = true;
-		String whiteName = GUI.getValidStrIpt("Enter white side's name");
-		String blackName = GUI.getValidStrIpt("Enter black side's name");
-		logger = new MatchLogging("./log.pgn", whiteName, blackName);
-	}
-
 	public void enableLogging(String whiteName, String blackName) {
 		this.logging = true;
 		logger = new MatchLogging("./log.pgn", whiteName, blackName);
+	}
+
+	public void disableLogging() {
+		this.logging = false;
 	}
 
 	/**
@@ -113,19 +117,30 @@ public class ChessBoard {
 		
 		ArrayList<unMove> toAdd = new ArrayList<unMove>();
 		if (theMove.getCapture() != null) {
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
+			// update king pos if king has been captured.
+			if(getBoard(theMove.getCapture()) instanceof King) {
+				kingPos[this.side? 0: 1] = new Pair(-1, -1);
+			}
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		
-		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
+		if (board[theMove.getEnd().first][theMove.getEnd().second] != null) {
+			toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second].clone(), theMove.getEnd()));
+		} else {
+			toAdd.add(new unMove(null, theMove.getEnd()));
+		}
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
 		if (theMove.getPiece2() != null) {
-			toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second], theMove.getEnd2()));
+			if (board[theMove.getEnd2().first][theMove.getEnd2().second] != null) {
+				toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second].clone(), theMove.getEnd2()));
+			} else {
+				toAdd.add(new unMove(null, theMove.getEnd2()));
+			}
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
 		
@@ -145,8 +160,6 @@ public class ChessBoard {
 		}
 		if (logging)
 			logger.logMove(theMove, oldBoard);
-		// change side
-		this.side = !this.side;
 
 		// set enPassant array
 		undoEnPassantStack.add(enPassant);
@@ -158,19 +171,35 @@ public class ChessBoard {
 			enPassant.second = theMove.getEnd().second;
 		}
 
-		theMove.getPiece().updateMoveCounter();
-		if (theMove.getPiece2() != null) {
-			theMove.getPiece2().updateMoveCounter();
+		// set the pawn's firstMove field to false
+		if (theMove.getPiece() instanceof Pawn) {
+			((Pawn) theMove.getPiece()).cancelFirstMove();
+		} else if (theMove.getPiece() instanceof King) {
+			// set king and rook firstmove to false
+			((King) theMove.getPiece()).cancelFirstMove();
+			// update kingPos array
+			this.kingPos[this.side? 1: 0] = theMove.getEnd();
+		} else if (theMove.getPiece() instanceof Rook) {
+			((Rook) theMove.getPiece()).cancelFirstMove();
+		} else if (theMove.getPiece2() != null) {
+			if (theMove.getPiece2() instanceof Rook) {
+				((Rook) theMove.getPiece2()).cancelFirstMove();
+			}
 		}
 
-		// if(this.loadingSimulation == false)
-		// 	System.out.println(evaluate());
+		// change side
+		this.side = !this.side;
+		//// System.out.println(kingPos[0].first + " " + kingPos[0].second);
+
+		//// if(this.loadingSimulation == false)
+		//// 	System.out.println(evaluate());
 	}
 
 	private boolean checkLegal(int x, int y, Move move) { // Author: Daniel - checks if a move is legal
 		// copies the board - in this function, we make the move, then check if the king
 		// is in check
-		Piece[][] boardCopy = (new ChessBoard(this)).getBoard();
+		ChessBoard newBoard = new ChessBoard(this);
+		Piece[][] boardCopy = newBoard.getBoard();
 
 		// emulate the move
 		boardCopy[x][y] = null;
@@ -178,20 +207,14 @@ public class ChessBoard {
 			boardCopy[move.getCapture().first][move.getCapture().second] = null;
 		}
 		boardCopy[move.getEnd().first][move.getEnd().second] = board[x][y];
+		if(move.getPiece() instanceof King) {
+			// update king pos in the new board
+			newBoard.kingPos[newBoard.getSide()? 1: 0] = move.getEnd();
+		}
 
 		// find location of king
-		int kingX = -1;
-		int kingY = -1;
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				// checks if piece exists, is a king, and is same color as turn
-				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King
-						&& boardCopy[i][j].getColor() == this.side) {
-					kingX = i;
-					kingY = j;
-				}
-			}
-		}
+		int kingX = newBoard.kingPos[this.side? 1: 0].first;
+		int kingY = newBoard.kingPos[this.side? 1: 0].second;
 
 		// check if king is in check after piece move
 		boolean leave = false;
@@ -262,7 +285,7 @@ public class ChessBoard {
 					if (board[x][y + 3].getFirstMove()) {
 						for (int i = y; i < y + 3; i++) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))) {
+									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
 								validCastle = true;
 							} else {
 								validCastle = false;
@@ -278,7 +301,7 @@ public class ChessBoard {
 					if (board[x][y - 4].getFirstMove()) {
 						for (int i = y; i > y - 4; i--) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))) {
+									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
 								validCastle = true;
 							} else {
 								validCastle = false;
@@ -365,25 +388,6 @@ public class ChessBoard {
 		int rnd = new Random().nextInt(allLegalMoves.size());
 		return allLegalMoves.get(rnd);
 	}
-	
-	public ArrayList<Move> getAllLegalMoves() {
-		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (board[i][j] != null && board[i][j].getColor() == this.side) {
-					ArrayList<Move> temp = getLegalMoves(i, j, true);
-					for (Move x : temp) {
-						if (x instanceof PromotionMove) {
-							((PromotionMove) x).setPromoteTo(new Queen(this.side));
-						}
-						allLegalMoves.add(x);
-					}
-				}
-			}
-		}
-
-		return allLegalMoves;
-	}
 
 	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
 		boolean middlegame = true;
@@ -464,16 +468,7 @@ public class ChessBoard {
 
 	public boolean checked(boolean color) { // author: Benjamin, return false if king's not checked, return true if
 											// king's checked
-		int kx = 0, ky = 0;
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (board[i][j] != null && board[i][j].getColor() == color
-						&& board[i][j].getIconFile().equals(board[i][j].getColor() ? "k_w.png" : "k_b.png")) {
-					kx = i;
-					ky = j;
-				}
-			}
-		}
+		int kx = kingPos[color? 1: 0].first, ky = kingPos[color? 1: 0].second;
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (board[i][j] != null && board[i][j].getColor() != color) {
@@ -514,10 +509,11 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
-			if (piece != null) {
-				piece.undoMoveCounter();
+			board[location.first][location.second] = piece;
+			// undo the position of king
+			if(piece instanceof King) {
+				kingPos[piece.getColor()? 1: 0] = location;
 			}
-			board[location.first][location.second] = piece; 
 		}
 	}
 	
@@ -559,7 +555,7 @@ public class ChessBoard {
 	}
 	
 	public ArrayList<Pair> piecesThreatened(Pair pos, boolean color) {
-		ArrayList<Pair> toReturn = new ArrayList<Pair>();
+		ArrayList<Pair> toReturn = new ArrayList<>();
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
 				if (board[row][column] != null && board[row][column].getColor() == color) {
