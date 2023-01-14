@@ -6,6 +6,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 
 import utils.bot.DanielBot;
+import utils.bot.kzbot;
 
 public class Main {
 	/**
