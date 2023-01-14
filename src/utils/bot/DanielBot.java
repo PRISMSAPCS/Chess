@@ -19,7 +19,7 @@ public class DanielBot extends ChessBot {
 	public Move getMove() {
 		boardCopy = new ChessBoard(super.getBoard());
 		posCounter = 0;
-		miniMax(4, -100000, 100000, true, true);
+		miniMax(6, -100000, 100000, true, true);
 		System.out.println(posCounter);
 		return bestMove;
 	}

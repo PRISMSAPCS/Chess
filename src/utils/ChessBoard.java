@@ -870,7 +870,9 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
-			piece.undoMoveCounter();
+			if (piece != null) {
+				piece.undoMoveCounter();
+			}
 			board[location.first][location.second] = piece;
 			// undo the position of king
 			if(piece instanceof King) {
