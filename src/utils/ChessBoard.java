@@ -166,7 +166,12 @@ public class ChessBoard {
 		// set the pawn's firstMove field to false
 		theMove.getPiece().updateMoveCounter();
 		if (theMove.getPiece2() != null) theMove.getPiece2().updateMoveCounter();
-
+		
+		// update kingPos array
+		if (theMove.getPiece() instanceof King) {
+			this.kingPos[this.side? 1: 0] = theMove.getEnd();
+		}
+		
 		// change side
 		this.side = !this.side;
 		//// System.out.println(kingPos[0].first + " " + kingPos[0].second);
