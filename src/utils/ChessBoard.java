@@ -121,26 +121,18 @@ public class ChessBoard {
 			if(getBoard(theMove.getCapture()) instanceof King) {
 				kingPos[this.side? 0: 1] = new Pair(-1, -1);
 			}
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		if (board[theMove.getEnd().first][theMove.getEnd().second] != null) {
-			toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second].clone(), theMove.getEnd()));
-		} else {
-			toAdd.add(new unMove(null, theMove.getEnd()));
-		}
+		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
 		if (theMove.getPiece2() != null) {
-			if (board[theMove.getEnd2().first][theMove.getEnd2().second] != null) {
-				toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second].clone(), theMove.getEnd2()));
-			} else {
-				toAdd.add(new unMove(null, theMove.getEnd2()));
-			}
+			toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second], theMove.getEnd2()));
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
 		
@@ -172,20 +164,8 @@ public class ChessBoard {
 		}
 
 		// set the pawn's firstMove field to false
-		if (theMove.getPiece() instanceof Pawn) {
-			((Pawn) theMove.getPiece()).cancelFirstMove();
-		} else if (theMove.getPiece() instanceof King) {
-			// set king and rook firstmove to false
-			((King) theMove.getPiece()).cancelFirstMove();
-			// update kingPos array
-			this.kingPos[this.side? 1: 0] = theMove.getEnd();
-		} else if (theMove.getPiece() instanceof Rook) {
-			((Rook) theMove.getPiece()).cancelFirstMove();
-		} else if (theMove.getPiece2() != null) {
-			if (theMove.getPiece2() instanceof Rook) {
-				((Rook) theMove.getPiece2()).cancelFirstMove();
-			}
-		}
+		theMove.getPiece().updateMoveCounter();
+		if (theMove.getPiece2() != null) theMove.getPiece2().updateMoveCounter();
 
 		// change side
 		this.side = !this.side;
@@ -538,6 +518,7 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
+			piece.undoMoveCounter();
 			board[location.first][location.second] = piece;
 			// undo the position of king
 			if(piece instanceof King) {
