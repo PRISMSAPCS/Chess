@@ -45,6 +45,47 @@ public class Rook extends Piece {
 		
 		return moves;
 	}
+	
+	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y, boolean pinnedHorizontal) {
+		ArrayList<int[]> moves = new ArrayList<>();
+		
+		if (pinnedHorizontal) {
+			for(int i = 1; i <= 8; i++) {
+				if(x + i >= board[0].length || (board[x + i][y] != null && board[x + i][y].getColor() == getColor()))
+					break;
+				int[] temp = {x + i, y};
+				moves.add(temp);
+				if(board[x + i][y] != null)
+					break;
+			}
+			for(int i = 1; i <= 8; i++) {
+				if(x - i < 0 || (board[x - i][y] != null && board[x - i][y].getColor() == getColor()))
+					break;
+				int[] temp = {x - i, y};
+				moves.add(temp);
+				if(board[x - i][y] != null)
+					break;
+			}
+		} else {
+			for(int i = 1; i <= 8; i++) {
+				if(y + i >= board[0].length || (board[x][y + i] != null && board[x][y + i].getColor() == getColor()))
+					break;
+				int[] temp = {x, y + i};
+				moves.add(temp);
+				if(board[x][y + i] != null)
+					break;
+			}
+			for(int i = 1; i <= 8; i++) {
+				if(y - i < 0 || (board[x][y - i] != null && board[x][y - i].getColor() == getColor()))
+					break;
+				int[] temp = {x, y - i};
+				moves.add(temp);
+				if(board[x][y - i] != null)
+					break;
+			}
+		}
+		return moves;
+	}
 
 	@Override
 	public String getIconFile() {
