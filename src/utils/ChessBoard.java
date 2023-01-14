@@ -255,6 +255,7 @@ public class ChessBoard {
 		ArrayList<Move> legalMoves = new ArrayList<>();
 		ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
 		// castle logic, special. Author: Kevin
+		try {
 		if (board[x][y] instanceof King) {
 			if (board[x][y].getFirstMove()) {
 				boolean validCastle = true;
@@ -291,7 +292,9 @@ public class ChessBoard {
 				}
 			}
 		}
-
+		} catch (Exception e) {
+			
+		}
 		for (int[] move : moves) {
 			// create the move object
 			Move toAdd;
@@ -386,19 +389,26 @@ public class ChessBoard {
 	}
 
 	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
-		boolean middlegame = true;
+		boolean endgame = true;
+		boolean endgame2 = true;
 		for (Piece[] x : board) {
 			for (Piece y : x) {
 				if (y instanceof Queen) {
-					middlegame = false;
+					endgame = false;
+				}
+				
+				if (y instanceof Bishop || y instanceof Knight || y instanceof Rook) {
+					endgame2 = false;
 				}
 			}
 		}
+		
+		endgame = endgame || endgame2;
 
 		int points = 0;
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
-				if (board[row][column] != null && board[row][column].getColor() == this.side) {
+				if (board[row][column] != null && board[row][column].getColor()) {
 					Piece piece = board[row][column];
 					if (piece instanceof Pawn) {
 						points += 100;
@@ -417,7 +427,7 @@ public class ChessBoard {
 						points += Eval.queen[row][column];
 					} else if (piece instanceof King) {
 						points += 20000;
-						if (middlegame) {
+						if (!endgame) {
 							points += Eval.kingmid[row][column];
 						} else {
 							points += Eval.kingend[row][column];
@@ -430,7 +440,7 @@ public class ChessBoard {
 		Eval.flip();
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
-				if (board[row][column] != null && board[row][column].getColor() != this.side) {
+				if (board[row][column] != null && !board[row][column].getColor()) {
 					Piece piece = board[row][column];
 					if (piece instanceof Pawn) {
 						points -= 100;
@@ -449,7 +459,7 @@ public class ChessBoard {
 						points -= Eval.queen[row][column];
 					} else if (piece instanceof King) {
 						points -= 20000;
-						if (middlegame) {
+						if (!endgame) {
 							points -= Eval.kingmid[row][column];
 						} else {
 							points -= Eval.kingend[row][column];
@@ -458,8 +468,8 @@ public class ChessBoard {
 				}
 			}
 		}
-
-		return (this.side) ? points : (points * -1);
+		Eval.flip();
+		return points;
 	}
 
 	public boolean checked(boolean color) { // author: Benjamin, return false if king's not checked, return true if
