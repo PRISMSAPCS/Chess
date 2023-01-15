@@ -272,6 +272,7 @@ public class ChessBoard {
 		ArrayList<Move> legalMoves = new ArrayList<>();
 		ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
 		
+		// Author: Daniel - checks if a piece is pinned or not, and generates its moveset accordingly 
 		if (!(board[x][y] instanceof King) && !(board[x][y] instanceof Pawn) && !checked(this.side)) {
 			// check distance from king
 			int xDiff = x - kingPos[this.side ? 1 : 0].first;

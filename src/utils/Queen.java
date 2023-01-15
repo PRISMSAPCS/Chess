@@ -132,11 +132,11 @@ public class Queen extends Piece {
 					break;
 			}
 			for(int i = 1; i <= 8; i++) {
-				if(x + i >= board[0].length || y - i < 0 || (board[x + i][y - i] != null && board[x + i][y - i].getColor() == getColor()))
+				if(x - i < 0 || y - i < 0 || (board[x - i][y - i] != null && board[x - i][y - i].getColor() == getColor()))
 					break;
-				int[] temp = {x + i, y - i};
+				int[] temp = {x - i, y - i};
 				moves.add(temp);
-				if(board[x + i][y - i] != null)
+				if(board[x - i][y - i] != null)
 					break;
 			}
 		} else if (pinnedBottomLeftTopRight) {
@@ -149,11 +149,11 @@ public class Queen extends Piece {
 					break;
 			}
 			for(int i = 1; i <= 8; i++) {
-				if(x - i < 0 || y - i < 0 || (board[x - i][y - i] != null && board[x - i][y - i].getColor() == getColor()))
+				if(x + i >= board[0].length || y - i < 0 || (board[x + i][y - i] != null && board[x + i][y - i].getColor() == getColor()))
 					break;
-				int[] temp = {x - i, y - i};
+				int[] temp = {x + i, y - i};
 				moves.add(temp);
-				if(board[x - i][y - i] != null)
+				if(board[x + i][y - i] != null)
 					break;
 			}
 		}
