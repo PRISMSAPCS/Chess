@@ -619,7 +619,7 @@ public class ChessBoard {
 		if (board[x][y] instanceof King) {
 			if (board[x][y].getFirstMove()) {
 				boolean validCastle = true;
-				if (board[x][y + 3] instanceof Rook) {
+				if (y + 3 < 8 && board[x][y + 3] instanceof Rook) {
 					if (board[x][y + 3].getFirstMove()) {
 						for (int i = y; i < y + 3; i++) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
@@ -635,7 +635,7 @@ public class ChessBoard {
 					}
 				}
 
-				if (board[x][y - 4] instanceof Rook) {
+				if (y - 4 >= 0 && board[x][y - 4] instanceof Rook) {
 					if (board[x][y - 4].getFirstMove()) {
 						for (int i = y; i > y - 4; i--) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
@@ -1311,7 +1311,71 @@ public class ChessBoard {
 	}
 
 
-    public boolean getProceed() {
+    public static int getWIDTH() {
+		return WIDTH;
+	}
+
+	public static void setWIDTH(int wIDTH) {
+		WIDTH = wIDTH;
+	}
+
+	public static int getHEIGHT() {
+		return HEIGHT;
+	}
+
+	public static void setHEIGHT(int hEIGHT) {
+		HEIGHT = hEIGHT;
+	}
+
+	public Pair getEnPassant() {
+		return enPassant;
+	}
+
+	public void setEnPassant(Pair enPassant) {
+		this.enPassant = enPassant;
+	}
+
+	public boolean isLogging() {
+		return logging;
+	}
+
+	public void setLogging(boolean logging) {
+		this.logging = logging;
+	}
+
+	public MatchLogging getLogger() {
+		return logger;
+	}
+
+	public void setLogger(MatchLogging logger) {
+		this.logger = logger;
+	}
+
+	public ArrayList<ArrayList<unMove>> getUndoMoveStack() {
+		return undoMoveStack;
+	}
+
+	public void setUndoMoveStack(ArrayList<ArrayList<unMove>> undoMoveStack) {
+		this.undoMoveStack = undoMoveStack;
+	}
+
+	public ArrayList<Integer> getUndoMoveRuleStack() {
+		return undoMoveRuleStack;
+	}
+
+	public void setUndoMoveRuleStack(ArrayList<Integer> undoMoveRuleStack) {
+		this.undoMoveRuleStack = undoMoveRuleStack;
+	}
+
+	public ArrayList<Pair> getUndoEnPassantStack() {
+		return undoEnPassantStack;
+	}
+
+	public void setUndoEnPassantStack(ArrayList<Pair> undoEnPassantStack) {
+		this.undoEnPassantStack = undoEnPassantStack;
+	}
+
+	public boolean getProceed() {
     	return this.proceed;
     }
     
