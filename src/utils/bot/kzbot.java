@@ -18,10 +18,11 @@ public class kzbot extends ChessBot{
         }
     }
 
-    private static int depth = 4;
+    private int depth = 2;
 
-    public kzbot(ChessBoard b){
+    public kzbot(ChessBoard b, int d){
         super(b);
+        depth = d;
     }
     
     public String getName(){
@@ -45,8 +46,8 @@ public class kzbot extends ChessBot{
 
     private thing getBestMove(ChessBoard bo, int d){
 
-        ArrayList<Move> moveArray = new ArrayList<>();
-        moveArray = getAllLegal(bo);
+            ArrayList<Move> moveArray = new ArrayList<>();
+            moveArray = getAllLegal(bo);
 
         int hiscoreIndex = 0;
         int hiscore = 0;
@@ -58,13 +59,6 @@ public class kzbot extends ChessBot{
         for(int i =0; i<moveArray.size(); i++){
             ChessBoard b2 = new ChessBoard(bo);
 
-            if(b2.getSide()){
-                s = -1;
-            }else{
-                s = 1;
-                //multiplier for side
-            }
-
             b2.submitMove(moveArray.get(i));
 
             if(d > 1){
@@ -75,6 +69,13 @@ public class kzbot extends ChessBot{
                 }
                 temp = recursed.v;
             }else{
+
+                if(b2.getSide()){
+                    s = -1;
+                }else{
+                    s = 1;
+                    //multiplier for side
+                }
                 temp = b2.evaluate() * s;
             }
 

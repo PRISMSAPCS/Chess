@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
+<<<<<<< HEAD
 import utils.bot.*;
+=======
+import utils.bot.DanielBot;
+import utils.bot.kzbot;
+>>>>>>> c36a611853f870a374144ab8226bba9dadf4459b
 
 public class Main {
 	/**
@@ -85,7 +90,11 @@ public class Main {
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 			GUI gui = new GUI(board, true);
+<<<<<<< HEAD
 			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), new kzbot(board)});
+=======
+			normalGame(board, gui, new DanielBot[] {new DanielBot(board, true), new DanielBot(board, false)});
+>>>>>>> c36a611853f870a374144ab8226bba9dadf4459b
 		}
     }
 }
