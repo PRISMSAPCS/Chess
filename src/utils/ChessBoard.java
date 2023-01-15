@@ -68,6 +68,7 @@ public class ChessBoard {
 		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
+		this.previousMoves = new ArrayList<Move>();
 	}
 
 	public ChessBoard(ChessBoard other) {
@@ -76,7 +77,6 @@ public class ChessBoard {
 		this.board = new Piece[8][8];
 		this.kingPos = Arrays.copyOf(other.kingPos, other.kingPos.length);
 		this.moveRule = other.getMoveRule();
-		this.previousMoves = other.getPreviousMoves();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (other.board[i][j] != null)
@@ -87,6 +87,7 @@ public class ChessBoard {
 		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
+		this.previousMoves = new ArrayList<Move>();
 	}
 
 	public void enableLogging(String whiteName, String blackName) {
