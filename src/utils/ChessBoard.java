@@ -3,6 +3,7 @@ package utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -26,15 +27,19 @@ public class ChessBoard {
 	private MatchLogging logger;
 	private Piece[][] board; // first index (0-7) corresponds to numbers (1-8), second index corresponds to
 								// letters (a-h)
+	private Pair[] kingPos;  // position of each sides' kings; Author: @MqCreaple
+
 	private ArrayList<ArrayList<unMove>> undoMoveStack;
 	private ArrayList<Integer> undoMoveRuleStack;
 	private ArrayList<Pair> undoEnPassantStack;
+	private ArrayList<Move> previousMoves;
     private boolean proceed = false;
     private boolean loadingSimulation = false;
 
 	public ChessBoard() {
 		this.side = true;
 		this.board = new Piece[8][8];
+		this.kingPos = new Pair[2];
 		this.enPassant = new Pair(-1, -1);
 		this.moveRule = 0;
 
@@ -43,6 +48,7 @@ public class ChessBoard {
 		board[0][2] = new Bishop(true);
 		board[0][3] = new Queen(true);
 		board[0][4] = new King(true);
+		kingPos[1] = new Pair(0, 4);
 		board[0][5] = new Bishop(true);
 		board[0][6] = new Knight(true);
 		board[0][7] = new Rook(true);
@@ -55,6 +61,7 @@ public class ChessBoard {
 		board[7][2] = new Bishop(false);
 		board[7][3] = new Queen(false);
 		board[7][4] = new King(false);
+		kingPos[0] = new Pair(7, 4);
 		board[7][5] = new Bishop(false);
 		board[7][6] = new Knight(false);
 		board[7][7] = new Rook(false);
@@ -67,7 +74,9 @@ public class ChessBoard {
 		// copy constructor
 		this.side = other.side;
 		this.board = new Piece[8][8];
+		this.kingPos = Arrays.copyOf(other.kingPos, other.kingPos.length);
 		this.moveRule = other.getMoveRule();
+		this.previousMoves = other.getPreviousMoves();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (other.board[i][j] != null)
@@ -80,16 +89,13 @@ public class ChessBoard {
 		this.undoEnPassantStack = new ArrayList<Pair>();
 	}
 
-	public void enableLogging() {
-		this.logging = true;
-		String whiteName = GUI.getValidStrIpt("Enter white side's name");
-		String blackName = GUI.getValidStrIpt("Enter black side's name");
-		logger = new MatchLogging("./log.pgn", whiteName, blackName);
-	}
-
 	public void enableLogging(String whiteName, String blackName) {
 		this.logging = true;
 		logger = new MatchLogging("./log.pgn", whiteName, blackName);
+	}
+
+	public void disableLogging() {
+		this.logging = false;
 	}
 
 	/**
@@ -98,6 +104,7 @@ public class ChessBoard {
 	 * @param theMove Move object being performed
 	 */
 	public void submitMove(Move theMove) {
+		previousMoves.add(theMove);
 		ChessBoard oldBoard = new ChessBoard(this);
 		// update move rule
 		undoMoveRuleStack.add(moveRule);
@@ -113,26 +120,22 @@ public class ChessBoard {
 		
 		ArrayList<unMove> toAdd = new ArrayList<unMove>();
 		if (theMove.getCapture() != null) {
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
+			// update king pos if king has been captured.
+			if(getBoard(theMove.getCapture()) instanceof King) {
+				kingPos[this.side? 0: 1] = new Pair(-1, -1);
+			}
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		if (board[theMove.getEnd().first][theMove.getEnd().second] != null) {
-			toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second].clone(), theMove.getEnd()));
-		} else {
-			toAdd.add(new unMove(null, theMove.getEnd()));
-		}
+		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
 		if (theMove.getPiece2() != null) {
-			if (board[theMove.getEnd2().first][theMove.getEnd2().second] != null) {
-				toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second].clone(), theMove.getEnd2()));
-			} else {
-				toAdd.add(new unMove(null, theMove.getEnd2()));
-			}
+			toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second], theMove.getEnd2()));
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
 		
@@ -152,8 +155,6 @@ public class ChessBoard {
 		}
 		if (logging)
 			logger.logMove(theMove, oldBoard);
-		// change side
-		this.side = !this.side;
 
 		// set enPassant array
 		undoEnPassantStack.add(enPassant);
@@ -166,31 +167,27 @@ public class ChessBoard {
 		}
 
 		// set the pawn's firstMove field to false
-		if (theMove.getPiece() instanceof Pawn) {
-			((Pawn) theMove.getPiece()).cancelFirstMove();
-		}
-
-		// set king and rook firstmove to false
+		theMove.getPiece().updateMoveCounter();
+		if (theMove.getPiece2() != null) theMove.getPiece2().updateMoveCounter();
+		
+		// update kingPos array
 		if (theMove.getPiece() instanceof King) {
-			((King) theMove.getPiece()).cancelFirstMove();
+			this.kingPos[this.side? 1: 0] = theMove.getEnd();
 		}
-		if (theMove.getPiece() instanceof Rook) {
-			((Rook) theMove.getPiece()).cancelFirstMove();
-		}
-		if (theMove.getPiece2() != null) {
-			if (theMove.getPiece2() instanceof Rook) {
-				((Rook) theMove.getPiece2()).cancelFirstMove();
-			}
-		}
+		
+		// change side
+		this.side = !this.side;
+		//// System.out.println(kingPos[0].first + " " + kingPos[0].second);
 
-		// if(this.loadingSimulation == false)
-		// 	System.out.println(evaluate());
+		//// if(this.loadingSimulation == false)
+		//// 	System.out.println(evaluate());
 	}
 
 	private boolean checkLegal(int x, int y, Move move) { // Author: Daniel - checks if a move is legal
 		// copies the board - in this function, we make the move, then check if the king
 		// is in check
-		Piece[][] boardCopy = (new ChessBoard(this)).getBoard();
+		ChessBoard newBoard = new ChessBoard(this);
+		Piece[][] boardCopy = newBoard.getBoard();
 
 		// emulate the move
 		boardCopy[x][y] = null;
@@ -198,20 +195,14 @@ public class ChessBoard {
 			boardCopy[move.getCapture().first][move.getCapture().second] = null;
 		}
 		boardCopy[move.getEnd().first][move.getEnd().second] = board[x][y];
+		if(move.getPiece() instanceof King) {
+			// update king pos in the new board
+			newBoard.kingPos[newBoard.getSide()? 1: 0] = move.getEnd();
+		}
 
 		// find location of king
-		int kingX = -1;
-		int kingY = -1;
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				// checks if piece exists, is a king, and is same color as turn
-				if (boardCopy[i][j] != null && boardCopy[i][j] instanceof King
-						&& boardCopy[i][j].getColor() == this.side) {
-					kingX = i;
-					kingY = j;
-				}
-			}
-		}
+		int kingX = newBoard.kingPos[this.side? 1: 0].first;
+		int kingY = newBoard.kingPos[this.side? 1: 0].second;
 
 		// check if king is in check after piece move
 		boolean leave = false;
@@ -262,6 +253,15 @@ public class ChessBoard {
     	board[7][6] = new Knight(false);
     	board[7][7] = new Rook(false);
     }
+    
+    public ArrayList<Move> convertIntPairToMoves(ArrayList<int[]> toConvert, int x, int y) {
+    	ArrayList<Move> toReturn = new ArrayList<Move>();
+    	for (int[] i : toConvert) {
+    		toReturn.add(new Move(board[x][y], x, y, i[0], i[1]));
+    	}
+    	
+    	return toReturn;
+    }
 	/**
 	 * Get all the possible legal moves of piece on position (x, y).
 	 * 
@@ -274,7 +274,347 @@ public class ChessBoard {
 																		// moves
 		ArrayList<Move> legalMoves = new ArrayList<>();
 		ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
+		
+		// Author: Daniel - checks if a piece is pinned or not, and generates its moveset accordingly 
+		if (!(board[x][y] instanceof King) && !(board[x][y] instanceof Pawn) && !checked(this.side)) {
+			// check distance from king
+			int xDiff = x - kingPos[this.side ? 1 : 0].first;
+			int yDiff = y - kingPos[this.side ? 1 : 0].second;
+			// piece on same bottom right top left diagonal as king
+			if (xDiff == yDiff) {
+				// possible pinning piece is to the down and right of the bishop
+				if (xDiff > 0) {
+					// check for pin
+					for (int i = 1; i < xDiff; i++) {
+						// piece isn't pinned, just return its moveset
+						if (board[x - i][y - i] != null) {
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// piece may be pinned, need to check for pinning piece
+					for (int i = 1; i < 8; i++) {
+						if (x + i >= 8 || y + i >= 8) {
+							break;
+						}
+						
+						// only bishop or queen can pin diagonally
+						if (board[x + i][y + i] instanceof Bishop || board[x + i][y + i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x + i][y + i].getColor() != this.side) {
+								// generate moves with bottom right top left pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x + i][y + i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				} else { // possible pinning piece is to the up and left of the bishop
+					// check for pin
+					for (int i = 1; i < xDiff * -1; i++) {
+						// piece isn't pinned, just return its moveset
+						if (board[x + i][y + i] != null) {
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// piece may be pinned, need to check for pinning piece
+					for (int i = 1; i < 8; i++) {
+						if (x - i < 0 || y - i < 0) {
+							break;
+						}
+						
+						// only bishop or queen can pin diagonally
+						if (board[x - i][y - i] instanceof Bishop || board[x - i][y - i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x - i][y - i].getColor() != this.side) {
+								// generate moves with bottom right top left pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x - i][y - i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				}
+			} else if (xDiff == -yDiff) { // Bottom Left to Top Right diagonal
+				// possible pinning piece is to the down and left of the bishop
+				if (xDiff > 0) {
+					// check for pin
+					for (int i = 1; i < xDiff; i++) {
+						// piece isn't pinned, just return its moveset
+						if (board[x - i][y + i] != null) {
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// piece may be pinned, need to check for pinning piece
+					for (int i = 1; i < 8; i++) {
+						if (x + i >= 8 || y - i < 0) {
+							break;
+						}
+						
+						// only bishop or queen can pin diagonally
+						if (board[x + i][y - i] instanceof Bishop || board[x + i][y - i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x + i][y - i].getColor() != this.side) {
+								// generate moves with bottom left top right pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x + i][y - i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				} else { // possible pinning piece is to the up and right of the piece
+					// check for pin
+					for (int i = 1; i < xDiff * -1; i++) {
+						// piece isn't pinned, just return its moveset
+						if (board[x + i][y - i] != null) {
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// piece may be pinned, need to check for pinning piece
+					for (int i = 1; i < 8; i++) {
+						if (x - i < 0 || y + i >= 8) {
+							break;
+						}
+						
+						// only bishop or queen can pin diagonally
+						if (board[x - i][y + i] instanceof Bishop || board[x - i][y + i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x - i][y + i].getColor() != this.side) {
+								// generate moves with bottom left top rightpin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x - i][y + i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				}
+			} else if (xDiff == 0) { // vertical pin
+				if (yDiff > 0) { // pinning piece is below pinned piece
+					for (int i = 1; i < yDiff; i++) {
+						if (board[x][y - i] != null) {
+							// no pin
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// possible pin
+					for (int i = 1; i < 8; i++) {
+						if (y + i >= 8) {
+							break;
+						}
+						
+						// only rook or queen can pin vertically
+						if (board[x][y + i] instanceof Rook || board[x][y + i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x][y + i].getColor() != this.side) {
+								// generate moves with vertical pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x][y + i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				} else { // pinning piece is above pinned piece
+					for (int i = 1; i < yDiff; i++) {
+						if (board[x][y + i] != null) {
+							// no pin
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// possible pin
+					for (int i = 1; i < 8; i++) {
+						if (y - i < 0) {
+							break;
+						}
+						
+						// only rook or queen can pin vertically
+						if (board[x][y - i] instanceof Rook || board[x][y - i] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x][y - i].getColor() != this.side) {
+								// generate moves with vertical pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x][y - i] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				}
+			} else if (yDiff == 0) { // horizontal pin
+				if (xDiff > 0) { // pinning piece is to the right of pinned piece
+					for (int i = 1; i < xDiff; i++) {
+						if (board[x - i][y] != null) {
+							// no pin
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// possible pin
+					for (int i = 1; i < 8; i++) {
+						if (x + i >= 8) {
+							break;
+						}
+						
+						// only rook or queen can pin vertically
+						if (board[x + i][y] instanceof Rook || board[x + i][y] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x + i][y].getColor() != this.side) {
+								// generate moves with horizontal pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x + i][y] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				} else { // pinning piece is to the left of pinned piece
+					for (int i = 1; i < xDiff; i++) {
+						if (board[x + i][y] != null) {
+							// no pin
+							return convertIntPairToMoves(moves, x, y);
+						}
+					}
+					
+					// possible pin
+					for (int i = 1; i < 8; i++) {
+						if (x - i < 0) {
+							break;
+						}
+						
+						// only rook or queen can pin vertically
+						if (board[x - i][y] instanceof Rook || board[x - i][y] instanceof Queen) {
+							// pinning piece is not on our side
+							if (board[x - i][y].getColor() != this.side) {
+								// generate moves with horizontal pin, convert into ArrayList of moves
+								if (board[x][y] instanceof Bishop) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Knight) {
+									return new ArrayList<Move>();
+								} else if (board[x][y] instanceof Rook) {
+									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
+								} else if (board[x][y] instanceof Queen) {
+									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
+								}
+							}
+						}
+						
+						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+						if (board[x - i][y] != null) {
+							break;
+						}
+					}
+					
+					// no pin, return normal moveset
+					return convertIntPairToMoves(moves, x, y);
+				}
+			} else {
+				// piece is not on the same diagonal, rank, or file as the king, so it cannot be pinned
+				return convertIntPairToMoves(moves, x, y);
+			}
+		}
+
 		// castle logic, special. Author: Kevin
+		try {
 		if (board[x][y] instanceof King) {
 			if (board[x][y].getFirstMove()) {
 				boolean validCastle = true;
@@ -282,7 +622,7 @@ public class ChessBoard {
 					if (board[x][y + 3].getFirstMove()) {
 						for (int i = y; i < y + 3; i++) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))) {
+									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
 								validCastle = true;
 							} else {
 								validCastle = false;
@@ -298,7 +638,7 @@ public class ChessBoard {
 					if (board[x][y - 4].getFirstMove()) {
 						for (int i = y; i > y - 4; i--) {
 							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][i], x, y, x, i)))) {
+									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
 								validCastle = true;
 							} else {
 								validCastle = false;
@@ -311,7 +651,9 @@ public class ChessBoard {
 				}
 			}
 		}
-
+		} catch (Exception e) {
+			
+		}
 		for (int[] move : moves) {
 			// create the move object
 			Move toAdd;
@@ -386,20 +728,46 @@ public class ChessBoard {
 		return allLegalMoves.get(rnd);
 	}
 
-	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
-		boolean middlegame = true;
-		for (Piece[] x : board) {
-			for (Piece y : x) {
-				if (y instanceof Queen) {
-					middlegame = false;
+	public ArrayList<Move> getAllLegalMoves() {
+		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] != null && board[i][j].getColor() == this.side) {
+					ArrayList<Move> temp = getLegalMoves(i, j, true);
+					for (Move x : temp) {
+						if (x instanceof PromotionMove) {
+							((PromotionMove) x).setPromoteTo(new Queen(this.side));
+						}
+						allLegalMoves.add(x);
+					}
 				}
 			}
 		}
 
+		return allLegalMoves;
+	}
+
+	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
+		boolean endgame = true;
+		boolean endgame2 = true;
+		for (Piece[] x : board) {
+			for (Piece y : x) {
+				if (y instanceof Queen) {
+					endgame = false;
+				}
+				
+				if (y instanceof Bishop || y instanceof Knight || y instanceof Rook) {
+					endgame2 = false;
+				}
+			}
+		}
+		
+		endgame = endgame || endgame2;
+
 		int points = 0;
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
-				if (board[row][column] != null && board[row][column].getColor() == this.side) {
+				if (board[row][column] != null && board[row][column].getColor()) {
 					Piece piece = board[row][column];
 					if (piece instanceof Pawn) {
 						points += 100;
@@ -418,7 +786,7 @@ public class ChessBoard {
 						points += Eval.queen[row][column];
 					} else if (piece instanceof King) {
 						points += 20000;
-						if (middlegame) {
+						if (!endgame) {
 							points += Eval.kingmid[row][column];
 						} else {
 							points += Eval.kingend[row][column];
@@ -431,7 +799,7 @@ public class ChessBoard {
 		Eval.flip();
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
-				if (board[row][column] != null && board[row][column].getColor() != this.side) {
+				if (board[row][column] != null && !board[row][column].getColor()) {
 					Piece piece = board[row][column];
 					if (piece instanceof Pawn) {
 						points -= 100;
@@ -450,7 +818,7 @@ public class ChessBoard {
 						points -= Eval.queen[row][column];
 					} else if (piece instanceof King) {
 						points -= 20000;
-						if (middlegame) {
+						if (!endgame) {
 							points -= Eval.kingmid[row][column];
 						} else {
 							points -= Eval.kingend[row][column];
@@ -459,22 +827,13 @@ public class ChessBoard {
 				}
 			}
 		}
-
-		return (this.side) ? points : (points * -1);
+		Eval.flip();
+		return points;
 	}
 
 	public boolean checked(boolean color) { // author: Benjamin, return false if king's not checked, return true if
 											// king's checked
-		int kx = 0, ky = 0;
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (board[i][j] != null && board[i][j].getColor() == color
-						&& board[i][j].getIconFile().equals(board[i][j].getColor() ? "k_w.png" : "k_b.png")) {
-					kx = i;
-					ky = j;
-				}
-			}
-		}
+		int kx = kingPos[color? 1: 0].first, ky = kingPos[color? 1: 0].second;
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (board[i][j] != null && board[i][j].getColor() != color) {
@@ -510,12 +869,20 @@ public class ChessBoard {
 		ArrayList<unMove> moves = undoMoveStack.remove(last);
 		moveRule = undoMoveRuleStack.remove(last);
 		enPassant = undoEnPassantStack.remove(last);
+		previousMoves.remove(last);
 		side = !side;
 		for (int i = moves.size() - 1; i >= 0; i--) {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
-			board[location.first][location.second] = piece; 
+			if (piece != null) {
+				piece.undoMoveCounter();
+			}
+			board[location.first][location.second] = piece;
+			// undo the position of king
+			if(piece instanceof King) {
+				kingPos[piece.getColor()? 1: 0] = location;
+			}
 		}
 	}
 	
@@ -557,7 +924,7 @@ public class ChessBoard {
 	}
 	
 	public ArrayList<Pair> piecesThreatened(Pair pos, boolean color) {
-		ArrayList<Pair> toReturn = new ArrayList<Pair>();
+		ArrayList<Pair> toReturn = new ArrayList<>();
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
 				if (board[row][column] != null && board[row][column].getColor() == color) {
@@ -1021,5 +1388,9 @@ public class ChessBoard {
     
     public void setLoadingSimulation(boolean loadingSimulation) {
     	this.loadingSimulation = loadingSimulation;
+    }
+    
+    public ArrayList<Move> getPreviousMoves() {
+    	return previousMoves;
     }
 }

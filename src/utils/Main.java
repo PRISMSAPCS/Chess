@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
-import utils.bot.MinMaxBot;
+import utils.bot.*;
 
 public class Main {
 	/**
@@ -22,6 +22,7 @@ public class Main {
 			Move move = moveSource[board.getSide()? 1: 0].getMove();
 			board.submitMove(move);
 			gui.applyMove(move);
+			
 			if(board.gameOver(board.getSide())>0) {
 				//test if game over
 				if(board.gameOver(board.getSide()) == 1) {
@@ -84,7 +85,7 @@ public class Main {
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 			GUI gui = new GUI(board, true);
-			normalGame(board, gui, new MinMaxBot[] {new MinMaxBot(board), new MinMaxBot(board)});
+			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), new kzbot(board, 4)});
 		}
     }
 }
