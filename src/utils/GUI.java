@@ -129,6 +129,7 @@ public class GUI implements CanGetMove {
         if (capture != null) {
             backgroundPanel[capture.first][capture.second].removeAll();
         }
+        backgroundPanel[end.first][end.second].removeAll();
         ImagePanel endLabel = new ImagePanel("resource/" + board.getBoard(end).getIconFile());
         endLabel.setOpaque(false);
         backgroundPanel[end.first][end.second].add(endLabel);
