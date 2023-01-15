@@ -32,6 +32,7 @@ public class ChessBoard {
 	private ArrayList<ArrayList<unMove>> undoMoveStack;
 	private ArrayList<Integer> undoMoveRuleStack;
 	private ArrayList<Pair> undoEnPassantStack;
+	private ArrayList<Move> previousMoves;
     private boolean proceed = false;
     private boolean loadingSimulation = false;
 
@@ -102,6 +103,7 @@ public class ChessBoard {
 	 * @param theMove Move object being performed
 	 */
 	public void submitMove(Move theMove) {
+		previousMoves.add(theMove);
 		ChessBoard oldBoard = new ChessBoard(this);
 		// update move rule
 		undoMoveRuleStack.add(moveRule);
@@ -866,6 +868,7 @@ public class ChessBoard {
 		ArrayList<unMove> moves = undoMoveStack.remove(last);
 		moveRule = undoMoveRuleStack.remove(last);
 		enPassant = undoEnPassantStack.remove(last);
+		previousMoves.remove(last);
 		side = !side;
 		for (int i = moves.size() - 1; i >= 0; i--) {
 			unMove toUndo = moves.get(i);
@@ -1320,5 +1323,9 @@ public class ChessBoard {
     
     public void setLoadingSimulation(boolean loadingSimulation) {
     	this.loadingSimulation = loadingSimulation;
+    }
+    
+    public ArrayList<Move> getPreviousMoves() {
+    	return previousMoves;
     }
 }
