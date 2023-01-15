@@ -33,6 +33,17 @@ public class ChessBoard {
 	private ArrayList<Integer> undoMoveRuleStack;
 	private ArrayList<Pair> undoEnPassantStack;
 	private ArrayList<Move> previousMoves;
+	private ArrayList<Long> previousZobrists;
+	
+	private long zobristKey;
+	private long[] zobristArray;
+	static final int BLACK_MOVE = 768;
+	static final int BLACK_SHORT = 769;
+	static final int BLACK_LONG = 770;
+	static final int WHITE_SHORT = 771;
+	static final int WHITE_LONG = 772;
+	static final int EN_PASSANT = 773;
+	
     private boolean proceed = false;
     private boolean loadingSimulation = false;
 
@@ -69,6 +80,9 @@ public class ChessBoard {
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
 		this.previousMoves = new ArrayList<Move>();
+		this.previousZobrists = new ArrayList<Long>();
+		this.zobristArray = getZobristArray();
+		this.zobristKey = initializeZobristKey();
 	}
 
 	public ChessBoard(ChessBoard other) {
@@ -88,6 +102,9 @@ public class ChessBoard {
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
 		this.previousMoves = new ArrayList<Move>();
+		this.previousZobrists = new ArrayList<Long>();
+		this.zobristArray = getZobristArray();
+		this.zobristKey = other.getZobristKey();
 	}
 
 	public void enableLogging(String whiteName, String blackName) {
@@ -106,6 +123,7 @@ public class ChessBoard {
 	 */
 	public void submitMove(Move theMove) {
 		previousMoves.add(theMove);
+		previousZobrists.add(zobristKey);
 		ChessBoard oldBoard = new ChessBoard(this);
 		// update move rule
 		undoMoveRuleStack.add(moveRule);
@@ -126,17 +144,24 @@ public class ChessBoard {
 				kingPos[this.side? 0: 1] = new Pair(-1, -1);
 			}
 			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
+			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getCapture().first, theMove.getCapture().second)];
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
 		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
+		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd().first, theMove.getEnd().second)];
+		
 		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
+		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart().first, theMove.getStart().second)];
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
 		if (theMove.getPiece2() != null) {
 			toAdd.add(new unMove(board[theMove.getEnd2().first][theMove.getEnd2().second], theMove.getEnd2()));
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
+			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd2().first, theMove.getEnd2().second)];
+
 			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
+			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart2().first, theMove.getStart2().second)];
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
 		
@@ -145,6 +170,7 @@ public class ChessBoard {
 		// check for promotion
 		// @author mqcreaple
 		if (theMove instanceof PromotionMove) {
+			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd().first, theMove.getEnd().second)];
 			if (((PromotionMove) theMove).getPromoteTo() != null) {
 				// automatically select the piece
 				board[theMove.getEnd().first][theMove.getEnd().second] = ((PromotionMove) theMove).getPromoteTo();
@@ -153,23 +179,36 @@ public class ChessBoard {
 				((PromotionMove) theMove).setPromoteTo(newPiece);
 				board[theMove.getEnd().first][theMove.getEnd().second] = newPiece;
 			}
+			
+			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd().first, theMove.getEnd().second)];
 		}
 		if (logging)
 			logger.logMove(theMove, oldBoard);
 
 		// set enPassant array
 		undoEnPassantStack.add(enPassant);
+		if (enPassant.second != -1) {
+			zobristKey ^= zobristArray[EN_PASSANT + enPassant.second];
+		}
 		enPassant.first = -1;
 		enPassant.second = -1;
 		if (theMove.getPiece() instanceof Pawn && ((Pawn) theMove.getPiece()).getFirstMove() == true
 				&& (theMove.getEnd().first == 3 || theMove.getEnd().first == 4)) {
 			enPassant.first = theMove.getEnd().first;
 			enPassant.second = theMove.getEnd().second;
+			zobristKey ^= zobristArray[EN_PASSANT + enPassant.second];
 		}
 
-		// set the pawn's firstMove field to false
+		// set the piece's firstMove field to false
+		boolean[] beforeMove = castlingRights();
 		theMove.getPiece().updateMoveCounter();
 		if (theMove.getPiece2() != null) theMove.getPiece2().updateMoveCounter();
+		boolean[] afterMove = castlingRights();
+		for (int i = 0; i < 4; i++) {
+			if (beforeMove[i] != afterMove[i]) {
+				zobristKey ^= zobristArray[BLACK_SHORT + i];
+			}
+		}
 		
 		// update kingPos array
 		if (theMove.getPiece() instanceof King) {
@@ -178,6 +217,7 @@ public class ChessBoard {
 		
 		// change side
 		this.side = !this.side;
+		zobristKey ^= zobristArray[BLACK_MOVE];
 		//// System.out.println(kingPos[0].first + " " + kingPos[0].second);
 
 		//// if(this.loadingSimulation == false)
@@ -870,6 +910,7 @@ public class ChessBoard {
 		ArrayList<unMove> moves = undoMoveStack.remove(last);
 		moveRule = undoMoveRuleStack.remove(last);
 		enPassant = undoEnPassantStack.remove(last);
+		zobristKey = previousZobrists.remove(last);
 		previousMoves.remove(last);
 		side = !side;
 		for (int i = moves.size() - 1; i >= 0; i--) {
@@ -1272,7 +1313,84 @@ public class ChessBoard {
 		}
 		return moves;
 	}
-
+	
+	private long[] getZobristArray() {
+		Random randGen = new Random(1283717); // set seed to make it deterministic
+		long[] toReturn = new long[781];
+		for (int i = 0; i < 781; i++) {
+			toReturn[i] = randGen.nextLong();
+		}
+		return toReturn;
+	}
+	
+	private long initializeZobristKey() {
+		long toReturn = 0;
+		for (int r = 0; r < 8; r++) {
+			for (int c = 0; c < 8; c++) {
+				if (board[r][c] != null) {
+					toReturn ^= zobristArray[pieceToZobristIndex(r, c)];
+				}
+			}
+		}
+		
+		toReturn ^= zobristArray[BLACK_SHORT];
+		toReturn ^= zobristArray[BLACK_LONG];
+		toReturn ^= zobristArray[WHITE_SHORT];
+		toReturn ^= zobristArray[WHITE_LONG];
+		
+		return toReturn;
+	}
+	
+	private int pieceToZobristIndex(int r, int c) {
+		int index = 0;
+		Piece piece = board[r][c];
+		
+		if (piece instanceof Pawn) {
+			;
+		} else if (piece instanceof Knight) {
+			index += 1;
+		} else if (piece instanceof Bishop) {
+			index += 2;
+		} else if (piece instanceof Rook) {
+			index += 3;
+		} else if (piece instanceof Queen) {
+			index += 4;
+		} else if (piece instanceof King) {
+			index += 5;
+		}
+		
+		if (piece.getColor()) {
+			index += 6;
+		}
+		
+		index *= 64;
+		
+		index += r * 8 + c;
+		
+		return index;
+	}
+	
+	private boolean[] castlingRights() {
+		boolean blackKing = board[7][4] instanceof King && board[7][4].getColor() == false && board[7][4].getFirstMove();
+		boolean blackShortRook = board[7][7] instanceof Rook && board[7][7].getColor() == false && board[7][7].getFirstMove();
+		boolean blackLongRook = board[7][0] instanceof Rook && board[7][0].getColor() == false && board[7][0].getFirstMove();
+		boolean whiteKing = board[0][4] instanceof King && board[0][4].getColor() == true && board[0][4].getFirstMove();
+		boolean whiteShortRook = board[0][7] instanceof Rook && board[0][7].getColor() == true && board[0][7].getFirstMove();
+		boolean whiteLongRook = board[0][0] instanceof Rook && board[0][0].getColor() == true && board[0][0].getFirstMove();
+		
+		boolean[] toReturn = new boolean[4];
+		toReturn[0] = blackKing && blackShortRook;
+		toReturn[1] = blackKing && blackLongRook;
+		toReturn[2] = whiteKing && whiteShortRook;
+		toReturn[3] = whiteKing && whiteLongRook;
+		
+		return toReturn;
+	}
+	
+	public long getZobristKey() {
+		return zobristKey;
+	}
+	
 	boolean isNumber(char c) {
 		if (c >= '0' && c <= '9')
 			return true;

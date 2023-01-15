@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.Scanner;
-
 import utils.*;
 
 public class DanielBot extends ChessBot {
@@ -25,6 +24,7 @@ public class DanielBot extends ChessBot {
 
 	@Override
 	public Move getMove() {
+		System.out.println(super.getBoard().getZobristKey());
 		if (inBook && bookMove()) {
 			return bestMove;
 		} else {
@@ -203,7 +203,7 @@ public class DanielBot extends ChessBot {
 			PGNString = PGNString.substring(0, PGNString.length() - 1);
 		}
 		
-		File file = new File("src//utils//bot//DanielBotResources//final.pgn");
+		File file = new File("src//utils//bot//DanielBotResources//test.pgn");
 		ArrayList<String> possibleContinuations = new ArrayList<String>();
 		
 		try {
