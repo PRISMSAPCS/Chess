@@ -664,6 +664,8 @@ public class ChessBoard {
 				kingMovePairs.add(new Pair(kingMove[0], kingMove[1]));
 			}
 			Set<Pair> kingSet = new HashSet<Pair>(kingMovePairs);
+			Piece kingPiece = board[x][y];
+			board[x][y] = null;
 			for (int i = 0; i < 8; i++) {
 				for (int j = 0; j < 8; j++) {
 					Piece piece = board[i][j];
@@ -681,6 +683,7 @@ public class ChessBoard {
 					}
 				}
 			}
+			board[x][y] = kingPiece;
 			kingMovePairs.clear();
 			kingMovePairs.addAll(kingSet);
 			kingMoves.clear();
