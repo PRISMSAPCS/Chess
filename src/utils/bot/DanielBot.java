@@ -34,7 +34,7 @@ public class DanielBot extends ChessBot {
 	static final boolean useIterativeDeepening = true;
 	static final int depth = 4;
 	static final boolean useFixedDepthSearch = false;
-	static final int timeLimit = 10000;
+	static final int timeLimit = 250;
 	static final int mateScore = 50000;
 	static final boolean infiniteBook = true;
 	static final int bookLimit = 10;
@@ -169,7 +169,7 @@ public class DanielBot extends ChessBot {
 		// no legal moves
 		if (legalMoves.isEmpty()) {
 			if (boardCopy.checked(boardCopy.getSide())) { // no legal moves and checked? you're mated
-				return ((boardCopy.getSide()) ? -1 : 1) * (mateScore - plyFromRoot);
+				return -1 * (mateScore - plyFromRoot);
 			}
 			
 			// no legal moves and not checked? stalemate
