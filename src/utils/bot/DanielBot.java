@@ -11,20 +11,45 @@ import java.util.Scanner;
 import utils.*;
 
 public class DanielBot extends ChessBot {
+	class Entry {
+		public final long key;
+		public final int value;
+		public final Move move;
+		public final byte depth;
+		public final byte nodeType;
+		
+		public Entry(long Key, int Value, byte Depth, byte NodeType, Move Move) {
+			key = Key;
+			value = Value;
+			move = Move;
+			depth = Depth;
+			nodeType = NodeType;
+		}
+	}
+	static final int Exact = 0;
+	static final int LowerBound = 1;
+	static final int UpperBound = 2;
+	static final int lookupFailed = -1;
+	
+	Entry[] entries;
 	int evalMult;
 	int posCounter;
+	long startTime;
 	ChessBoard boardCopy;
 	Move bestMove;
+	boolean finishedSearching;
 	private boolean inBook;
 	public DanielBot(ChessBoard board, boolean side) {
 		super(board);
 		inBook = true;
 		evalMult = (side) ? 1 : -1;
+		entries = new Entry[64000];
 	}
 
 	@Override
 	public Move getMove() {
-		System.out.println(super.getBoard().getZobristKey());
+		startTime = System.currentTimeMillis();
+		finishedSearching = true;
 		if (inBook && bookMove()) {
 			return bestMove;
 		} else {
@@ -32,18 +57,47 @@ public class DanielBot extends ChessBot {
 		}
 		boardCopy = new ChessBoard(super.getBoard());
 		posCounter = 0;
-		miniMax(4, -100000, 100000, true, true);
-		System.out.println(posCounter);
+		miniMax(4, 0, -100000, 100000, true, true);
 		return bestMove;
+//		int depth = 2;
+//		Move toReturn = null;
+//		while (System.currentTimeMillis() - startTime < 5000) {
+//			finishedSearching = true;
+//			clearTT();
+//			miniMax(depth, 0, -100000, 100000, true, true);
+//			if (finishedSearching) toReturn = bestMove; 
+//			depth += 2;
+//		}
+//		System.out.print("Depth (ply): ");
+//		System.out.println(depth - 2);
+//		System.out.println(posCounter);
+//		return toReturn;
 	}
 	
-	private int miniMax(int depth, int alpha, int beta, boolean maximizingPlayer, boolean setBestMove) {
+	private int miniMax(int depth, int plyFromRoot, int alpha, int beta, boolean maximizingPlayer, boolean setBestMove) {
+//		if (System.currentTimeMillis() - startTime >= 5000) {
+//			finishedSearching = false;
+//			return 0;
+//		}
 		posCounter++;
+		int occurrences = 0;
+		for (long x : boardCopy.getPreviousZobrists()) {
+			if (boardCopy.getZobristKey() == x) {
+				occurrences++;
+			}
+		}
+		
+		for (long x : super.getBoard().getPreviousZobrists()) {
+			if (boardCopy.getZobristKey() == x) {
+				occurrences++;
+			}
+		}
+		if (occurrences >= 2) return 0;
 		if (depth == 0) return quietSearch(alpha, beta, maximizingPlayer);
 		ArrayList<Move> legalMoves = orderMoves(boardCopy.getAllLegalMoves());
 		if (legalMoves.isEmpty()) {
 			if (boardCopy.checked(boardCopy.getSide())) {
-				return ((boardCopy.getSide()) ? -1 : 1) * (50000 + depth); 
+				return ((boardCopy.getSide()) ? -1 : 1) * (50000 - plyFromRoot); 
 			}
 			return 0;
 		}
@@ -51,29 +105,38 @@ public class DanielBot extends ChessBot {
 			int max = -1000000;
 			for (Move x : legalMoves) {
 				boardCopy.submitMove(x);
-				int eval = miniMax(depth - 1, alpha, beta, false, false) * evalMult;
+				int eval = miniMax(depth - 1, plyFromRoot + 1, alpha, beta, false, false) * evalMult;
+				if (finishedSearching == false) return 0;
 				boardCopy.undoMove();
-				if (max <= eval) {
+				if (max < eval) {
 					max = eval;
 					if (setBestMove) { bestMove = x; }
 				}
 				
-				if (max > beta) break;
+				if (max > beta) {
+					storeEvaluationTT(depth, plyFromRoot, max * evalMult, LowerBound, x);
+					return beta * evalMult;
+				}
 				alpha = Math.max(max, alpha);
 			}
+			
+			//tt.storeEvaluation(depth, plyFromRoot, max * evalMult, Exact, )
 			
 			return max * evalMult;
 		} else {
 			int min = 1000000;
 			for (Move x : legalMoves) {
 				boardCopy.submitMove(x);
-				int eval = miniMax(depth - 1, alpha, beta, true, false) * evalMult;
+				int eval = miniMax(depth - 1, plyFromRoot + 1, alpha, beta, true, false) * evalMult;
+				if (finishedSearching == false) return 0;
 				boardCopy.undoMove();
-				if (min >= eval) {
+				if (min > eval) {
 					min = eval;
 				}
 				
-				if (min < alpha) break;
+				if (min < alpha) {
+					return alpha * evalMult;
+				}
 				beta = Math.min(min, beta);
 			}
 			
@@ -130,7 +193,6 @@ public class DanielBot extends ChessBot {
 	
 	private boolean bookMove() {
 		ArrayList<Move> moves = super.getBoard().getPreviousMoves();
-		System.out.println(moves.size());
 		ChessBoard b = new ChessBoard();
 		String PGNString = "";
 
@@ -159,39 +221,36 @@ public class DanielBot extends ChessBot {
 				if (x.getPiece() instanceof Queen) PGNString += "Q";
 				if (x.getPiece() instanceof King) PGNString += "K";
 				
+				char rankReference = ' ';
+				char fileReference = ' ';
+				
 				for (int i = 0; i < 8; i++) {
-					if (i != x.getStart().second) {
-						Piece toCheck = b.getBoard()[x.getStart().first][i];
-						if (toCheck == null) continue;
-						if (toCheck.getClass().equals(x.getPiece().getClass()) && toCheck.getColor() == x.getPiece().getColor()) {
-							ArrayList<int[]> moveset = toCheck.getMoveSet(b.getBoard(), x.getStart().first, i);
-							for (int[] finalSquare : moveset) {
-								if ((new Pair(finalSquare[0], finalSquare[1])).equals(x.getEnd())) {
-									PGNString += Character.toString(x.getStart().getCol());
+					for (int j = 0; j < 8; j++) {
+						if (i != x.getStart().first || j != x.getStart().second) {
+							Piece toCheck = b.getBoard()[i][j];
+							if (toCheck == null) continue;
+							if (toCheck.getClass().equals(x.getPiece().getClass()) && toCheck.getColor() == x.getPiece().getColor()) {
+								ArrayList<int[]> moveset = toCheck.getMoveSet(b.getBoard(), i, j);
+								for (int[] finalSquare : moveset) {
+									if ((new Pair(finalSquare[0], finalSquare[1])).equals(x.getEnd())) {
+										if (i == x.getStart().first) {
+											fileReference = x.getStart().getCol();
+										} else if (j == x.getStart().second) {
+											rankReference = x.getStart().getRow();
+										} else {
+											fileReference = x.getStart().getCol();
+										}
+									}
 								}
 							}
 						}
 					}
 				}
 				
-				for (int i = 0; i < 8; i++) {
-					if (i != x.getStart().first) {
-						Piece toCheck = b.getBoard()[i][x.getStart().second];
-						if (toCheck == null) continue;
-						if (toCheck.getClass().equals(x.getPiece().getClass()) && toCheck.getColor() == x.getPiece().getColor()) {
-							ArrayList<int[]> moveset = toCheck.getMoveSet(b.getBoard(), i, x.getStart().second);
-							for (int[] finalSquare : moveset) {
-								if ((new Pair(finalSquare[0], finalSquare[1])).equals(x.getEnd())) {
-									PGNString += Character.toString(x.getStart().getRow());
-								}
-							}
-						}
-					}
-				}
+				if (fileReference != ' ') PGNString += Character.toString(fileReference);
+				if (rankReference != ' ') PGNString += Character.toString(rankReference);
 
-                if (captured) {
-                	PGNString += "x";
-                }
+                if (captured) PGNString += "x";
                 
                 PGNString += x.getEnd().toChessNote();
 			}
@@ -403,8 +462,6 @@ public class DanielBot extends ChessBot {
 					}
 				}
 			}
-			System.out.print(endRank);
-			System.out.println(endFile);
 			move = new Move(b.getBoard()[startRank][startFile], startRank, startFile, endRank, endFile);
 		}
 		
@@ -413,7 +470,19 @@ public class DanielBot extends ChessBot {
 	}
 	
 	private int quietSearch(int alpha, int beta, boolean maximizingPlayer) {
-		return boardCopy.evaluate();
+		int occurrences = 0;
+		for (long x : boardCopy.getPreviousZobrists()) {
+			if (boardCopy.getZobristKey() == x) {
+				occurrences++;
+			}
+		}
+		
+		for (long x : super.getBoard().getPreviousZobrists()) {
+			if (boardCopy.getZobristKey() == x) {
+				occurrences++;
+			}
+		}
+		return (occurrences >= 2) ? 0 : boardCopy.evaluate();
 //		posCounter++;
 //		ArrayList<Move> legalMoves = pruneNonCaptures(boardCopy.getAllLegalMoves());
 //		if (legalMoves.isEmpty()) return boardCopy.evaluate();
@@ -466,6 +535,58 @@ public class DanielBot extends ChessBot {
 		}
 		
 		return temp;
+	}
+	
+	private void clearTT() {
+		for (int i = 0; i < entries.length; i++) {
+			entries[i] = null;
+		}
+	}
+	
+	private int indexTT() {
+		return Math.abs((int) (boardCopy.getZobristKey() % 64000));
+	}
+	
+	public int lookUpEvaluationTT(int depth, int plyFromRoot, int alpha, int beta) {
+		Entry entry = entries[indexTT()];
+		if (entry != null && entry.key == boardCopy.getZobristKey()) {
+			if (entry.depth >= depth) {
+				int score = correctMateScoreForRetrieval(entry.value, plyFromRoot);
+				if (entry.nodeType == Exact) {
+					return score;
+				}
+				
+				if (entry.nodeType == UpperBound && score < alpha) {
+					return score;
+				}
+				
+				if (entry.nodeType == LowerBound && score > beta) {
+					return score;
+				}
+			}
+		}
+		
+		return lookupFailed;
+	}
+	
+	public void storeEvaluationTT(int depth, int numPlySearched, int eval, int evalType, Move move) {
+		entries[indexTT()] = new Entry(boardCopy.getZobristKey(), correctMateScoreForStorage(eval, numPlySearched), (byte) depth, (byte) evalType, move);
+	}
+	
+	public int correctMateScoreForStorage(int score, int numPlySearched) {
+		if (score > 30000 || score < -30000) {
+			return (score * (int) Math.signum(score) + numPlySearched) * (int) Math.signum(score);
+		}
+		
+		return score;
+	}
+	
+	public int correctMateScoreForRetrieval(int score, int numPlySearched) {
+		if (score > 30000 || score < -30000) {
+			return (score * (int) Math.signum(score) - numPlySearched) * (int) Math.signum(score);
+		}
+		
+		return score;
 	}
 	
 //	private int miniMax(int depth, boolean maximizingPlayer, boolean setBestMove) {

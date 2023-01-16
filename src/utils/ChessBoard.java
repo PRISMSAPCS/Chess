@@ -791,6 +791,7 @@ public class ChessBoard {
 	public int evaluate() { // Author: Daniel - evaluates a position, returns centipawn advantage
 		boolean endgame = true;
 		boolean endgame2 = true;
+		int occurrences = 0;
 		for (Piece[] x : board) {
 			for (Piece y : x) {
 				if (y instanceof Queen) {
@@ -799,11 +800,12 @@ public class ChessBoard {
 				
 				if (y instanceof Bishop || y instanceof Knight || y instanceof Rook) {
 					endgame2 = false;
+					occurrences++;
 				}
 			}
 		}
 		
-		endgame = endgame || endgame2;
+		endgame = (endgame && occurrences <= 6) || endgame2;
 
 		int points = 0;
 		for (int row = 0; row < 8; row++) {
@@ -891,6 +893,14 @@ public class ChessBoard {
 
 	public int gameOver(boolean color) { // author: Benjamin, return 0 for not game over, 1 for checkmate, and 2 for
 											// stalemate
+		int occurrences = 0;
+		for (long x : previousZobrists) {
+			if (x == getZobristKey()) occurrences++;
+		}
+		
+		if (occurrences >= 2) {
+			return 2;
+		}
 		if (moveRule >= 50) {
 			return 2;
 		}
@@ -1385,6 +1395,10 @@ public class ChessBoard {
 		toReturn[3] = whiteKing && whiteLongRook;
 		
 		return toReturn;
+	}
+	
+	public ArrayList<Long> getPreviousZobrists() {
+		return previousZobrists;
 	}
 	
 	public long getZobristKey() {
