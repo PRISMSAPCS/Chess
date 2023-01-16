@@ -67,7 +67,7 @@ public class Main {
 		}
 	}
     public static void main(String[] args) throws InterruptedException {
-        JList<String> list = new JList<>(new String[]{"Play Game", "Simulate Game", "Train Bot"});
+        JList<String> list = new JList<>(new String[]{"Play Game", "Simulate Game", "Train Bot", "Play Against Bot As White", "Play Against Bot As Black"});
         while(list.getSelectedValue() == null) {
             JOptionPane.showInputDialog(null, list, "Choose the game mode", JOptionPane.QUESTION_MESSAGE);
         }
@@ -79,13 +79,19 @@ public class Main {
         } else if(list.getSelectedValue().equals("Simulate Game")) {
 			GUI gui = new GUI(board, false);
         	replayGame(board, gui, "./log.pgn");
-        } else {
+        } else if (list.getSelectedValue().equals("Train Bot")){
 			//* USAGE:
 			//* 1. remove comment of the following code
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
-			GUI gui = new GUI(board, false);
+			GUI gui = new GUI(board, true);
 			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), new DanielBot(board, true)});
+		} else if (list.getSelectedValue().equals("Play Against Bot As White")){
+			GUI gui = new GUI(board, false);
+			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), gui});
+		} else if (list.getSelectedValue().equals("Play Against Bot As Black")){
+			GUI gui = new GUI(board, false);
+			normalGame(board, gui, new CanGetMove[] {gui, new DanielBot(board, true)});
 		}
     }
 }
