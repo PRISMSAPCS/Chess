@@ -44,7 +44,7 @@ public class kzbot extends ChessBot{
         return bo.getAllLegalMoves();
     }
 
-    private thing getBestMove(ChessBoard bo, int d){
+    private thing minimax(ChessBoard bo, int d){
 
             ArrayList<Move> moveArray = new ArrayList<>();
             moveArray = getAllLegal(bo);
@@ -97,6 +97,61 @@ public class kzbot extends ChessBot{
         return new thing(bestMove, hiscore);
     }
     
+
+    private thing getBestMove(ChessBoard bo, int d){
+
+        ArrayList<Move> moveArray = new ArrayList<>();
+        moveArray = getAllLegal(bo);
+
+    int hiscoreIndex = 0;
+    int hiscore = 0;
+    int temp = 0;
+    int s = 0;
+
+    thing recursed = new thing(null, 0);
+
+    for(int i =0; i<moveArray.size(); i++){
+        ChessBoard b2 = new ChessBoard(bo);
+
+        b2.submitMove(moveArray.get(i));
+
+        if(d > 1){
+            //temp = (b2.evaluate() * s) - getEnemyBestMove(b2, d-1).v;
+            recursed = getBestMove(b2, d-1);
+            if (recursed == null){
+                continue;
+            }
+            temp = recursed.v;
+        }else{
+
+            if(b2.getSide()){
+                s = -1;
+            }else{
+                s = 1;
+                //multiplier for side
+            }
+            temp = b2.evaluate() * s;
+        }
+
+        if((temp > hiscore)){ 
+            hiscore = temp;
+            hiscoreIndex = i;
+        }/*else if(temp == hiscore && rand.nextInt(3)==1){//slight randomization here, quick fix, needs to be revamped.
+            hiscoreIndex = i;
+        }*/
+    }
+
+    Move bestMove = null;
+    try{
+        bestMove = moveArray.get(hiscoreIndex);
+    }catch(Exception e){
+        return null;
+        //bestMove = null;
+    }
+    return new thing(bestMove, hiscore);
+}
+
+
     public Move getMove(){
         Move finalMove = null;
         ChessBoard b1 = new ChessBoard(super.getBoard());
