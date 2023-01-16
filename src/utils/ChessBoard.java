@@ -670,12 +670,7 @@ public class ChessBoard {
 				for (int j = 0; j < 8; j++) {
 					Piece piece = board[i][j];
 					if (piece != null && piece.getColor() != side) {
-						ArrayList<int[]> attackerMoves = null;
-						if (piece instanceof Pawn) {
-							attackerMoves = ((Pawn) board[i][j]).getMoveSet(board, i, j, true);
-						} else {
-							attackerMoves = board[i][j].getMoveSet(board, i, j);
-						}
+						ArrayList<int[]> attackerMoves = board[i][j].getAllThreats(board, i, j);
 						
 						for (int[] a : attackerMoves) {
 							kingSet.remove(new Pair(a[0], a[1]));

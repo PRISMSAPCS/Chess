@@ -93,6 +93,7 @@ public class DanielBot extends ChessBot {
 		bestEval = bestEvalThisIteration = 0;
 		depthSearched = 0;
 		posCounter = 0;
+		transpositionCounter = 0;
 		
 		startTime = System.currentTimeMillis();
 		

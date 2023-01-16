@@ -37,19 +37,10 @@ public class Pawn extends Piece {
 		return moves;
 	}
 	
-	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y, boolean capturesOnly) {
+	public ArrayList<int[]> getAllThreats(Piece[][] board, int x, int y) {
 		//moves list of potential spaces the pawn can move to
 		ArrayList<int[]> moves = new ArrayList<>();
 		int colorMult = this.getColor()? 1: -1;     // y direction this pawn moves
-		//checks forward moves
-//		if((x+colorMult<ChessBoard.WIDTH&&x+colorMult>=0)&&board[x+colorMult][y]==null) {
-//			int[] temp = {x+colorMult,y};
-//			moves.add(temp);
-//			if((x+(2*colorMult)<board[0].length&&x+(2*colorMult)>=0)&&board[x+2*colorMult][y]==null && super.getFirstMove()) {
-//				int[] temp2 = {x+2*colorMult, y};
-//				moves.add(temp2);
-//			}
-//		}
 		//checks cross attacks
 		if(x+colorMult<board[0].length&&x+colorMult>=0) {
 			if((y+1<board.length&&y>=0)) {
