@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 public class ChessBoard {
 	private class unMove {
@@ -653,48 +656,82 @@ public class ChessBoard {
 				return convertIntPairToMoves(moves, x, y);
 			}
 		}
-
-		// castle logic, special. Author: Kevin
-		try {
+		
 		if (board[x][y] instanceof King) {
-			if (board[x][y].getFirstMove()) {
-				boolean validCastle = true;
-				if (y + 3 < 8 && board[x][y + 3] instanceof Rook) {
-					if (board[x][y + 3].getFirstMove()) {
-						for (int i = y; i < y + 3; i++) {
-							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
-								validCastle = true;
-							} else {
-								validCastle = false;
-								break;
-							}
-						}
-						if (validCastle)
-							legalMoves.add(new Move(board[x][y], x, y, x, y + 2, board[x][y + 3], x, y + 3, x, y + 1));
-					}
-				}
-
-				if (y - 4 >= 0 && board[x][y - 4] instanceof Rook) {
-					if (board[x][y - 4].getFirstMove()) {
-						for (int i = y; i > y - 4; i--) {
-							if ((board[x][i] == null || board[x][i] instanceof King)
-									&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
-								validCastle = true;
-							} else {
-								validCastle = false;
-								break;
-							}
-						}
-						if (validCastle)
-							legalMoves.add(new Move(board[x][y], x, y, x, y - 2, board[x][y - 4], x, y - 4, x, y - 1));
+			ArrayList<int[]> kingMoves = board[x][y].getMoveSet(board, x, y);
+			ArrayList<Pair> kingMovePairs = new ArrayList<Pair>();
+			for (int[] kingMove : kingMoves) {
+				kingMovePairs.add(new Pair(kingMove[0], kingMove[1]));
+			}
+			Set<Pair> kingSet = new HashSet<Pair>(kingMovePairs);
+			Piece kingPiece = board[x][y];
+			board[x][y] = null;
+			for (int i = 0; i < 8; i++) {
+				for (int j = 0; j < 8; j++) {
+					Piece piece = board[i][j];
+					if (piece != null && piece.getColor() != side) {
+						ArrayList<int[]> attackerMoves = board[i][j].getAllThreats(board, i, j);
+						
+						for (int[] a : attackerMoves) {
+							kingSet.remove(new Pair(a[0], a[1]));
+						}						
 					}
 				}
 			}
-		}
-		} catch (Exception e) {
+			board[x][y] = kingPiece;
+			kingMovePairs.clear();
+			kingMovePairs.addAll(kingSet);
+			kingMoves.clear();
+			for (Pair kingMovePair : kingMovePairs) {
+				int[] toAdd = {kingMovePair.first, kingMovePair.second};
+				kingMoves.add(toAdd);
+			}
+			legalMoves = convertIntPairToMoves(new ArrayList<int[]>(kingMoves), x, y);
+			// castle logic, special. Author: Kevin
+			try {
+			if (board[x][y] instanceof King) {
+				if (board[x][y].getFirstMove()) {
+					boolean validCastle = true;
+					if (y + 3 < 8 && board[x][y + 3] instanceof Rook) {
+						if (board[x][y + 3].getFirstMove()) {
+							for (int i = y; i < y + 3; i++) {
+								if ((board[x][i] == null || board[x][i] instanceof King)
+										&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
+									validCastle = true;
+								} else {
+									validCastle = false;
+									break;
+								}
+							}
+							if (validCastle)
+								legalMoves.add(new Move(board[x][y], x, y, x, y + 2, board[x][y + 3], x, y + 3, x, y + 1));
+						}
+					}
+
+					if (y - 4 >= 0 && board[x][y - 4] instanceof Rook) {
+						if (board[x][y - 4].getFirstMove()) {
+							for (int i = y; i > y - 4; i--) {
+								if ((board[x][i] == null || board[x][i] instanceof King)
+										&& (checkLegal(x, y, new Move(board[x][y], x, y, x, i)))) {
+									validCastle = true;
+								} else {
+									validCastle = false;
+									break;
+								}
+							}
+							if (validCastle)
+								legalMoves.add(new Move(board[x][y], x, y, x, y - 2, board[x][y - 4], x, y - 4, x, y - 1));
+						}
+					}
+				}
+			}
+			} catch (Exception e) {
+				
+			}
 			
+			return legalMoves;
 		}
+		
 		for (int[] move : moves) {
 			// create the move object
 			Move toAdd;

@@ -32,7 +32,19 @@ public class King extends Piece {
 
         return ans;
     }
+    
+    public ArrayList<int[]> getAllThreats(Piece[][] board, int x, int y) {
+        ArrayList<int[]> ans = new ArrayList<>();
+        for(int i = 0; i < 8; i++) {
+            int endX = x + MOVE_SET[i][0], endY = y + MOVE_SET[i][1];
+            if(endX >= 0 && endX < ChessBoard.WIDTH && endY >= 0 && endY < ChessBoard.HEIGHT) {
+                ans.add(new int[] {x + MOVE_SET[i][0], y + MOVE_SET[i][1]});
+            }
+        }
 
+        return ans;
+    }
+    
     @Override
     public String getIconFile() {
         return getColor()? "k_w.png": "k_b.png";

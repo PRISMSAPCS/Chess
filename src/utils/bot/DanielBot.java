@@ -29,15 +29,16 @@ public class DanielBot extends ChessBot {
 	static final int Exact = 0;
 	static final int LowerBound = 1;
 	static final int UpperBound = 2;
-	static final int lookupFailed = -1;
+	static final int lookupFailed = -52738;
 	
 	static final boolean useIterativeDeepening = true;
 	static final int depth = 4;
 	static final boolean useFixedDepthSearch = false;
 	static final int timeLimit = 5000;
 	static final int mateScore = 50000;
-	static final boolean infiniteBook = true;
+	static final boolean infiniteBook = false;
 	static final int bookLimit = 10;
+	static final String bookFile = "final.pgn";
 	
 	Entry[] entries;
 	int evalMult;
@@ -92,7 +93,7 @@ public class DanielBot extends ChessBot {
 		bestEval = bestEvalThisIteration = 0;
 		depthSearched = 0;
 		posCounter = 0;
-		
+		transpositionCounter = 0;
 		startTime = System.currentTimeMillis();
 		
 		boardCopy = new ChessBoard(super.getBoard());
@@ -168,7 +169,7 @@ public class DanielBot extends ChessBot {
 		// no legal moves
 		if (legalMoves.isEmpty()) {
 			if (boardCopy.checked(boardCopy.getSide())) { // no legal moves and checked? you're mated
-				return ((boardCopy.getSide()) ? -1 : 1) * (mateScore - plyFromRoot);
+				return -1 * (mateScore - plyFromRoot);
 			}
 			
 			// no legal moves and not checked? stalemate
@@ -206,7 +207,7 @@ public class DanielBot extends ChessBot {
 	}
 	
 	private int quietSearch(int alpha, int beta) {
-		int eval = boardCopy.evaluate() * (boardCopy.getSide() ? 1 : -1);
+		int eval = DanielEval.evaluate(boardCopy.getBoard()) * (boardCopy.getSide() ? 1 : -1);
 		if (eval >= beta) {
 			return beta;
 		}
@@ -377,7 +378,7 @@ public class DanielBot extends ChessBot {
 			PGNString = PGNString.substring(0, PGNString.length() - 1);
 		}
 		
-		File file = new File("src//utils//bot//DanielBotResources//final.pgn");
+		File file = new File("src//utils//bot//DanielBotResources//" + bookFile);
 		ArrayList<String> possibleContinuations = new ArrayList<String>();
 		
 		try {
@@ -603,11 +604,11 @@ public class DanielBot extends ChessBot {
 					return score;
 				}
 				
-				if (entry.nodeType == UpperBound && score < alpha) {
+				if (entry.nodeType == UpperBound && score <= alpha) {
 					return score;
 				}
 				
-				if (entry.nodeType == LowerBound && score > beta) {
+				if (entry.nodeType == LowerBound && score >= beta) {
 					return score;
 				}
 			}

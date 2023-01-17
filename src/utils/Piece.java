@@ -16,6 +16,8 @@ public abstract class Piece implements Cloneable {
 	}
 
 	public abstract ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y);
+	
+	public abstract ArrayList<int[]> getAllThreats(Piece[][] board, int x, int y);
 
 	public abstract String getIconFile();
 

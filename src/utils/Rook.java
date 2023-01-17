@@ -46,6 +46,45 @@ public class Rook extends Piece {
 		return moves;
 	}
 	
+	public ArrayList<int[]> getAllThreats(Piece[][] board, int x, int y) {
+		ArrayList<int[]> moves = new ArrayList<>();
+
+		for(int i = 1; i <= 8; i++) {
+			if(x + i >= board[0].length)
+				break;
+			int[] temp = {x + i, y};
+			moves.add(temp);
+			if(board[x + i][y] != null)
+				break;
+		}
+		for(int i = 1; i <= 8; i++) {
+			if(x - i < 0)
+				break;
+			int[] temp = {x - i, y};
+			moves.add(temp);
+			if(board[x - i][y] != null)
+				break;
+		}
+		for(int i = 1; i <= 8; i++) {
+			if(y + i >= board[0].length)
+				break;
+			int[] temp = {x, y + i};
+			moves.add(temp);
+			if(board[x][y + i] != null)
+				break;
+		}
+		for(int i = 1; i <= 8; i++) {
+			if(y - i < 0)
+				break;
+			int[] temp = {x, y - i};
+			moves.add(temp);
+			if(board[x][y - i] != null)
+				break;
+		}
+		
+		return moves;
+	}
+	
 	public ArrayList<int[]> getMoveSet(Piece[][] board, int x, int y, boolean pinnedHorizontal) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		

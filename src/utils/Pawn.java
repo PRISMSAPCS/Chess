@@ -36,6 +36,24 @@ public class Pawn extends Piece {
 		}
 		return moves;
 	}
+	
+	public ArrayList<int[]> getAllThreats(Piece[][] board, int x, int y) {
+		//moves list of potential spaces the pawn can move to
+		ArrayList<int[]> moves = new ArrayList<>();
+		int colorMult = this.getColor()? 1: -1;     // y direction this pawn moves
+		//checks cross attacks
+		if(x+colorMult<board[0].length&&x+colorMult>=0) {
+			if((y+1<board.length&&y>=0)) {
+				int[] temp = {x+colorMult,y+1};
+				moves.add(temp);
+			}
+			if((y<board.length&&y-1>=0)) {
+				int[] temp = {x+colorMult,y-1};
+				moves.add(temp);
+			}
+		}
+		return moves;
+	}
 
 	@Override
 	public String getIconFile() {
