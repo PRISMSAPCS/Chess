@@ -29,12 +29,12 @@ public class DanielBot extends ChessBot {
 	static final int Exact = 0;
 	static final int LowerBound = 1;
 	static final int UpperBound = 2;
-	static final int lookupFailed = -52738;
+	static final int lookupFailed = -25783;
 	
 	static final boolean useIterativeDeepening = true;
 	static final int depth = 4;
 	static final boolean useFixedDepthSearch = false;
-	static final int timeLimit = 5000;
+	static final int timeLimit = 10000;
 	static final int mateScore = 50000;
 	static final boolean infiniteBook = false;
 	static final int bookLimit = 10;
@@ -84,9 +84,7 @@ public class DanielBot extends ChessBot {
 		return bestMove;
 	}
 	
-	private void startSearch() {
-		clearTT();
-		
+	private void startSearch() {		
 		finishedSearching = true;
 		
 		bestMove = bestMoveThisIteration = null;
@@ -665,7 +663,7 @@ public class DanielBot extends ChessBot {
 	
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return "DanielBot";
 	}
 	
 //	private int miniMax(int depth, boolean maximizingPlayer, boolean setBestMove) { // first minimax
