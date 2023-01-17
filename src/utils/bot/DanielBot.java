@@ -29,16 +29,16 @@ public class DanielBot extends ChessBot {
 	static final int Exact = 0;
 	static final int LowerBound = 1;
 	static final int UpperBound = 2;
-	static final int lookupFailed = -1;
+	static final int lookupFailed = -52738;
 	
 	static final boolean useIterativeDeepening = true;
 	static final int depth = 4;
 	static final boolean useFixedDepthSearch = false;
-	static final int timeLimit = 250;
+	static final int timeLimit = 1000;
 	static final int mateScore = 50000;
 	static final boolean infiniteBook = true;
 	static final int bookLimit = 10;
-	static final String bookFile = "test.pgn";
+	static final String bookFile = "test2.pgn";
 	
 	Entry[] entries;
 	int evalMult;
@@ -94,7 +94,6 @@ public class DanielBot extends ChessBot {
 		depthSearched = 0;
 		posCounter = 0;
 		transpositionCounter = 0;
-		
 		startTime = System.currentTimeMillis();
 		
 		boardCopy = new ChessBoard(super.getBoard());
@@ -208,7 +207,7 @@ public class DanielBot extends ChessBot {
 	}
 	
 	private int quietSearch(int alpha, int beta) {
-		int eval = boardCopy.evaluate() * (boardCopy.getSide() ? 1 : -1);
+		int eval = DanielEval.evaluate(boardCopy.getBoard()) * (boardCopy.getSide() ? 1 : -1);
 		if (eval >= beta) {
 			return beta;
 		}
@@ -605,11 +604,11 @@ public class DanielBot extends ChessBot {
 					return score;
 				}
 				
-				if (entry.nodeType == UpperBound && score < alpha) {
+				if (entry.nodeType == UpperBound && score <= alpha) {
 					return score;
 				}
 				
-				if (entry.nodeType == LowerBound && score > beta) {
+				if (entry.nodeType == LowerBound && score >= beta) {
 					return score;
 				}
 			}
