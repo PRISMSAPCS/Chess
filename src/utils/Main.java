@@ -15,8 +15,8 @@ public class Main {
 	 * @param moveSource sources of moving. An array with 2 elements, represents the two sides of players
 	 */
 	public static void normalGame(ChessBoard board, GUI gui, CanGetMove[] moveSource) {
-		String whiteName = moveSource[0].getName();
-		String blackName = moveSource[1].getName();
+		String whiteName = moveSource[1].getName();
+		String blackName = moveSource[0].getName();
 		board.enableLogging(whiteName, blackName);
 		while(true) {
 			Move move = moveSource[board.getSide()? 1: 0].getMove();
