@@ -65,8 +65,63 @@ public class BitBoardMoveGeneration {
 							}
 						}
 						
+						// init pawn attack bitboard
+						attacks = pawnAttacks[side][sourceSquare] & occupancies[black];
+						
+						// generate pawn captures
+						while (attacks != 0) {
+							targetSquare = getLS1BIndex(attacks);
+							
+							// pawn promotion
+							if (sourceSquare >= a7 && sourceSquare <= h7) {
+								// pawn promotion capture
+								
+								
+							} else { // one square move
+								// pawn capture
+							}
+							
+							attacks &= ~(1L << (targetSquare));
+						}
+						
+						// generate enPassant captures
+						if (enPassant != no_sq) {
+							long enPassantAttacks = pawnAttacks[side][sourceSquare] & (1L << enPassant);
+							
+							// if en passant is available
+							if (enPassantAttacks != 0) {
+								int targetEnPassant = getLS1BIndex(enPassantAttacks);
+								
+								// en passant capture
+							}
+						}
+						
 						// pop bit
 						bitboard &= ~(1L << (sourceSquare));
+					}
+				}
+				
+				// castling moves
+				if (piece == K) {
+					// king side castling is available
+					if ((castle & wk) != 0) {
+						// make sure there are no pieces between king and rook
+						if (getBit(occupancies[both], f1) == 0 && getBit(occupancies[both], g1) == 0) {
+							if (isSquareAttacked(e1, black) == 0 && isSquareAttacked(f1, black) == 0) {
+								// kingside castle
+								
+							}
+						}
+					}
+					
+					if ((castle & wq) != 0) {
+						// make sure there are no pieces between king and rook
+						if (getBit(occupancies[both], d1) == 0 && getBit(occupancies[both], c1) == 0 && getBit(occupancies[both], b1) == 0) {
+							if (isSquareAttacked(e1, black) == 0 && isSquareAttacked(d1, black) == 0) {
+								// queenside castle
+								
+							}
+						}
 					}
 				}
 			} else { // generate black pawn and castling moves
@@ -97,21 +152,216 @@ public class BitBoardMoveGeneration {
 							}
 						}
 						
+						// init pawn attack bitboard
+						attacks = pawnAttacks[side][sourceSquare] & occupancies[white];
+						
+						// generate pawn captures
+						while (attacks != 0) {
+							targetSquare = getLS1BIndex(attacks);
+							
+							// pawn promotion
+							if (sourceSquare >= a2 && sourceSquare <= h2) {
+								// pawn promotion capture
+								
+								
+							} else { // one square move
+								// pawn capture
+							}
+							
+							attacks &= ~(1L << (targetSquare));
+						}
+						
+						// generate enPassant captures
+						if (enPassant != no_sq) {
+							long enPassantAttacks = pawnAttacks[side][sourceSquare] & (1L << enPassant);
+							
+							// if en passant is available
+							if (enPassantAttacks != 0) {
+								int targetEnPassant = getLS1BIndex(enPassantAttacks);
+								
+								// en passant capture
+							}
+						}
+						
 						// pop bit
 						bitboard &= ~(1L << (sourceSquare));
+					}
+				}
+				
+				// castling moves
+				if (piece == k) {
+					// king side castling is available
+					if ((castle & bk) != 0) {
+						// make sure there are no pieces between king and rook
+						if (getBit(occupancies[both], f8) == 0 && getBit(occupancies[both], g8) == 0) {
+							if (isSquareAttacked(e8, white) == 0 && isSquareAttacked(f8, white) == 0) {
+								// kingside castle
+								
+							}
+						}
+					}
+					
+					if ((castle & bq) != 0) {
+						// make sure there are no pieces between king and rook
+						if (getBit(occupancies[both], d8) == 0 && getBit(occupancies[both], c8) == 0 && getBit(occupancies[both], b8) == 0) {
+							if (isSquareAttacked(e8, white) == 0 && isSquareAttacked(d8, white) == 0) {
+								// queenside castle
+								
+							}
+						}
 					}
 				}
 			}
 			
 			// generate knight moves
+			if ((side == white) ? piece == N : piece == n) {
+				// loop over bitboard
+				while (bitboard != 0) {
+					sourceSquare = getLS1BIndex(bitboard);
+					
+					// initialize attacks array - ignore squares which already have friendly pieces
+					attacks = knightAttacks[sourceSquare] & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
+					
+					// loop over target squares
+					while (attacks != 0) {
+						targetSquare = getLS1BIndex(attacks);
+						
+						// quiet moves
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
+							// quiet piece move
+							
+						} else {
+							// capture move
+							
+						}
+						
+						// pop bit
+						attacks &= ~(1L << (targetSquare));
+					}
+					
+					bitboard &= ~(1L << (sourceSquare));
+				}
+			}
 			
 			// generate bishop moves
+			if ((side == white) ? piece == B : piece == b) {
+				// loop over bitboard
+				while (bitboard != 0) {
+					sourceSquare = getLS1BIndex(bitboard);
+					
+					// initialize attacks array - ignore squares which already have friendly pieces
+					attacks = getBishopAttacks(sourceSquare, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
+					
+					// loop over target squares
+					while (attacks != 0) {
+						targetSquare = getLS1BIndex(attacks);
+						
+						// quiet moves
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
+							// quiet piece move
+							
+						} else {
+							// capture move
+							
+						}
+						
+						// pop bit
+						attacks &= ~(1L << (targetSquare));
+					}
+					
+					bitboard &= ~(1L << (sourceSquare));
+				}
+			}
 			
 			// generate rook moves
+			if ((side == white) ? piece == R : piece == r) {
+				// loop over bitboard
+				while (bitboard != 0) {
+					sourceSquare = getLS1BIndex(bitboard);
+					
+					// initialize attacks array - ignore squares which already have friendly pieces
+					attacks = getRookAttacks(sourceSquare, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
+					
+					// loop over target squares
+					while (attacks != 0) {
+						targetSquare = getLS1BIndex(attacks);
+						
+						// quiet moves
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
+							// quiet piece move
+							
+						} else {
+							// capture move
+							
+						}
+						
+						// pop bit
+						attacks &= ~(1L << (targetSquare));
+					}
+					
+					bitboard &= ~(1L << (sourceSquare));
+				}
+			}
 			
 			// generate queen moves
+			if ((side == white) ? piece == Q : piece == q) {
+				// loop over bitboard
+				while (bitboard != 0) {
+					sourceSquare = getLS1BIndex(bitboard);
+					
+					// initialize attacks array - ignore squares which already have friendly pieces
+					attacks = getQueenAttacks(sourceSquare, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
+					
+					// loop over target squares
+					while (attacks != 0) {
+						targetSquare = getLS1BIndex(attacks);
+						
+						// quiet moves
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
+							// quiet piece move
+							
+						} else {
+							// capture move
+							
+						}
+						
+						// pop bit
+						attacks &= ~(1L << (targetSquare));
+					}
+					
+					bitboard &= ~(1L << (sourceSquare));
+				}
+			}
 			
 			// generate king moves
+			if ((side == white) ? piece == K : piece == k) {
+				// loop over bitboard
+				while (bitboard != 0) {
+					sourceSquare = getLS1BIndex(bitboard);
+					
+					// initialize attacks array - ignore squares which already have friendly pieces
+					attacks = kingAttacks[sourceSquare] & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
+					
+					// loop over target squares
+					while (attacks != 0) {
+						targetSquare = getLS1BIndex(attacks);
+						
+						// quiet moves
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
+							// quiet piece move
+							
+						} else {
+							// capture move
+							
+						}
+						
+						// pop bit
+						attacks &= ~(1L << (targetSquare));
+					}
+					
+					bitboard &= ~(1L << (sourceSquare));
+				}
+			}
 		}
 	}
 }
