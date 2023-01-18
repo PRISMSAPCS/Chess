@@ -10,8 +10,8 @@ import java.util.Hashtable;
 public class TonyNegaMaxPVSTT extends ChessBot {
     public record MoveScore(Move move, int score) {
     }
-    
-    private record TTEntry(MoveScore movScore, NodeType type, int depth) {
+
+    private record TTEntry(MoveScore movScore, NodeType type, int remDep) {
     }
 
     private enum NodeType {
@@ -63,12 +63,11 @@ public class TonyNegaMaxPVSTT extends ChessBot {
 
     private boolean isWhite;
 
-    private final int SEARCH_DEP_NORM = 6;
-    private final int SEARCH_DEP_HIGH = 6;
-    private float SEARCH_DEP_HIGH_RATIO = 0.3f;
+    private final int MAX_SEARCH_DEP = 15;
+    private volatile boolean finishedSearchingInTime = true;
     private long startTime;
     private final long TIME_LIMIT = 5000;
-    private AtomicInteger[] nodeSearched = new AtomicInteger[SEARCH_DEP_HIGH];
+    private AtomicInteger[] nodeSearched = new AtomicInteger[MAX_SEARCH_DEP];
     private int totZeroWindowSearch = 0, totFullSearch = 0;
     private int totSearch = 0, totCacheHit = 0;
     private Hashtable<ChessBoard, TTEntry> transposTable = new Hashtable<>();
@@ -80,11 +79,11 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         this.isWhite = side;
     }
 
-    private MoveScore probeTT(ChessBoard b, int depth, int alpha, int beta) {
+    private MoveScore probeTT(ChessBoard b, int remDep, int alpha, int beta) {
         TTEntry e = transposTable.get(b);
         if (e == null)
             return null;
-        if (e.depth <= depth) {
+        if (e.remDep >= remDep) {
             // means e have more remianing depth until search end
             // this is because e.depth means the current depth of e
             if (e.type == NodeType.EXACT)
@@ -105,52 +104,68 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         return "tony's AlphabetaPVSTT";
     }
 
-    @Override
-    public Move getMove() {
-        startTime = System.currentTimeMillis();
-        board = new ChessBoard(getBoard());
-
-        int remainPiece = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board.getBoard(new Pair(i, j)) != null)
-                    remainPiece++;
-            }
-        }
-
-        // mapping from [0, 28] to [0.4, 1]
-        SEARCH_DEP_HIGH_RATIO = (float) (0.3 + 0.7 * (28 - remainPiece) / 28.0);
-        System.out.println("remain piece: " + remainPiece + " ratio: " + SEARCH_DEP_HIGH_RATIO);
-
-        totFullSearch = 0;
-        totZeroWindowSearch = 0;
-        for (int i = 0; i < nodeSearched.length; i++) {
-            nodeSearched[i] = new AtomicInteger(0);
-        }
-        ArrayList<Future<MoveScore>> moveRets = new ArrayList<>();
-        for (int i = 0; i < MAX_THREADS; i++) {
-            moveRets.add(
-                    thPool.submit(() -> {
-                        MoveScore tmp = negaMax(isWhite ? 1 : -1, 0, Integer.MIN_VALUE / 2, Integer.MAX_VALUE / 2,
-                                new ChessBoard(board));
-                        MoveScore nega = new MoveScore(tmp.move, tmp.score);
-                        return nega;
-                    }));
-        }
-
+    public Move multiThreadSearch() {
         Move bestMove = null;
         int bestScore = Integer.MIN_VALUE;
-        try {
-            for (Future<MoveScore> f : moveRets) {
-                MoveScore ms = f.get();
+        
+        for (int dep = 1; dep <= MAX_SEARCH_DEP; dep++) {
+            // System.out.println("dep " + dep + "executed");
+            ArrayList<Future<MoveScore>> futureMoveRets = new ArrayList<>();
+            finishedSearchingInTime = true;
+            for (int i = 0; i < MAX_THREADS; i++) {
+                final int fDep = dep;
+                futureMoveRets.add(
+                        thPool.submit(() -> {
+                            MoveScore tmp = negaMax(isWhite ? 1 : -1, 0, fDep, Integer.MIN_VALUE / 2, Integer.MAX_VALUE / 2,
+                                    new ChessBoard(board));
+                            return tmp;
+                        }));
+            }
+
+
+            ArrayList<MoveScore> moveRets = new ArrayList<>();
+            try {
+                for (Future<MoveScore> f : futureMoveRets) {
+                    MoveScore ms = f.get();
+                    moveRets.add(ms);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            // check if finished searching in this layer
+            if (!finishedSearchingInTime) {
+                System.out.println("tdep " + (dep - 1));
+                break;
+            }
+
+            // get best move
+            bestMove = null;
+            bestScore = Integer.MIN_VALUE;
+            for (MoveScore ms : moveRets) {
                 if (ms.score > bestScore) {
                     bestScore = ms.score;
                     bestMove = ms.move;
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            
         }
+        return bestMove;
+    }
+
+    @Override
+    public Move getMove() {
+        startTime = System.currentTimeMillis();
+        board = new ChessBoard(getBoard());
+
+        totFullSearch = 0;
+        totZeroWindowSearch = 0;
+        Move bestMove;
+        for (int i = 0; i < nodeSearched.length; i++) {
+            nodeSearched[i] = new AtomicInteger(0);
+        }
+
+        bestMove = multiThreadSearch();
 
         // print time used
         System.out.println((isWhite ? "white" : "black") + " spent " + (System.currentTimeMillis() - startTime) + "ms");
@@ -178,25 +193,22 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         return ret;
     }
 
-    private int selectDepOnChance() {
-        if (Math.random() < SEARCH_DEP_HIGH_RATIO)
-            return SEARCH_DEP_HIGH;
-        return SEARCH_DEP_NORM;
-    }
-
-    private MoveScore negaMax(int color, int dep, int alpha, int beta, ChessBoard b) {
-        if (dep >= selectDepOnChance() || System.currentTimeMillis() - startTime > TIME_LIMIT) {
-            // System.out.println("color " + color);
+    private MoveScore negaMax(int color, int curDep, int remDep,int alpha, int beta, ChessBoard b) {
+        boolean timeOut = System.currentTimeMillis() - startTime > TIME_LIMIT;
+        // boolean timeOut = false;
+        if (remDep == 0 || timeOut) {
+            if (timeOut){
+                finishedSearchingInTime = false;
+            }
             return new MoveScore(null, b.evaluate() * color);
         }
         totSearch++;
+        nodeSearched[curDep].incrementAndGet();
         MoveScore probeRet = null;
-        if ((probeRet = probeTT(b, dep, alpha, beta)) != null) {
+        if ((probeRet = probeTT(b, remDep, alpha, beta)) != null) {
             totCacheHit++;
             return probeRet;
         }
-
-        nodeSearched[dep].incrementAndGet();
 
         Move bestMove = null;
         int maxScore = Integer.MIN_VALUE;
@@ -213,16 +225,16 @@ public class TonyNegaMaxPVSTT extends ChessBot {
             Move m = moves.get(i);
             b.submitMove(m);
             if (i == 0) {
-                curScore = -negaMax(-color, dep + 1, -beta, -alpha, b).score;
+                curScore = -negaMax(-color, curDep + 1, remDep - 1, -beta, -alpha, b).score;
                 bestMove = m;
             } else {
                 // null window at first
-                curScore = -negaMax(-color, dep + 1, -(alpha + 1), -alpha, b).score;
+                curScore = -negaMax(-color, curDep + 1, remDep - 1, -(alpha + 1), -alpha, b).score;
 
                 totZeroWindowSearch++;
                 if (alpha < curScore && curScore < beta) {
                     // full search
-                    curScore = -negaMax(-color, dep + 1, -beta, -curScore, b).score;
+                    curScore = -negaMax(-color, curDep + 1, remDep -1, -beta, -curScore, b).score;
                     totFullSearch++;
                 }
 
@@ -247,16 +259,17 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         }
 
         // store transposition table
-        TTEntry entry = new TTEntry(ret, type, dep);
+        TTEntry entry = new TTEntry(ret, type, curDep);
         transposTable.put(b, entry);
-        return ret;   
+        return ret;
     }
 
     private void printNodeSearched() {
         int tot = 0;
         for (int i = 0; i < nodeSearched.length; i++) {
             tot += nodeSearched[i].get();
-            System.out.println("depth: " + i + " : " + (float) nodeSearched[i].get() / (float) MAX_THREADS);
+            if (nodeSearched[i].get() == 0) break;
+            System.out.println("tdep " + i + " : " + (float) nodeSearched[i].get() / (float) MAX_THREADS);
         }
         System.out.println("tot search ratio: " + (double) totFullSearch / totZeroWindowSearch + " full search = "
                 + totFullSearch + " zero window search = " + totZeroWindowSearch);
