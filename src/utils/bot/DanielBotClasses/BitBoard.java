@@ -20,8 +20,8 @@ public class BitBoard {
 	public static void main(String[] args) {
 		initAll();
 		
-		long occupancy = 0L;
+		parseFen(startPosition);
 		
-		print(getQueenAttacks(d5, occupancy));
+		printAttackedSquares(white);
 	}
 }
