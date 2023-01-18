@@ -102,4 +102,8 @@ public class BitBoardMagic {
 		
 		return rookAttacks[square][(int) (occupancy)];
 	}
+	
+	public static long getQueenAttacks(int square, long occupancy) {
+		return getBishopAttacks(square, occupancy) | getRookAttacks(square, occupancy);
+	}
 }
