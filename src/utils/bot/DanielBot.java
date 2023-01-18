@@ -34,9 +34,9 @@ public class DanielBot extends ChessBot {
 	static final boolean useIterativeDeepening = true;
 	static final int depth = 4;
 	static final boolean useFixedDepthSearch = false;
-	static final int timeLimit = 10000;
+	static final int timeLimit = 5000;
 	static final int mateScore = 50000;
-	static final boolean infiniteBook = false;
+	static final boolean infiniteBook = true;
 	static final int bookLimit = 10;
 	static final String bookFile = "final.pgn";
 	

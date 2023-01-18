@@ -1,6 +1,7 @@
 package utils.bot.DanielBotClasses;
 
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
+import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 
 public class BitBoardAttacks {
@@ -176,6 +177,27 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
+
+	public static long getBishopAttacks(int square, long occupancy) {
+		occupancy &= bishopMasks[square];
+		occupancy *= bishopMagicNumbers[square];
+		occupancy >>>= 64 - bishopRelevantBits[square];
+		
+		return bishopAttacks[square][(int) (occupancy)];
+	}
+	
+	public static long getRookAttacks(int square, long occupancy) {
+		occupancy &= rookMasks[square];
+		occupancy *= rookMagicNumbers[square];
+		occupancy >>>= 64 - rookRelevantBits[square];
+		
+		return rookAttacks[square][(int) (occupancy)];
+	}
+	
+	public static long getQueenAttacks(int square, long occupancy) {
+		return getBishopAttacks(square, occupancy) | getRookAttacks(square, occupancy);
+	}
+	
 	static void initLeapersAttacks() {
 		for (int square = 0; square < 64; square++) {
 			pawnAttacks[white][square] = maskPawnAttacks(square, white);
@@ -184,6 +206,34 @@ public class BitBoardAttacks {
 			knightAttacks[square] = maskKnightAttacks(square);
 			
 			kingAttacks[square] = maskKingAttacks(square);
+		}
+	}
+	
+
+	public static void initSlidersAttacks(int bishop) {
+		for (int square = 0; square < 64; square++) {
+			bishopMasks[square] = maskBishopAttacks(square);
+			rookMasks[square] = maskRookAttacks(square);
+			
+			long attackMask = (bishop == 1) ? bishopMasks[square] : rookMasks[square];
+			
+			int relevantBitsCount = countBits(attackMask);
+			
+			int occupancyIndices = (1 << relevantBitsCount);
+			for (int index = 0; index < occupancyIndices; index++) {
+				if (bishop == 1) {
+					long occupancy = setOccupancy(index, relevantBitsCount, attackMask);
+					int magicIndex = (int) ((occupancy * bishopMagicNumbers[square]) >>> (64 - bishopRelevantBits[square]));
+					
+					bishopAttacks[square][magicIndex] = bishopAttacksOnTheFly(square, occupancy);
+				} else {
+					long occupancy = setOccupancy(index, relevantBitsCount, attackMask);
+					
+					int magicIndex = (int) ((occupancy * rookMagicNumbers[square]) >>> (64 - rookRelevantBits[square]));
+					
+					rookAttacks[square][magicIndex] = rookAttacksOnTheFly(square, occupancy);
+				}
+			}
 		}
 	}
 	

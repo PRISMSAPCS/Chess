@@ -33,9 +33,11 @@ public class BitBoardChessBoard {
 					int piece = charPieces[c];
 					bitboards[piece] |= (1L << square);
 				} else if (Character.isDigit(c)) {
+					// skip empty spaces
 					int offset = c - '1';
 					file += offset;
 				} else if (c == '/') {
+					// decrement file to account for "wasted" fen
 					file--;
 				}
 				fenIndex++;
@@ -62,6 +64,7 @@ public class BitBoardChessBoard {
 		
 		fenIndex++;
 		
+		// set en passant
 		if (fen.charAt(fenIndex) != '-') {
 			int file = fen.charAt(fenIndex) - 'a';
 			int rank = 8 - (fen.charAt(fenIndex + 1) - '0');
@@ -71,14 +74,17 @@ public class BitBoardChessBoard {
 			enPassant = no_sq;
 		}
 		
+		// set white occupancies
 		for (int piece = P; piece <= K; piece++) {
 			occupancies[white] |= bitboards[piece];
 		}
 		
+		// set black occupancies
 		for (int piece = p; piece <= k; piece++) {
 			occupancies[black] |= bitboards[piece];
 		}
 		
+		// set both occupancies
 		occupancies[both] |= occupancies[white];
 		occupancies[both] |= occupancies[black];
 	}

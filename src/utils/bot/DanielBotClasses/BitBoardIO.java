@@ -3,6 +3,7 @@ package utils.bot.DanielBotClasses;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.getBit;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
+import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 
 public class BitBoardIO {
 	public static void print(long bitboard) {
@@ -22,6 +23,23 @@ public class BitBoardIO {
 		System.out.println("\n     a b c d e f g h");
 		
 		System.out.printf("       Bitboard: %d\n\n", bitboard);
+	}
+
+	public static void printAttackedSquares(int side) {
+		for (int rank = 0; rank < 8; rank++) {
+			for (int file = 0; file < 8; file++) {
+				// print ranks
+				if (file == 0)
+					System.out.printf("  %d ", 8 - rank);
+					
+				System.out.printf(" %c", (isSquareAttacked(rank * 8 + file, side) == 1) ? '1' : '.');
+			}
+			
+			System.out.println();
+		}
+		
+		// print board files
+		System.out.println("\n     a b c d e f g h");
 	}
 	
 	public static void printBoard() {

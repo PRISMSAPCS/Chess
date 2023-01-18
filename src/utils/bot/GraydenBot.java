@@ -49,15 +49,7 @@ public class GraydenBot extends ChessBot {
 		for(Move x:allMove) {
 			ChessBoard temp = new ChessBoard(this.getBoard());
 			temp.submitMove(x);
-			moveS.add(miniMax(2,temp,!side, alpha, beta));
-		}
-		for(Move x:allMove) {
-			ChessBoard temp = new ChessBoard(this.getBoard());
-			temp.submitMove(x);
-			moveSD4.add(miniMax(4,temp,!side, alpha, beta));
-		}
-		if(!thing) {
-			moveS = moveSD4;
+			moveS.add(miniMax(6, temp, !side, alpha, beta));
 		}
 		if(this.getBoard().getSide()) {
 			return allMove.get(moveS.indexOf(Collections.max(moveS)));

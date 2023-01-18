@@ -1361,6 +1361,23 @@ public class ChessBoard {
 		return moves;
 	}
 	
+	@Override 
+	public int hashCode() {
+		return (int) zobristKey;
+	}
+
+	@Override
+	public boolean equals(Object other){
+		if(other == null)
+			return false;
+		if(other == this)
+			return true;
+		if(!(other instanceof ChessBoard))
+			return false;
+		ChessBoard otherBoard = (ChessBoard) other;
+		return otherBoard.zobristKey == this.zobristKey;
+	}
+
 	private long[] getZobristArray() {
 		Random randGen = new Random(1283717); // set seed to make it deterministic
 		long[] toReturn = new long[781];
