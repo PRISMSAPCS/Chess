@@ -4,9 +4,14 @@ import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 
 public class BitBoardAttacks {
-	static long pawn_attacks[][] = new long[2][64];
-	static long knight_attacks[] = new long[64];
-	static long king_attacks[] = new long[64];
+	static long pawnAttacks[][] = new long[2][64];
+	static long knightAttacks[] = new long[64];
+	static long kingAttacks[] = new long[64];
+	static long bishopMasks[] = new long[64];
+	static long rookMasks[] = new long[64];
+	static long bishopAttacks[][] = new long[64][512];
+	static long rookAttacks[][] = new long[64][4096];
+	
 	
 	static long maskPawnAttacks(int square, int side) {
 		long attacks = 0L;
@@ -173,12 +178,12 @@ public class BitBoardAttacks {
 	
 	static void initLeapersAttacks() {
 		for (int square = 0; square < 64; square++) {
-			pawn_attacks[white][square] = maskPawnAttacks(square, white);
-			pawn_attacks[black][square] = maskPawnAttacks(square, black);
+			pawnAttacks[white][square] = maskPawnAttacks(square, white);
+			pawnAttacks[black][square] = maskPawnAttacks(square, black);
 			
-			knight_attacks[square] = maskKnightAttacks(square);
+			knightAttacks[square] = maskKnightAttacks(square);
 			
-			king_attacks[square] = maskKingAttacks(square);
+			kingAttacks[square] = maskKingAttacks(square);
 		}
 	}
 	
