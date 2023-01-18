@@ -10,35 +10,7 @@ import java.util.Hashtable;
 public class TonyNegaMaxPVSTT extends ChessBot {
     public record MoveScore(Move move, int score) {
     }
-
-    public TonyZobrist hashFunc = new TonyZobrist();
-
-    private class BoardHashCodeWrapper {
-
-        public ChessBoard b;
-        public long zcode;
-
-        public BoardHashCodeWrapper(ChessBoard b) {
-            zcode = hashFunc.getHash(b);
-        }
-
-        @Override
-        public int hashCode() {
-            return (int) zcode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null)
-                return false;
-            if (obj == this)
-                return true;
-            if (!(obj instanceof BoardHashCodeWrapper))
-                return false;
-            return this.zcode == ((BoardHashCodeWrapper) obj).zcode;
-        }
-    }
-
+    
     private record TTEntry(MoveScore movScore, NodeType type, int depth) {
     }
 
@@ -99,7 +71,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
     private AtomicInteger[] nodeSearched = new AtomicInteger[SEARCH_DEP_HIGH];
     private int totZeroWindowSearch = 0, totFullSearch = 0;
     private int totSearch = 0, totCacheHit = 0;
-    private Hashtable<BoardHashCodeWrapper, TTEntry> transposTable = new Hashtable<>();
+    private Hashtable<ChessBoard, TTEntry> transposTable = new Hashtable<>();
     private final int MAX_THREADS = Runtime.getRuntime().availableProcessors() - 2;
     private ExecutorService thPool = Executors.newFixedThreadPool(MAX_THREADS);
 
@@ -109,7 +81,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
     }
 
     private MoveScore probeTT(ChessBoard b, int depth, int alpha, int beta) {
-        TTEntry e = transposTable.get(new BoardHashCodeWrapper(b));
+        TTEntry e = transposTable.get(b);
         if (e == null)
             return null;
         if (e.depth <= depth) {
@@ -276,7 +248,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
 
         // store transposition table
         TTEntry entry = new TTEntry(ret, type, dep);
-        transposTable.put(new BoardHashCodeWrapper(b), entry);
+        transposTable.put(b, entry);
         return ret;   
     }
 
