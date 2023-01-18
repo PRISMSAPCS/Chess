@@ -109,6 +109,10 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         int bestScore = Integer.MIN_VALUE;
         
         for (int dep = 1; dep <= MAX_SEARCH_DEP; dep++) {
+            // clear node searched
+            for (int i = 0; i < dep; i++) {
+                nodeSearched[i] = new AtomicInteger(0);
+            }
             // System.out.println("dep " + dep + "executed");
             ArrayList<Future<MoveScore>> futureMoveRets = new ArrayList<>();
             finishedSearchingInTime = true;
@@ -168,8 +172,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         bestMove = multiThreadSearch();
 
         // print time used
-        System.out.println((isWhite ? "white" : "black") + " spent " + (System.currentTimeMillis() - startTime) + "ms");
-        printNodeSearched();
+        printTurnInfo();
         return bestMove;
     }
 
@@ -264,17 +267,11 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         return ret;
     }
 
-    private void printNodeSearched() {
-        int tot = 0;
-        for (int i = 0; i < nodeSearched.length; i++) {
-            tot += nodeSearched[i].get();
-            if (nodeSearched[i].get() == 0) break;
-            System.out.println("tdep " + i + " : " + (float) nodeSearched[i].get() / (float) MAX_THREADS);
-        }
+    private void printTurnInfo() {
         System.out.println("tot search ratio: " + (double) totFullSearch / totZeroWindowSearch + " full search = "
                 + totFullSearch + " zero window search = " + totZeroWindowSearch);
         System.out.println("cache hit rate: " + (double) totCacheHit / totSearch + " cache hit = " + totCacheHit
                 + " total search = " + totSearch);
-        System.out.println("total: " + tot);
+        System.out.println("total: " + totSearch);
     }
 }
