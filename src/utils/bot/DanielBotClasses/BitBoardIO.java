@@ -1,6 +1,6 @@
 package utils.bot.DanielBotClasses;
 
-import static utils.bot.DanielBotClasses.BitBoardBitManipulation.getBit;
+import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
@@ -32,7 +32,7 @@ public class BitBoardIO {
 				if (file == 0)
 					System.out.printf("  %d ", 8 - rank);
 					
-				System.out.printf(" %c", (isSquareAttacked(rank * 8 + file, side) == 1) ? '1' : '.');
+				System.out.printf(" %c", isSquareAttacked(rank * 8 + file, side) ? '1' : '.');
 			}
 			
 			System.out.println();
@@ -89,5 +89,33 @@ public class BitBoardIO {
 	                                           ((castle & wq) != 0) ? 'Q' : '-',
 	                                           ((castle & bk) != 0) ? 'k' : '-',
 	                                           ((castle & bq) != 0) ? 'q' : '-');
+	}
+	
+	// print move (for UCI purposes)
+	public static void printMove(int move) {
+		System.out.printf("%s%s%c\n", squareToCoordinates[getMoveSource(move)], squareToCoordinates[getMoveTarget(move)], (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ');
+	}
+
+
+	// print move list
+	public static void printMoveList(moves moveList) {
+		System.out.printf("\n    move    piece   capture   double    enpass    castling\n\n");
+	    
+	    // loop over moves within a move list
+	    for (int moveCount = 0; moveCount < moveList.count; moveCount++) {
+	        // init move
+	    	int move = moveList.moves[moveCount];
+	        System.out.printf("    %s%s%c   %c       %d         %d         %d         %d\n", squareToCoordinates[getMoveSource(move)],
+                                                                                  squareToCoordinates[getMoveTarget(move)],
+                                                                                  (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ',
+                                                                                  asciiPieces[getMovePiece(move)],
+                                                                                  getMoveCapture(move) != 0 ? 1 : 0,
+                                                                                  getMoveDouble(move) != 0 ? 1 : 0,
+                                                                                  getMoveEnPassant(move) != 0 ? 1 : 0,
+                                                                                  getMoveCastling(move) != 0 ? 1 : 0);
+	    }
+	    
+	    // print total number of moves
+        System.out.printf("\n\n    Total number of moves: %d\n\n", moveList.count);
 	}
 }

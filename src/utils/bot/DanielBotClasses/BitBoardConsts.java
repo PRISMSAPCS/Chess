@@ -1,5 +1,13 @@
 package utils.bot.DanielBotClasses;
 
+import utils.Bishop;
+import utils.King;
+import utils.Knight;
+import utils.Pair;
+import utils.Pawn;
+import utils.Queen;
+import utils.Rook;
+
 public class BitBoardConsts {
 	public static final int a8 = 0;
 	public static final int b8 = 1;
@@ -117,6 +125,20 @@ public class BitBoardConsts {
 	public static final String trickyPosition = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ";
 	public static final String killerPosition = "rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1";
 	public static final String cmkPosition = "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9 ";
+	
+	public static final int allMoves = 0;
+	public static final int capturesOnly = 1;
+	
+	public static final int castlingRights[] = {
+		     7, 15, 15, 15,  3, 15, 15, 11,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    15, 15, 15, 15, 15, 15, 15, 15,
+		    13, 15, 15, 15, 12, 15, 15, 14
+		};
 	
 	// bishop relevant occupancy bit count for every square on board
 	public static final int bishopRelevantBits[] = {
@@ -275,4 +297,40 @@ public class BitBoardConsts {
 		    0x8918844842082200L,
 		    0x4010011029020020L
 		};
+		
+		// initializes fen string "r3k2r/p1ppppb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1 " for chessboard speed testing
+//		board[0][0] = new Rook(true);
+//		board[0][4] = new King(true);
+//		kingPos[1] = new Pair(0, 4);
+//		board[0][7] = new Rook(true);
+//		board[1][0] = new Pawn(true);
+//		board[1][1] = new Pawn(true);
+//		board[1][2] = new Pawn(true);
+//		board[1][3] = new Bishop(true);
+//		board[1][4] = new Bishop(true);
+//		board[1][5] = new Pawn(true);
+//		board[1][6] = new Pawn(true);
+//		board[1][7] = new Pawn(true);
+//		board[2][2] = new Knight(true);
+//		board[2][5] = new Queen(true);
+//		board[2][7] = new Pawn(false);
+//		board[3][1] = new Pawn(false);
+//		board[3][4] = new Pawn(true);
+//		board[4][3] = new Pawn(true);
+//		board[4][4] = new Knight(true);
+//		board[5][0] = new Bishop(false);
+//		board[5][1] = new Knight(false);
+//		board[5][4] = new Pawn(false);
+//		board[5][5] = new Knight(false);
+//		board[5][6] = new Pawn(false);
+//		board[6][0] = new Pawn(false);
+//		board[6][2] = new Pawn(false);
+//		board[6][3] = new Pawn(false);
+//		board[6][4] = new Pawn(false);
+//		board[6][5] = new Pawn(false);
+//		board[6][6] = new Bishop(false);
+//		board[7][0] = new Rook(false);
+//		board[7][4] = new King(false);
+//		kingPos[0] = new Pair(7, 4);
+//		board[7][7] = new Rook(false);
 }

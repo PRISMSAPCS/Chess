@@ -21,19 +21,19 @@ public class BitBoard {
 	public static void main(String[] args) {
 		initAll();
 		
-		parseFen(startPosition);
+		parseFen("r3k2r/p1ppppb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1 ");
 		
-		generateMoves();
+		long start = System.currentTimeMillis();
+		for (int counter = 0; counter < 1000000; counter++) {
+			moves moveList = new moves();
+			
+			generateMoves(moveList, allMoves);
+			for (int i = 0; i < moveList.count; i++) {
+				if (!makeMove(moveList.moves[i])) { continue; }
+				takeBack();
+			}
+		}
 		
-		int move = encodeMove(e2, e4, P, Q, 1, 0, 0, 0);
-		
-		System.out.println(squareToCoordinates[getMoveSource(move)]);
-		System.out.println(squareToCoordinates[getMoveTarget(move)]);
-		System.out.println(asciiPieces[getMovePiece(move)]);
-		System.out.println(asciiPieces[getMovePromoted(move)]);
-		System.out.println(getMoveCapture(move) != 0);
-		System.out.println(getMoveDouble(move) != 0);
-		System.out.println(getMoveEnPassant(move) != 0);
-		System.out.println(getMoveCastling(move) != 0);
+		System.out.printf("time taken to execute: %d", System.currentTimeMillis() - start);
 	}
 }

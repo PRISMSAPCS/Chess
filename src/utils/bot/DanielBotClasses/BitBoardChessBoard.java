@@ -16,6 +16,14 @@ public class BitBoardChessBoard {
 	
 	public static int castle;
 	
+	public static long[][] pastBitBoards = new long[1000][12];
+	public static long[][] pastOccupancies = new long[1000][3];
+	public static byte[] pastSides = new byte[1000];
+	public static byte[] pastEnPassant = new byte[1000];
+	public static byte[] pastCastle = new byte[1000];
+	public static int index = 0;
+	
+	
 	public static void parseFen(String fen) {
 		// reset bitboards and occupancies
 		Arrays.fill(bitboards, 0);
@@ -87,5 +95,25 @@ public class BitBoardChessBoard {
 		// set both occupancies
 		occupancies[both] |= occupancies[white];
 		occupancies[both] |= occupancies[black];
+	}
+	
+	public static void copyBoard() {
+		pastBitBoards[index] = bitboards.clone();
+		pastOccupancies[index] = occupancies.clone();
+		pastSides[index] = (byte) side;
+		pastEnPassant[index] = (byte) enPassant;
+		pastCastle[index] = (byte) castle;
+		
+		index++;
+	}
+	
+	public static void takeBack() {
+		index--;
+		
+		bitboards = pastBitBoards[index];
+		occupancies = pastOccupancies[index];
+		side = pastSides[index];
+		enPassant = pastEnPassant[index];
+		castle = pastCastle[index];
 	}
 }
