@@ -2,15 +2,20 @@ package utils.bot;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
+import utils.Piece;
 import utils.ChessBoard;
 import utils.Move;
+import utils.Pawn;
 
 public class GraydenBot extends ChessBot {
 	long time;
 	boolean thing;
-	public GraydenBot(ChessBoard board) {
+	int test1;
+	int test2;
+	int mode;
+	public GraydenBot(ChessBoard board,int mode) {
 		super(board);
+		this.mode = mode;
 	}
 
 	@Override
@@ -21,13 +26,11 @@ public class GraydenBot extends ChessBot {
 		int beta = Integer.MAX_VALUE;
 		ArrayList<Move> allMove = grabMoves(this.getBoard());
 		ArrayList<Integer> moveS;
-		ArrayList<Integer> moveSD4;
+		ArrayList<Integer> moveSD;
 		moveS = new ArrayList<Integer>();
-		moveSD4 = new ArrayList<Integer>();
+		moveSD = new ArrayList<Integer>();
 		if(this.getBoard().getSide()) {
 			side = true;
-			alpha = Integer.MAX_VALUE;
-			beta = Integer.MIN_VALUE;
 		}
 		else {
 			side = false;
@@ -45,18 +48,51 @@ public class GraydenBot extends ChessBot {
 				break;
 			}
 		}*/
-		time = System.currentTimeMillis();
-		for(Move x:allMove) {
-			ChessBoard temp = new ChessBoard(this.getBoard());
-			temp.submitMove(x);
-			moveS.add(miniMax(6, temp, !side, alpha, beta));
+		if(mode==1) {
+			time = System.currentTimeMillis();
+			for(int x=2; x<20; x+=2) {
+				for(Move y:allMove) {
+					ChessBoard temp = new ChessBoard(this.getBoard());
+					temp.submitMove(y);
+					moveSD.add(negamax(x, temp, !side/*, alpha, beta*/));
+				}
+				if(System.currentTimeMillis()-time>5000) {
+					System.out.println("DepthGB:"+Integer.toString(x-1));
+					break;
+				}
+				else {
+					moveS = moveSD;
+					moveSD = new ArrayList<Integer>();
+				}
+			}
+			System.out.println("NegaMax = Cuts:"+Integer.toString(test1)+" Evals:"+Integer.toString(test2)+" Color:"+this.getBoard().getSide());
 		}
-		if(this.getBoard().getSide()) {
+		else {
+			time = System.currentTimeMillis();
+			for(int x=2; x<20; x+=2) {
+				for(Move y:allMove) {
+					ChessBoard temp = new ChessBoard(this.getBoard());
+					temp.submitMove(y);
+					moveSD.add(miniMaxOriginal(x, temp, !side/*, alpha, beta*/));
+				}
+				if(System.currentTimeMillis()-time>5000) {
+					System.out.println("DepthGB:"+Integer.toString(x-1));
+					break;
+				}
+				else {
+					moveS = moveSD;
+					moveSD = new ArrayList<Integer>();
+				}
+			}
+			System.out.println("miniMax = Cuts:"+Integer.toString(test1)+" Evals:"+Integer.toString(test2)+" Color:"+this.getBoard().getSide());
+		}
+		return allMove.get(moveS.indexOf(Collections.max(moveS)));
+		/*if(this.getBoard().getSide()) {
 			return allMove.get(moveS.indexOf(Collections.max(moveS)));
 		}
 		else {
 			return allMove.get(moveS.indexOf(Collections.min(moveS)));
-		}
+		}*/
 	}
 	
 	public ArrayList<Move> grabMoves(ChessBoard board) { // Author: Daniel - gets a random legal move
@@ -83,79 +119,80 @@ public class GraydenBot extends ChessBot {
 		return 0;
 	}
 	
-public int miniMax(int depth,ChessBoard board, boolean color, int alpha, int beta) {
+public int negamax(int depth,ChessBoard board, boolean color/*, int alpha, int beta*/) {
 	if(System.currentTimeMillis()-time>5000) {
-		thing = true;
 		return 0;
 	}
 	if(depth == 0) {
-		return board.evaluate();
-	}
-	if(color==this.getBoard().getSide()) {
-		int max;
+		test2++;
 		if(this.getBoard().getSide()) {
-			max = Integer.MIN_VALUE;
+			return board.evaluate();
 		}
 		else {
-			max = Integer.MAX_VALUE;
+			return board.evaluate()*-1;
 		}
-		ArrayList<Move> allMove = grabMoves(board);
-		//System.out.println(Moves: )
-		for(Move x:allMove) {
-			ChessBoard temp = new ChessBoard(board);
-			temp.submitMove(x);
-			int tempNum = miniMax(depth-1,temp,false, alpha, beta);
-			if(this.getBoard().getSide()) {
-				max = Math.max(max, tempNum);
-				if(max > beta) {
-					break;
-				}
-				alpha = Math.max(alpha, max);
-			}
-			else {
-				max = Math.min(max, tempNum);
-				if(max < beta) {
-					break;
-				}
-				alpha = Math.min(alpha, max);
-			}
-		}
-		return max;
 	}
-	else {
-		int min;
-		if(this.getBoard().getSide()) {
-			min = Integer.MAX_VALUE;
-		}
-		else {
-			min = Integer.MIN_VALUE;
-		}
-		ArrayList<Move> allMove = grabMoves(board);
-		for(Move x:allMove) {
-			ChessBoard temp = new ChessBoard(board);
-			temp.submitMove(x);
-			int tempNum = miniMax(depth-1,temp,true, alpha, beta);
-			if(this.getBoard().getSide()) {
-				min = Math.min(min, tempNum);
-				if(min < alpha) {
-					break;
-				}
-				beta = Math.min(beta, min);
-			}
-			else {
-				min = Math.max(min, tempNum);
-				if(min > alpha) {
-					break;
-				}
-				beta = Math.max(beta, min);
-			}
-		}
-		return min;
+	int value = Integer.MIN_VALUE;
+	ArrayList<Move> allM = new ArrayList<Move>(this.grabMoves(board));
+	for(Move x:allM) {
+		ChessBoard temp = new ChessBoard(board);
+		temp.submitMove(x);
+		value = Math.max(value, -negamax(depth-1, temp, !color/*, -beta, -alpha*/));
+		/*alpha = Math.max(alpha, value);
+		if(alpha >= beta) {
+			test1++;
+			break;
+		}*/
 	}
+	return value;
 	}
 public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
+	if(System.currentTimeMillis()-time>5000) {
+		return 0;
+	}
 	if(depth == 0) {
-		return board.evaluate();
+		int eval = board.evaluate();
+		double evalMod = 0;
+		for(int x = 0; x<8; x++) {
+			for(int y = 0; y<8; y++) {
+				if(board.getBoard()[x][y] instanceof Pawn) {
+					if(board.getBoard()[x+1][y+1] instanceof Pawn && board.getBoard()[x+1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 0.5;
+						}
+						else {
+							evalMod -= 0.5;
+						}
+					}
+					if(board.getBoard()[x-1][y+1] instanceof Pawn && board.getBoard()[x-1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 0.5;
+						}
+						else {
+							evalMod -= 0.5;
+						}
+					}
+					if(board.getBoard()[x+1][y-1] instanceof Pawn && board.getBoard()[x+1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 0.5;
+						}
+						else {
+							evalMod -= 0.5;
+						}
+					}
+					if(board.getBoard()[x-1][y-1] instanceof Pawn && board.getBoard()[x-1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 0.5;
+						}
+						else {
+							evalMod -= 0.5;
+						}
+					}
+				}
+			}
+			eval += (int)evalMod;
+			return eval;
+		}
 	}
 	if(color==this.getBoard().getSide()) {
 		int max;
