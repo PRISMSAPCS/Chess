@@ -19,7 +19,11 @@ public class Main {
 		String blackName = moveSource[0].getName();
 		board.enableLogging(whiteName, blackName);
 		while(true) {
+			System.out.println("--------------------" + (board.getSide() ? "White": "Black") + "'s turn --------------------");
+			long startTime = System.currentTimeMillis();
 			Move move = moveSource[board.getSide()? 1: 0].getMove();
+			long endTime = System.currentTimeMillis();
+			System.out.println("Time used: " + (endTime - startTime) + "ms");
 			board.submitMove(move);
 			gui.applyMove(move);
 			
@@ -86,7 +90,7 @@ public class Main {
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 			GUI gui = new GUI(board, true);
-			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), new GraydenBot(board)});
+			normalGame(board, gui, new CanGetMove[] {new TomChessBot(board), new TonyNegaMaxPVSTT(board, true)});
 		} else if (list.getSelectedValue().equals("Play Against Bot As White")){
 			GUI gui = new GUI(board, false);
 			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), gui});
