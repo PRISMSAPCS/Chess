@@ -8,10 +8,26 @@ import static utils.bot.DanielBotClasses.BitBoardMagic.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
+import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 
+import java.util.Random;
 
-public class BitBoard {		
-	public static int getSquare(int rank, int file) { return rank * 8 + file; }
+public class BitBoard {
+	public static void loadFen(String fen) { parseFen(fen); }
+	
+	public static int randomMove() {
+		moves moveList = new moves();
+		
+		generateMoves(moveList, allMoves);
+		
+		Random asdf = new Random();
+		int randomNum = asdf.nextInt(moveList.count);
+		while (!makeMove(moveList.moves[randomNum])) {
+			randomNum = asdf.nextInt(moveList.count);
+		}
+		return moveList.moves[randomNum];
+	}
 	
 	public static void initAll() {
 		initLeapersAttacks();
@@ -22,8 +38,9 @@ public class BitBoard {
 	public static void main(String[] args) {
 		initAll();
 		
-		parseFen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8 ");
+		parseFen("r111k11r/p1ppRpb1/bn11pnp1/111PN111/1p11P111/11N11Q1p/PPPBBPPP/R111K11R KQkq - 0 0");
+		System.out.println(evaluate());
 		
-		perftTest(5);
+		printBoard();
 	}
 }

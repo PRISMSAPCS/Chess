@@ -394,7 +394,7 @@ public class BitBoardMoveGeneration {
         int promoted = getMovePromoted(move);
         int capture = getMoveCapture(move);
         int doublePush = getMoveDouble(move);
-        int enPassantLocal= getMoveEnPassant(move);
+        int enPassant= getMoveEnPassant(move);
         int castling = getMoveCastling(move);
         
         // move piece
@@ -433,7 +433,7 @@ public class BitBoardMoveGeneration {
         }
         
         // handle en passant
-        if (enPassantLocal != 0) {
+        if (enPassant != 0) {
         	// erase the pawn
         	if (side == white) {
         		bitboards[p] &= ~(1L << (targetSquare + 8));

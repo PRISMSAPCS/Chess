@@ -28,6 +28,7 @@ public class BitBoardChessBoard {
 		// reset bitboards and occupancies
 		Arrays.fill(bitboards, 0);
 		Arrays.fill(occupancies, 0);
+		castle = 0;
 		
 		int fenIndex = 0;
 		

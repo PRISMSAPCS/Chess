@@ -79,6 +79,7 @@ public class ChessBoard {
 		board[7][5] = new Bishop(false);
 		board[7][6] = new Knight(false);
 		board[7][7] = new Rook(false);
+
 		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
@@ -1434,7 +1435,7 @@ public class ChessBoard {
 		return index;
 	}
 	
-	private boolean[] castlingRights() {
+	public boolean[] castlingRights() {
 		boolean blackKing = board[7][4] instanceof King && board[7][4].getColor() == false && board[7][4].getFirstMove();
 		boolean blackShortRook = board[7][7] instanceof Rook && board[7][7].getColor() == false && board[7][7].getFirstMove();
 		boolean blackLongRook = board[7][0] instanceof Rook && board[7][0].getColor() == false && board[7][0].getFirstMove();

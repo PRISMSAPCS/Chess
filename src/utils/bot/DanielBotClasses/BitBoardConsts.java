@@ -1,8 +1,5 @@
 package utils.bot.DanielBotClasses;
 
-import static utils.bot.DanielBotClasses.BitBoardChessBoard.parseFen;
-import static utils.bot.DanielBotClasses.BitBoardChessBoard.takeBack;
-import static utils.bot.DanielBotClasses.BitBoardConsts.allMoves;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.generateMoves;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.makeMove;
 
@@ -149,6 +146,8 @@ public class BitBoardConsts {
 		    15, 15, 15, 15, 15, 15, 15, 15,
 		    13, 15, 15, 15, 12, 15, 15, 14
 		};
+	
+	public static final int materialScore[] = {100, 320, 330, 500, 900, 10000, -100, -320, -330, -500, -900, -10000};
 	
 	// bishop relevant occupancy bit count for every square on board
 	public static final int bishopRelevantBits[] = {
