@@ -329,7 +329,7 @@ public class BitBoardMoveGeneration {
 					
 					// initialize attacks array - ignore squares which already have friendly pieces
 					attacks = getQueenAttacks(sourceSquare, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
-					
+
 					// loop over target squares
 					while (attacks != 0) {
 						targetSquare = getLS1BIndex(attacks);
@@ -481,11 +481,11 @@ public class BitBoardMoveGeneration {
         Arrays.fill(occupancies, 0);
         
         // recreate occupancy bitboards
-        for (int bbPiece = P; bbPiece < K; bbPiece++) {
+        for (int bbPiece = P; bbPiece <= K; bbPiece++) {
         	occupancies[white] |= bitboards[bbPiece];
         }
         
-        for (int bbPiece = p; bbPiece < k; bbPiece++) {
+        for (int bbPiece = p; bbPiece <= k; bbPiece++) {
         	occupancies[black] |= bitboards[bbPiece];
         }
         

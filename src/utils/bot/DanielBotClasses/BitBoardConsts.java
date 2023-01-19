@@ -1,8 +1,18 @@
 package utils.bot.DanielBotClasses;
 
+import static utils.bot.DanielBotClasses.BitBoardChessBoard.parseFen;
+import static utils.bot.DanielBotClasses.BitBoardChessBoard.takeBack;
+import static utils.bot.DanielBotClasses.BitBoardConsts.allMoves;
+import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.generateMoves;
+import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.makeMove;
+
+import java.util.ArrayList;
+
 import utils.Bishop;
+import utils.ChessBoard;
 import utils.King;
 import utils.Knight;
+import utils.Move;
 import utils.Pair;
 import utils.Pawn;
 import utils.Queen;
@@ -299,6 +309,32 @@ public class BitBoardConsts {
 		};
 		
 		// initializes fen string "r3k2r/p1ppppb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1 " for chessboard speed testing
+//		ChessBoard test = new ChessBoard();
+//    	long start = System.currentTimeMillis();
+//    	for (int counter = 0; counter < 100000; counter++) {
+//    		ArrayList<Move> moves = test.getAllLegalMoves();
+//    		for (Move x : moves) {
+//    			test.submitMove(x);
+//    			test.undoMove();
+//    		}
+//    	}
+//    	System.out.printf("time taken: %d", System.currentTimeMillis() - start);
+		
+//		parseFen("r3k2r/p1ppppb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1 ");
+//		
+//		long start = System.currentTimeMillis();
+//		for (int counter = 0; counter < 1000000; counter++) {
+//			moves moveList = new moves();
+//			
+//			generateMoves(moveList, allMoves);
+//			for (int i = 0; i < moveList.count; i++) {
+//				if (!makeMove(moveList.moves[i])) { continue; }
+//				takeBack();
+//			}
+//		}
+//		
+//		System.out.printf("time taken to execute: %d", System.currentTimeMillis() - start);
+		
 //		board[0][0] = new Rook(true);
 //		board[0][4] = new King(true);
 //		kingPos[1] = new Pair(0, 4);
