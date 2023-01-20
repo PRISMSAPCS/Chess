@@ -5,9 +5,9 @@ import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 
 public class BitBoardAttacks {
-	static long pawnAttacks[][] = new long[2][64];
-	static long knightAttacks[] = new long[64];
-	static long kingAttacks[] = new long[64];
+	public static long pawnAttacks[][] = new long[2][64];
+	public static long knightAttacks[] = new long[64];
+	public static long kingAttacks[] = new long[64];
 	static long bishopMasks[] = new long[64];
 	static long rookMasks[] = new long[64];
 	static long bishopAttacks[][] = new long[64][512];

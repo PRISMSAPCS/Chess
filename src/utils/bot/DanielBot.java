@@ -43,7 +43,7 @@ public class DanielBot extends ChessBot {
 	static final boolean useFixedDepthSearch = false;
 	static final int timeLimit = 5000;
 	static final int mateScore = 50000;
-	static final boolean infiniteBook = true;
+	static final boolean infiniteBook = false;
 	static final int bookLimit = 10;
 	static final String bookFile = "final.pgn";
 	
@@ -75,24 +75,24 @@ public class DanielBot extends ChessBot {
 
 	@Override
 	public Move getMove() {
-		loadFen(generateFen(super.getBoard()));
-		Move move = convertIntToMove(randomMove());
-		return move;
-//		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
-//			return bestMove;
-//		} else {
-//			inBook = false;
-//		}
-//		startSearch();
-//		System.out.print("Depth: ");
-//		System.out.println(depthSearched);
-//		System.out.print("Positions evaluated: ");
-//		System.out.println(posCounter);
-//		System.out.print("Transpositions: ");
-//		System.out.println(transpositionCounter);
-//		System.out.print("Evaluation: ");
-//		System.out.println(bestEval);
-//		return bestMove;
+//		loadFen(generateFen(super.getBoard()));
+//		Move move = convertIntToMove(randomMove());
+//		return move;
+		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
+			return bestMove;
+		} else {
+			inBook = false;
+		}
+		startSearch();
+		System.out.print("Depth: ");
+		System.out.println(depthSearched);
+		System.out.print("Positions evaluated: ");
+		System.out.println(posCounter);
+		System.out.print("Transpositions: ");
+		System.out.println(transpositionCounter);
+		System.out.print("Evaluation: ");
+		System.out.println(bestEval);
+		return bestMove;
 	}
 	
 	private void startSearch() {		

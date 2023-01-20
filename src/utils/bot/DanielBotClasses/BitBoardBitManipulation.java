@@ -1,7 +1,7 @@
 package utils.bot.DanielBotClasses;
 
 public class BitBoardBitManipulation {
-	public static long getBit(long bitboard, int square) { return bitboard & (0b1L << square); }
+	public static long getBit(long bitboard, int square) { return bitboard & (1L << square); }
 	public static long setBit(long bitboard, int square) { return bitboard | (1L << square); }
 	public static long popBit(long bitboard, int square) { return bitboard & ~(1L << (square)); }
 	public static int countBits(long bitboard) { return Long.bitCount(bitboard); }
