@@ -7,7 +7,7 @@ import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 
 public class Helpers {
 	public static int rank(int square) {
-		return (side == white) ? 8 - square / 8 : square / 8 + 1;
+		return 8 - square / 8;
 	}
 	
 	public static int file(int square) {

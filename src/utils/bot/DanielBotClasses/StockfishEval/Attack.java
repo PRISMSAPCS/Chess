@@ -256,7 +256,7 @@ public class Attack {
 				// pop queen location
 				queenLocations &= ~(1L << (queenSquare));
 			}
-						
+			
 			while (queenAttackBitboard != 0) {
 				int queenAttackSquare = getLS1BIndex(queenAttackBitboard);
 				
@@ -277,7 +277,7 @@ public class Attack {
 			
 			if (getBit(bitboards[Q], queenReachSquare) != 0 && ((square2 == -1) || (square2 == queenReachSquare))) {
 				int direction = pinnedDirection(queenReachSquare);
-				
+
 				int startX = square % 8;
 				int startY = square / 8;
 				
@@ -309,7 +309,7 @@ public class Attack {
 				int pawnSquare = getLS1BIndex(pawnLocations);
 				
 				// count pawn attacks
-				sum += countBits(pawnAttacks[side][pawnSquare]);
+				sum += countBits(pawnAttacks[white][pawnSquare]);
 				
 				// pop pawn location
 				pawnLocations &= ~(1L << (pawnSquare));
@@ -320,7 +320,7 @@ public class Attack {
 		
 		int toReturn = 0;
 		
-		long pawnCanReach = pawnAttacks[side ^ 1][square]; // get pawn attacks from opposite side to find what can attack that square
+		long pawnCanReach = pawnAttacks[black][square]; // get pawn attacks from opposite side to find what can attack that square
 		
 		while (pawnCanReach != 0) {
 			int pawnReachSquare = getLS1BIndex(pawnCanReach);
