@@ -36,8 +36,8 @@ public class Attack {
 		int color = 1;
 		if (board(square) >= p) color = -1;
 		
-		int x = square / 8;
-		int y = square % 8;
+		int x = square % 8;
+		int y = square / 8;
 		
 		for (int i = 0; i < 8; i++) {
 			// 8 directions around king

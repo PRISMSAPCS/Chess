@@ -8,7 +8,7 @@ public class Global {
 			for (int bbPiece = P; bbPiece <= k; bbPiece++) {
 				long bitboard = bitboards[bbPiece];
 				
-				int square = x * 8 + y;
+				int square = x + y * 8;
 				
 				if ((bitboard & (1L << square)) != 0) {
 					return bbPiece;

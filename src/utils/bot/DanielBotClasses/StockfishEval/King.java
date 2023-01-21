@@ -9,6 +9,7 @@ import static utils.bot.DanielBotClasses.StockfishEval.Global.*;
 import static utils.bot.DanielBotClasses.StockfishEval.Attack.*;
 import static utils.bot.DanielBotClasses.StockfishEval.Helpers.*;
 import static utils.bot.DanielBotClasses.StockfishEval.Consts.*;
+import static utils.bot.DanielBotClasses.StockfishEval.Mobility.*;
 
 public class King {
 	public static int pawnlessFlank() {
@@ -44,7 +45,7 @@ public class King {
 		for (int x = kx - 1; x <= kx + 1; x++) {
 			int us = 0;
 			for (int y = 7; y >= square / 8; y--) {
-				if (getBit(bitboards[p], x + y * 8) != 0 && board(y + 1, x - 1) != P && board(y + 1, x + 1) != P) {
+				if (getBit(bitboards[p], x + y * 8) != 0 && board(x - 1, y + 1) != P && board(x + 1, y + 1) != P) {
 					us = y;
 				}
 			}
@@ -64,7 +65,7 @@ public class King {
 		for (int x = kx - 1; x <= kx + 1; x++) {
 			int us = 0, them = 0;
 			for (int y = 7; y >= square / 8; y--) {
-				if (getBit(bitboards[p], x + y * 8) != 0 && board(y + 1, x - 1) != P && board(y + 1, x + 1) != P) {
+				if (getBit(bitboards[p], x + y * 8) != 0 && board(x + 1, y - 1) != P && board(x + 1, y + 1) != P) {
 					us = y;
 				}
 				
@@ -245,6 +246,7 @@ public class King {
 		}
 		
 		if (board(square) <= K && board(square) >= P) return 0;
+		if (check(square, type) == 0) return 0;
 		
 		if (type == 3 && safeCheck(square, 2) != 0) return 0;
 		if (type == 1 && safeCheck(square, 3) != 0) return 0;
@@ -259,7 +261,9 @@ public class King {
 		
 		if ((attack(x + (7 - y) * 8) == 0)
 			|| (weakSquare != 0 && attacked > 1)
-			&& (type != 3 || queenAttack(x + (7 - y) * 8, -1) == 0)) return 1;
+			&& (type != 3 || queenAttack(x + (7 - y) * 8, -1) == 0)) { changeColor(); return 1; }
+		
+		changeColor();
 		
 		return 0;
 	}
@@ -327,7 +331,294 @@ public class King {
 		return 0;
 	}
 	
+	public static int kingAttacks(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += kingAttacks(i);
+			}
+			
+			return sum;
+		}
+		
+		if (board(square) < N || board(square) > Q) return 0;
+		if (kingAttackersCount(square) == 0) return 0;
+		
+		int kingSquare = getLS1BIndex(bitboards[k]);
+		
+		int kx = kingSquare % 8;
+		int ky = kingSquare / 8;
+		
+		int toReturn = 0;
+		
+		for (int x = kx - 1; x <= kx + 1; x++) {
+			for (int y = ky - 1; y <= ky + 1; y++) {
+				int s2 = x + y * 8;
+				
+				if (x >= 0 && y >= 0 && x <= 7 && y <= 7 && (x != kx || y != ky)) {
+					toReturn += knightAttack(s2, square);
+					toReturn += bishopXRayAttack(s2, square);
+					toReturn += rookXRayAttack(s2, square);
+					toReturn += queenAttack(s2, square);
+				}
+			}
+		}
+		
+		return toReturn;
+	}
+	
+	public static int weakBonus(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += weakBonus(i);
+			}
+			
+			return sum;
+		}
+		
+		if (weakSquares(square) == 0) return 0;
+		if (kingRing(square, false) == 0) return 0;
+		
+		return 1;
+	}
+	
 	public static int weakSquares(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += weakSquares(i);
+			}
+			
+			return sum;
+		}
+		
+		if (attack(square) != 0) {
+			changeColor();
+			
+			int attacked = attack(square % 8 + (7 - square / 8) * 8);
+			
+			if (attacked >= 2) { changeColor(); return 0; }
+			if (attacked == 0) { changeColor(); return 1; }
+			
+			if (kingAttack(square % 8 + (7 - square / 8) * 8) != 0
+				|| queenAttack(square % 8 + (7 - square / 8) * 8, -1) != 0) { changeColor(); return 1; }
+			
+			changeColor();
+		}
+		
 		return 0;
+	}
+	
+	public static int unsafeChecks(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += unsafeChecks(i);
+			}
+			
+			return sum;
+		}
+		
+		if (check(square, 0) != 0 && safeCheck(-1, 0) == 0) return 1;
+		if (check(square, 1) != 0 && safeCheck(-1, 1) == 0) return 1;
+		if (check(square, 2) != 0 && safeCheck(-1, 2) == 0) return 1;
+		
+		return 0;
+	}
+	
+	public static int knightDefender(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += knightDefender(i);
+			}
+			
+			return sum;
+		}
+		
+		if (knightAttack(square, -1) != 0 && kingAttack(square) != 0) return 1;
+		
+		return 0;
+	}
+	
+	public static int endgameShelter(int square) {
+		int w = 0, s = 1024, e = 0;
+		
+		for (int x = 0; x < 8; x++) {
+			for (int y = 0; y < 8; y++) {
+				if (getBit(bitboards[k], x + y * 8) != 0 || ((castle & bk) != 0 && x == 6 && y == 0) || ((castle & bq) != 0 && x == 2 && y == 0)) {
+					int w1 = strengthSquare(x + y * 8);
+					int s1 = stormSquare(x + y * 8, false);
+					int e1 = stormSquare(x + y * 8, true);
+					
+					if (s1 - w1 < s - w) {
+						w = w1;
+						s = s1;
+						e = e1;
+					}
+				}
+			}
+		}
+		
+		if (square == -1) return e;
+		return 0;
+	}
+	
+	public static int blockersForKing(int square) {
+		if (square == -1) {
+			changeColor();
+			
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				if (pinnedDirection(i) != 0) sum += 1;
+			}
+			
+			changeColor();
+			
+			return sum;
+		}
+		
+		changeColor();
+		
+		int result = pinnedDirection(square % 8 + (7 - square / 8) * 8);
+		
+		changeColor();
+		
+		return (result != 0) ? 1 : 0;
+	}
+	
+	public static int flankAttack(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += flankAttack(i);
+			}
+			
+			return sum;
+		}
+		
+		if (square / 8 > 4) return 0;
+		
+		int kingSquare = getLS1BIndex(bitboards[k]);
+		
+		int kx = kingSquare % 8;
+		int ky = kingSquare / 8;
+		
+		int x = square % 8;
+		
+		if (kx == 0 && x > 2) return 0;
+		if (kx < 3 && x > 3) return 0;
+		if (kx >= 3 && kx < 5 && (x < 2 || x > 5)) return 0;
+		if (kx >= 5 && x < 4) return 0;
+		if (kx == 7 && x < 5) return 0;
+		
+		int a = attack(square);
+		
+		if (a == 0) return 0;
+		return (a > 1) ? 2 : 1;
+	}
+	
+	public static int flankDefense(int square) {
+		if (square == -1) {
+			int sum = 0;
+			
+			for (int i = 0; i < 64; i++) {
+				sum += flankDefense(i);
+			}
+			
+			return sum;
+		}
+		
+		if (square / 8 > 4) return 0;
+		
+		int kingSquare = getLS1BIndex(bitboards[k]);
+		
+		int kx = kingSquare % 8;
+		int ky = kingSquare / 8;
+		
+		int x = square % 8;
+		
+		if (kx == 0 && x > 2) return 0;
+		if (kx < 3 && x > 3) return 0;
+		if (kx >= 3 && kx < 5 && (x < 2 || x > 5)) return 0;
+		if (kx >= 5 && x < 4) return 0;
+		if (kx == 7 && x < 5) return 0;
+		
+		changeColor();
+		int a = attack(square % 8 + (7 - square / 8) * 8);
+		changeColor();
+		
+		return (a > 0) ? 1 : 0;
+	}
+	
+	public static int kingDanger() {
+		int count = kingAttackersCount(-1);
+		int weight = kingAttackersWeight(-1);
+		int kingAttacks = kingAttacks(-1);
+		int weak = weakBonus(-1);
+		int unsafeChecks = unsafeChecks(-1);
+		int blockersForKing = blockersForKing(-1);
+		int kingFlankAttack = flankAttack(-1);
+		int kingFlankDefense = flankDefense(-1);
+		int noQueen = (queenCount() > 0) ? 0 : 1;
+		int mobilityMG = mobilityMG(-1);
+		
+		changeColor();
+		int knightDefender = (knightDefender(-1) > 0) ? 1 : 0;
+		mobilityMG -= mobilityMG(-1);
+		changeColor();
+		
+		int toReturn = count * weight
+					+ 69 * kingAttacks
+					+ 185 * weak
+					- 100 * knightDefender
+					+ 148 * unsafeChecks
+					+ 98 * blockersForKing
+					- 4 * kingFlankDefense
+					+ 3 * kingFlankAttack * kingFlankAttack / 8
+					- 873 * noQueen
+					- 6 * (shelterStrength(-1) - shelterStorm(-1)) / 8
+					+ mobilityMG
+					+ 37
+					+ (int) (772 * Math.min(safeCheck(-1, 3), 1.45))
+					+ (int) (1084 * Math.min(safeCheck(-1, 2), 1.75))
+					+ (int) (645 * Math.min(safeCheck(-1, 1), 1.5))
+					+ (int) (792 * Math.min(safeCheck(1, 0), 1.62));
+		
+		if (toReturn > 100) return toReturn;
+		
+		return 0;			
+	}
+	
+	public static int kingMG() {
+		int toReturn = 0;
+		int kd = kingDanger();
+		
+		toReturn -= shelterStrength(-1);
+		toReturn += shelterStorm(-1);
+		toReturn += (kd * kd / 4096);
+		toReturn += 8 * flankAttack(-1);
+		toReturn += 17 * pawnlessFlank();
+		
+		return toReturn;
+	}
+	
+	public static int kingEG() {
+		int toReturn = 0;
+		
+		toReturn -= 16 * kingPawnDistance(-1);
+		toReturn += endgameShelter(-1);
+		toReturn += 95 * pawnlessFlank();
+		toReturn += (kingDanger() / 16);
+		
+		return toReturn;
 	}
 }
