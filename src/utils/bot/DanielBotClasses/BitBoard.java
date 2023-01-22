@@ -10,37 +10,60 @@ import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardSearch.*;
+import static utils.bot.DanielBotClasses.BitBoardUCI.*;
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
+import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 
-import java.util.Random;
+import java.util.ArrayList;
+
+import utils.*;
 
 public class BitBoard {
-	public static void loadFen(String fen) { parseFen(fen); }
+	static boolean init = false;
 	
-	public static int randomMove() {
-		moves moveList = new moves();
-		
-		generateMoves(moveList, allMoves);
-		
-		Random asdf = new Random();
-		int randomNum = asdf.nextInt(moveList.count);
-		while (!makeMove(moveList.moves[randomNum])) {
-			randomNum = asdf.nextInt(moveList.count);
+	public static int getBitBoardMove(ChessBoard board) {
+		setUpBitBoard(board);
+		clearHistory();
+		return searchPosition();
+	}
+	
+	public static void setUpBitBoard(ChessBoard board) {
+		if (!init) initAll();
+		clearRepetitionTable();
+		ArrayList<Move> previousMoves = board.getPreviousMoves();
+		parseFen(startPosition);
+		for (Move m : previousMoves) {
+			String note = "";
+			note += m.getStart().toChessNote();
+			note += m.getEnd().toChessNote();
+			
+			if (m instanceof PromotionMove) {
+				Piece piece = ((PromotionMove) m).getPromoteTo();
+				
+				if (piece instanceof Knight) note += "n";
+				if (piece instanceof Bishop) note += "b";
+				if (piece instanceof Rook) note += "r";
+				if (piece instanceof Queen) note += "q";
+			}
+			makeMove(parseMove(note), allMoves);
 		}
-		return moveList.moves[randomNum];
 	}
 	
 	public static void initAll() {
+		init = true;
 		initLeapersAttacks();
 		initSlidersAttacks(bishop);
 		initSlidersAttacks(rook);
+		initRandomKeys();
 	}
 	
 	public static void main(String[] args) {
 		initAll();
-		
-		parseFen("r111k11r/p1ppRpb1/bn11pnp1/111PN111/1p11P111/11N11Q1p/PPPBBPPP/R111K11R KQkq - 0 0");
-		System.out.println(evaluate());
-		
-		printBoard();
+		//uciLoop();
+		parseFen("k7/1b6/2r5/8/8/8/8/3Q3K b - - 0 1");
+		//System.out.println(moveRule);
+		//searchPosition();
+		System.out.println(quiescence(-50000, 50000));
 	}
 }

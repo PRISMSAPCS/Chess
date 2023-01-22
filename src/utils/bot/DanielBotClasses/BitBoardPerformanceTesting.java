@@ -8,7 +8,7 @@ import static utils.bot.DanielBotClasses.BitBoardIO.*;
 
 
 public class BitBoardPerformanceTesting {
-	static long nodes = 0;
+	public static long nodes = 0;
 	
 	static void perftDriver(int depth) {
 		if (depth == 0) {
@@ -18,10 +18,10 @@ public class BitBoardPerformanceTesting {
 		
 		moves moveList = new moves();
 		
-		generateMoves(moveList, allMoves);
+		generateMoves(moveList);
 		
 		for (int i = 0; i < moveList.count; i++) {
-			if (!makeMove(moveList.moves[i])) {
+			if (!makeMove(moveList.moves[i], allMoves)) {
 				continue;
 			}
 			
@@ -37,12 +37,12 @@ public class BitBoardPerformanceTesting {
 		nodes = 0;
 		moves moveList = new moves();
 		
-		generateMoves(moveList, allMoves);
+		generateMoves(moveList);
 		
 		long start = System.currentTimeMillis();
 		
 		for (int i = 0; i < moveList.count; i++) {
-			if (!makeMove(moveList.moves[i])) {
+			if (!makeMove(moveList.moves[i], allMoves)) {
 				continue;
 			}
 			

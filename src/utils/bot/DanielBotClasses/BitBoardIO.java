@@ -4,6 +4,7 @@ import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 
 public class BitBoardIO {
 	public static void print(long bitboard) {
@@ -72,11 +73,12 @@ public class BitBoardIO {
 	                                           ((castle & wq) != 0) ? 'Q' : '-',
 	                                           ((castle & bk) != 0) ? 'k' : '-',
 	                                           ((castle & bq) != 0) ? 'q' : '-');
+	    System.out.printf("     Hash Key: %x\n\n", generateHashKey());
 	}
 	
 	// print move (for UCI purposes)
 	public static void printMove(int move) {
-		System.out.printf("%s%s%c\n", squareToCoordinates[getMoveSource(move)], squareToCoordinates[getMoveTarget(move)], (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ');
+		System.out.printf("%s%s%c", squareToCoordinates[getMoveSource(move)], squareToCoordinates[getMoveTarget(move)], (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ');
 	}
 
 

@@ -21,6 +21,20 @@ public class BitBoardEvaluation {
 				
 				score += materialScore[bbPiece];
 				
+				switch (piece) {
+				case P: score += pawnScore[square]; break;
+				case N: score += knightScore[square]; break;
+				case B: score += bishopScore[square]; break;
+				case R: score += rookScore[square]; break;
+				case K: score += kingScore[square]; break;
+				
+				case p: score -= pawnScore[mirrorScore[square]]; break;
+				case n: score -= knightScore[mirrorScore[square]]; break;
+				case b: score -= bishopScore[mirrorScore[square]]; break;
+				case r: score -= rookScore[mirrorScore[square]]; break;
+				case k: score -= kingScore[mirrorScore[square]]; break;
+				}
+				
 				bitboard &= ~(1L << (square));
 			}
 		}

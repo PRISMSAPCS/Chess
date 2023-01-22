@@ -2,11 +2,13 @@ package utils.bot.DanielBotClasses;
 
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
+import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+import static utils.bot.DanielBotClasses.BitBoardIO.*;
+import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 
 import java.util.Arrays;
-
-import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
-import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 
 public class BitBoardMoveGeneration {
 	public static void addMove(moves moveList, int move) {
@@ -36,7 +38,7 @@ public class BitBoardMoveGeneration {
 		return false;
 	}
 	
-	public static void generateMoves(moves moveList, int flag) {
+	public static void generateMoves(moves moveList) {
 		int sourceSquare, targetSquare;
 		
 		long bitboard, attacks;
@@ -54,7 +56,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = sourceSquare - 8;
 						
 						// generate quiet pawn moves
-						if (targetSquare >= a8 && getBit(occupancies[both], targetSquare) == 0 && flag == allMoves) {
+						if (targetSquare >= a8 && getBit(occupancies[both], targetSquare) == 0) {
 							// pawn promotion
 							if (sourceSquare >= a7 && sourceSquare <= h7) {
 								// pawn promotes
@@ -116,7 +118,7 @@ public class BitBoardMoveGeneration {
 				}
 				
 				// castling moves
-				if (piece == K && flag == allMoves) {
+				if (piece == K) {
 					// king side castling is available
 					if ((castle & wk) != 0) {
 						// make sure there are no pieces between king and rook
@@ -147,7 +149,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = sourceSquare + 8;
 						
 						// generate quiet pawn moves
-						if (targetSquare <= h1 && getBit(occupancies[both], targetSquare) == 0 && flag == allMoves) {
+						if (targetSquare <= h1 && getBit(occupancies[both], targetSquare) == 0) {
 							// pawn promotion
 							if (sourceSquare >= a2 && sourceSquare <= h2) {
 								// pawn promotes
@@ -207,7 +209,7 @@ public class BitBoardMoveGeneration {
 				}
 				
 				// castling moves
-				if (piece == k && flag == allMoves) {
+				if (piece == k) {
 					// king side castling is available
 					if ((castle & bk) != 0) {
 						// make sure there are no pieces between king and rook
@@ -245,7 +247,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = getLS1BIndex(attacks);
 						
 						// quiet moves
-						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0 && flag == allMoves) {
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
 	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
 						} else {
@@ -275,7 +277,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = getLS1BIndex(attacks);
 						
 						// quiet moves
-						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0 && flag == allMoves) {
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
 	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
 						} else {
@@ -305,7 +307,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = getLS1BIndex(attacks);
 						
 						// quiet moves
-						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0 && flag == allMoves) {
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
 	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
 						} else {
@@ -335,7 +337,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = getLS1BIndex(attacks);
 						
 						// quiet moves
-						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0 && flag == allMoves) {
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
 	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
 						} else {
@@ -365,7 +367,7 @@ public class BitBoardMoveGeneration {
 						targetSquare = getLS1BIndex(attacks);
 						
 						// quiet moves
-						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0 && flag == allMoves) {
+						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
 	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
 						} else {
@@ -383,9 +385,11 @@ public class BitBoardMoveGeneration {
 		}
 	}
 	
-	public static boolean makeMove(int move) {
+	public static boolean makeMove(int move, int flag) {
 		// preserve board state
         copyBoard();
+        
+        moveRule++;
         
         // parse move
         int sourceSquare = getMoveSource(move);
@@ -394,15 +398,26 @@ public class BitBoardMoveGeneration {
         int promoted = getMovePromoted(move);
         int capture = getMoveCapture(move);
         int doublePush = getMoveDouble(move);
-        int enPassant= getMoveEnPassant(move);
+        int enPassantLocal = getMoveEnPassant(move);
         int castling = getMoveCastling(move);
+        
+        boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
         
         // move piece
         bitboards[piece] |= (1L << targetSquare);
         bitboards[piece] &= ~(1L << sourceSquare);
         
+        hashKey ^= pieceKeys[piece][sourceSquare];
+        hashKey ^= pieceKeys[piece][targetSquare];
+        
+        if (piece == P || piece == p) {
+        	moveRule = 0;
+        }
+        
         // handle captures
         if (capture != 0) {
+        	moveRule = 0;
+        	
         	int startPiece = -1, endPiece = -1;
         	
         	if (side == white) { // white to move, capture black pieces
@@ -418,6 +433,8 @@ public class BitBoardMoveGeneration {
         			// pop!
         			bitboards[bbPiece] &= ~(1L << targetSquare);
         			
+        			hashKey ^= pieceKeys[bbPiece][targetSquare];
+        			
         			break;
         		}
         	}
@@ -428,28 +445,40 @@ public class BitBoardMoveGeneration {
         	// erase pawn from target square
         	bitboards[(side == white) ? P : p] &= ~(1L << targetSquare);
         	
+        	hashKey ^= pieceKeys[(side == white) ? P : p][targetSquare];
+        	
         	// add promoted piece
         	bitboards[promoted] |= (1L << targetSquare);
+        	hashKey ^= pieceKeys[promoted][targetSquare];
         }
         
         // handle en passant
-        if (enPassant != 0) {
+        if (enPassantLocal != 0) {
+        	moveRule = 0;
+        	
         	// erase the pawn
         	if (side == white) {
         		bitboards[p] &= ~(1L << (targetSquare + 8));
+        		hashKey ^= pieceKeys[p][targetSquare + 8];
         	} else {
         		bitboards[P] &= ~(1L << (targetSquare - 8));
+        		hashKey ^= pieceKeys[P][targetSquare - 8];
         	}
         }
+        
+        if (enPassant != no_sq) hashKey ^= enPassantKeys[enPassant];
         
         enPassant = no_sq;
         
         if (doublePush != 0) {
         	if (side == white) {
         		enPassant = targetSquare + 8;
+        		
         	} else {
         		enPassant = targetSquare - 8;
         	}
+        	
+        	hashKey ^= enPassantKeys[enPassant];
         }
         
         if (castling != 0) {
@@ -457,25 +486,39 @@ public class BitBoardMoveGeneration {
         	case g1: // white castles king side
         		bitboards[R] |= (1L << f1);
                 bitboards[R] &= ~(1L << h1);
+                
+                hashKey ^= pieceKeys[R][f1];
+                hashKey ^= pieceKeys[R][h1];
                 break;
         	case c1: // white castles queen side
         		bitboards[R] |= (1L << d1);
         		bitboards[R] &= ~(1L << a1);
+        		
+        		hashKey ^= pieceKeys[R][d1];
+        		hashKey ^= pieceKeys[R][a1];
         		break;
         	case g8: // black castles king side
         		bitboards[r] |= (1L << f8);
         		bitboards[r] &= ~(1L << h8);
+        		
+        		hashKey ^= pieceKeys[r][f8];
+        		hashKey ^= pieceKeys[r][h8];
         		break;
         	case c8: // black castles queen side
         		bitboards[r] |= (1L << d8);
         		bitboards[r] &= ~(1L << a8);
+        		
+        		hashKey ^= pieceKeys[r][d8];
+        		hashKey ^= pieceKeys[r][a8];
         		break;
         	}
         }
         
         // update castling rights
+        hashKey ^= castleKeys[castle];
         castle &= castlingRights[sourceSquare];
         castle &= castlingRights[targetSquare];
+        hashKey ^= castleKeys[castle];
         
         // reset occupancies
         Arrays.fill(occupancies, 0);
@@ -494,9 +537,28 @@ public class BitBoardMoveGeneration {
         
         // switch side
         side ^= 1;
+        hashKey ^= sideKey;
+        
+        addPosition();
         
         // check if king is in check
         if (isSquareAttacked((side == white) ? getLS1BIndex(bitboards[k]) : getLS1BIndex(bitboards[K]), side)) {
+        	takeBack();
+        	return false;
+        }
+        
+        // evading checks
+        if (flag == nonQuietOnly && inCheck) {
+        	return true;
+        }
+        
+        // giving checks
+        if (flag == nonQuietOnly && isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)) {
+        	return true;
+        }
+        
+        // if it's not check related and there's no captures or promotions, it's a quiet move
+        if (flag == nonQuietOnly && capture == 0 && promoted == 0 && enPassantLocal == 0) {
         	takeBack();
         	return false;
         }

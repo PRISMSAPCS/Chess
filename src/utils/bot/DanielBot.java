@@ -75,24 +75,24 @@ public class DanielBot extends ChessBot {
 
 	@Override
 	public Move getMove() {
-//		loadFen(generateFen(super.getBoard()));
-//		Move move = convertIntToMove(randomMove());
-//		return move;
 		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
 			return bestMove;
 		} else {
 			inBook = false;
 		}
-		startSearch();
-		System.out.print("Depth: ");
-		System.out.println(depthSearched);
-		System.out.print("Positions evaluated: ");
-		System.out.println(posCounter);
-		System.out.print("Transpositions: ");
-		System.out.println(transpositionCounter);
-		System.out.print("Evaluation: ");
-		System.out.println(bestEval);
-		return bestMove;
+		
+		Move move = convertIntToMove(getBitBoardMove(super.getBoard()));
+		return move;
+//		startSearch();
+//		System.out.print("Depth: ");
+//		System.out.println(depthSearched);
+//		System.out.print("Positions evaluated: ");
+//		System.out.println(posCounter);
+//		System.out.print("Transpositions: ");
+//		System.out.println(transpositionCounter);
+//		System.out.print("Evaluation: ");
+//		System.out.println(bestEval);
+//		return bestMove;
 	}
 	
 	private void startSearch() {		
@@ -164,6 +164,21 @@ public class DanielBot extends ChessBot {
 		int ttVal = lookupEvaluationTT(depth, plyFromRoot, alpha, beta);
 		if (ttVal != lookupFailed) {
 			transpositionCounter++;
+			int occurrences = 0;
+			for (long x : boardCopy.getPreviousZobrists()) {
+				if (boardCopy.getZobristKey() == x) {
+					occurrences++;
+				}
+			}
+			
+			for (long x : super.getBoard().getPreviousZobrists()) {
+				if (boardCopy.getZobristKey() == x) {
+					occurrences++;
+				}
+			}
+			
+			if (occurrences >= 2) return 0;
+			if (boardCopy.getMoveRule() >= 50) return 0;
 			if (plyFromRoot == 0) {
 				bestMoveThisIteration = entries[indexTT()].move;
 				bestEvalThisIteration = entries[indexTT()].value;
@@ -413,7 +428,7 @@ public class DanielBot extends ChessBot {
 		
 		int rnd = new Random().nextInt(possibleContinuations.size());
 		String result = possibleContinuations.get(rnd);
-		System.out.println(result);
+
 		Move move = null;
 		
 		if (Character.isLowerCase(result.charAt(0))) { // pawn move
@@ -734,15 +749,11 @@ public class DanielBot extends ChessBot {
         int enPassant = getMoveEnPassant(move);
         int castling = getMoveCastling(move);
         
-        switch (castling) {
-    	case wk:
-    		return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 6, super.getBoard().getBoard()[0][7], 0, 7, 0, 5);
-    	case wq:
-    		return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 2, super.getBoard().getBoard()[0][0], 0, 0, 0, 3);
-    	case bk:
-    		return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 6, super.getBoard().getBoard()[7][7], 7, 7, 7, 5);
-    	case bq:
-    		return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 2, super.getBoard().getBoard()[7][0], 7, 0, 7, 3);
+        if (castling != 0) {
+    	if (targetSquare == 62) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 6, super.getBoard().getBoard()[0][7], 0, 7, 0, 5);
+    	if (targetSquare == 58) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 2, super.getBoard().getBoard()[0][0], 0, 0, 0, 3);
+    	if (targetSquare == 6) return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 6, super.getBoard().getBoard()[7][7], 7, 7, 7, 5);
+    	if (targetSquare == 2) return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 2, super.getBoard().getBoard()[7][0], 7, 0, 7, 3);
     	}
         
         int sourceRank = 7 - sourceSquare / 8;

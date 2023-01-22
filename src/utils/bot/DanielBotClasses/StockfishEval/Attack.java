@@ -99,7 +99,7 @@ public class Attack {
 		
 		int toReturn = 0;
 		
-		long knightCanReach = knightAttacks[square];
+		long knightCanReach = knightAttacks[square] & bitboards[N];
 
 		while (knightCanReach != 0) {
 			int knightReachSquare = getLS1BIndex(knightCanReach);
@@ -149,7 +149,7 @@ public class Attack {
 		
 		blocker &= ~(bitboards[Q] | bitboards[q]); // remove both queens from blocker array
 		
-		long bishopCanReach = getBishopAttacks(square, blocker);
+		long bishopCanReach = getBishopAttacks(square, blocker) & bitboards[B];
 		
 		while (bishopCanReach != 0) {
 			int bishopReachSquare = getLS1BIndex(bishopCanReach);
@@ -211,7 +211,7 @@ public class Attack {
 		long blocker = occupancies[both];
 		
 		blocker &= ~(bitboards[Q] | bitboards[q] | bitboards[R]); // remove both queens and our rooks from blocker array
-		long rookCanReach = getRookAttacks(square, blocker);
+		long rookCanReach = getRookAttacks(square, blocker) & bitboards[R];
 		
 		while (rookCanReach != 0) {
 			int rookReachSquare = getLS1BIndex(rookCanReach);
@@ -270,7 +270,7 @@ public class Attack {
 		
 		int toReturn = 0;
 		
-		long queenCanReach = getQueenAttacks(square, occupancies[both]);
+		long queenCanReach = getQueenAttacks(square, occupancies[both]) & bitboards[Q];
 		
 		while (queenCanReach != 0) {
 			int queenReachSquare = getLS1BIndex(queenCanReach);
@@ -320,7 +320,7 @@ public class Attack {
 		
 		int toReturn = 0;
 		
-		long pawnCanReach = pawnAttacks[black][square]; // get pawn attacks from opposite side to find what can attack that square
+		long pawnCanReach = pawnAttacks[black][square] & bitboards[P]; // get pawn attacks from opposite side to find what can attack that square
 		
 		while (pawnCanReach != 0) {
 			int pawnReachSquare = getLS1BIndex(pawnCanReach);
@@ -346,7 +346,7 @@ public class Attack {
 			return countBits(kingAttacks[kingSquare]);
 		}
 		
-		long kingCanReach = kingAttacks[square]; // get pawn attacks from opposite side to find what can attack that square
+		long kingCanReach = kingAttacks[square] & bitboards[K]; // get pawn attacks from opposite side to find what can attack that square
 		
 		while (kingCanReach != 0) {
 			int kingReachSquare = getLS1BIndex(kingCanReach);
@@ -406,7 +406,7 @@ public class Attack {
 		
 		int toReturn = 0;
 		
-		long queenCanReach = getBishopAttacks(square, occupancies[both]); // remember, ONLY DIAGONALS
+		long queenCanReach = getBishopAttacks(square, occupancies[both]) & bitboards[Q]; // remember, ONLY DIAGONALS
 		
 		while (queenCanReach != 0) {
 			int queenReachSquare = getLS1BIndex(queenCanReach);

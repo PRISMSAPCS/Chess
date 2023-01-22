@@ -17,9 +17,15 @@ public class Main {
 	public static void main(String[] args) {
 		initAll();
 		parseFen("rnb1k2r/pppppppp/8/8/1b1PP3/8/PPP2qPP/RNBQKBNR w KQkq - 1 2");
-		changeColor();
-		printBoard();
-
-		System.out.println(kingEG());
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 1000; i++) {
+			int j = kingMG();
+		}
+		
+		System.out.println(System.currentTimeMillis() - start);
+//		changeColor();
+//		printBoard();
+//
+//		System.out.println(kingEG());
 	}
 }

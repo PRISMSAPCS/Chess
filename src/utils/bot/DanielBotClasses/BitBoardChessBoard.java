@@ -2,7 +2,8 @@ package utils.bot.DanielBotClasses;
 
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
-
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 
 import java.util.Arrays;
 
@@ -16,11 +17,17 @@ public class BitBoardChessBoard {
 	
 	public static int castle;
 	
+	public static long hashKey;
+	
+	public static int moveRule = 0;
+	
 	public static long[][] pastBitBoards = new long[1000][12];
 	public static long[][] pastOccupancies = new long[1000][3];
 	public static byte[] pastSides = new byte[1000];
 	public static byte[] pastEnPassant = new byte[1000];
 	public static byte[] pastCastle = new byte[1000];
+	public static long[] pastHashKey = new long[1000];
+	public static int[] pastMoveRule = new int[1000];
 	public static int index = 0;
 	
 	
@@ -83,6 +90,8 @@ public class BitBoardChessBoard {
 			enPassant = no_sq;
 		}
 		
+		moveRule = Integer.parseInt((fen.substring(index + fenIndex + 2).split(" ", 2)[0]));
+		
 		// set white occupancies
 		for (int piece = P; piece <= K; piece++) {
 			occupancies[white] |= bitboards[piece];
@@ -96,6 +105,10 @@ public class BitBoardChessBoard {
 		// set both occupancies
 		occupancies[both] |= occupancies[white];
 		occupancies[both] |= occupancies[black];
+		
+		hashKey = generateHashKey();
+		
+		addPosition();
 	}
 	
 	public static void copyBoard() {
@@ -104,6 +117,8 @@ public class BitBoardChessBoard {
 		pastSides[index] = (byte) side;
 		pastEnPassant[index] = (byte) enPassant;
 		pastCastle[index] = (byte) castle;
+		pastHashKey[index] = hashKey;
+		pastMoveRule[index] = moveRule;
 		
 		index++;
 	}
@@ -111,10 +126,18 @@ public class BitBoardChessBoard {
 	public static void takeBack() {
 		index--;
 		
+		removePosition();
+		
 		bitboards = pastBitBoards[index];
 		occupancies = pastOccupancies[index];
 		side = pastSides[index];
 		enPassant = pastEnPassant[index];
 		castle = pastCastle[index];
+		hashKey = pastHashKey[index];
+		moveRule = pastMoveRule[index];
+	}
+	
+	public static void clearHistory() {
+		index = 0;
 	}
 }
