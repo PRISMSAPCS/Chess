@@ -20,6 +20,7 @@ public class BitBoardChessBoard {
 	public static long hashKey;
 	
 	public static int moveRule = 0;
+	public static int totalMoves = 0;
 	
 	public static long[][] pastBitBoards = new long[1000][12];
 	public static long[][] pastOccupancies = new long[1000][3];
@@ -32,6 +33,9 @@ public class BitBoardChessBoard {
 	
 	
 	public static void parseFen(String fen) {
+		clearHistory();
+		clearRepetitionTable();
+		
 		// reset bitboards and occupancies
 		Arrays.fill(bitboards, 0);
 		Arrays.fill(occupancies, 0);
@@ -86,12 +90,15 @@ public class BitBoardChessBoard {
 			int rank = 8 - (fen.charAt(fenIndex + 1) - '0');
 			
 			enPassant = rank * 8 + file;
+			
+			fenIndex += 2;
 		} else {
+			fenIndex++;
 			enPassant = no_sq;
 		}
 		
-		moveRule = Integer.parseInt((fen.substring(index + fenIndex + 2).split(" ", 2)[0]));
-		
+		moveRule = Integer.parseInt((fen.substring(index + fenIndex + 1).split(" ", 2)[0]));
+
 		// set white occupancies
 		for (int piece = P; piece <= K; piece++) {
 			occupancies[white] |= bitboards[piece];

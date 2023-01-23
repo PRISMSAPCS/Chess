@@ -14,6 +14,7 @@ import static utils.bot.DanielBotClasses.BitBoardUCI.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 import java.util.ArrayList;
 
@@ -46,6 +47,7 @@ public class BitBoard {
 				if (piece instanceof Rook) note += "r";
 				if (piece instanceof Queen) note += "q";
 			}
+			
 			makeMove(parseMove(note), allMoves);
 		}
 	}
@@ -56,14 +58,23 @@ public class BitBoard {
 		initSlidersAttacks(bishop);
 		initSlidersAttacks(rook);
 		initRandomKeys();
+		initEvaluationMasks();
 	}
 	
 	public static void main(String[] args) {
 		initAll();
+		
+		openBook();
+		
+		parseFen("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2");
+		
+		for (int i = 0; i < 10; i++) {
+			int move = getBookMove();
+			printMove(move);
+			System.out.println();
+			makeMove(move, allMoves);
+		}
+		
 		//uciLoop();
-		parseFen("k7/1b6/2r5/8/8/8/8/3Q3K b - - 0 1");
-		//System.out.println(moveRule);
-		//searchPosition();
-		System.out.println(quiescence(-50000, 50000));
 	}
 }

@@ -4,13 +4,23 @@ import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
+import static utils.bot.DanielBotClasses.BitBoardUCI.parseMove;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+
+import utils.Bishop;
+import utils.Knight;
+import utils.Piece;
+import utils.PromotionMove;
+import utils.Queen;
+import utils.Rook;
+
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 public class BitBoardSearch {	
 	static final int maxPly = 100;
@@ -33,7 +43,24 @@ public class BitBoardSearch {
 	
 	static int transpositions;
 	
+	static boolean inBook = true;
+	
 	public static int searchPosition() {
+		if (inBook) {
+			//return 0b001000000000100100110100;
+			openBook();
+			int bookMove = getBookMove();
+			
+			if (bookMove == -1) inBook = false;
+			
+			if (inBook) {
+				makeMove(bookMove, allMoves);
+				printMove(bookMove);
+				System.out.println(Integer.toBinaryString(bookMove));
+				return bookMove;
+			}
+		}
+		
 		clearHashTable();
 		int score = 0;
 		nodes = 0;
@@ -303,14 +330,14 @@ public class BitBoardSearch {
 	}
 	
 	public static int quiescence(int alpha, int beta) {
-//		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
-//			keepSearching = false;
-//			
-//			return 0;
-//		}
+		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
+			keepSearching = false;
+			
+			return 0;
+		}
 		
 		nodes++;
-		
+
 		int evaluation = evaluate();
 		
 		// beta cutoff
@@ -322,7 +349,7 @@ public class BitBoardSearch {
 		if (evaluation > alpha) {
 			alpha = evaluation;
 		}
-		
+	
 		
 		moves moveList = new moves();
 		

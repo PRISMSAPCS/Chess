@@ -75,13 +75,14 @@ public class DanielBot extends ChessBot {
 
 	@Override
 	public Move getMove() {
-		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
-			return bestMove;
-		} else {
-			inBook = false;
-		}
+//		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
+//			return bestMove;
+//		} else {
+//			inBook = false;
+//		}
 		
 		Move move = convertIntToMove(getBitBoardMove(super.getBoard()));
+		System.out.println(move);
 		return move;
 //		startSearch();
 //		System.out.print("Depth: ");

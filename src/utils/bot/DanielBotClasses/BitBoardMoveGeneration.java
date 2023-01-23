@@ -7,6 +7,7 @@ import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 
 import java.util.Arrays;
 
@@ -546,16 +547,16 @@ public class BitBoardMoveGeneration {
         	takeBack();
         	return false;
         }
-        
-        // evading checks
-        if (flag == nonQuietOnly && inCheck) {
-        	return true;
-        }
-        
-        // giving checks
-        if (flag == nonQuietOnly && isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)) {
-        	return true;
-        }
+
+//        // evading checks
+//        if (flag == nonQuietOnly && inCheck && ply < 10) {
+//        	return true;
+//        }
+//        
+//        // giving checks
+//        if (flag == nonQuietOnly && isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1) && ply < 10) {
+//        	return true;
+//        }
         
         // if it's not check related and there's no captures or promotions, it's a quiet move
         if (flag == nonQuietOnly && capture == 0 && promoted == 0 && enPassantLocal == 0) {

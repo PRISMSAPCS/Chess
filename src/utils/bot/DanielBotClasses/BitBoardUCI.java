@@ -7,8 +7,11 @@ import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 import java.util.Scanner;
+
+import utils.ChessBoard;
 
 public class BitBoardUCI {
 	public static int parseMove(String moveString) {
@@ -94,16 +97,6 @@ public class BitBoardUCI {
 	}
 	
 	public static void parseGo(String command) {
-		int depth = -1;
-		
-		int index = command.indexOf("depth");
-		
-		if (index != -1) {
-			depth = Integer.parseInt((command.substring(index + 6).split(" ", 2)[0]));
-		} else {
-			depth = 6;
-		}
-		
 		searchPosition();
 	}
 	
