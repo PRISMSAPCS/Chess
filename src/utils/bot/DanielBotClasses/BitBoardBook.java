@@ -5,6 +5,7 @@ import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,12 +27,12 @@ public class BitBoardBook {
 	
 	public static void openBook() {
 		try {
-			bookFile = new RandomAccessFile("src//utils//bot//DanielBotResources//bigBook.bin", "r");
+			bookFile = new RandomAccessFile("src//utils//bot//DanielBotResources//" + bookFilePath, "r");
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		Path path = Paths.get("src//utils//bot//DanielBotResources//bigBook.bin");
+		Path path = Paths.get("src//utils//bot//DanielBotResources//" + bookFilePath);
 		try {
 			bookSize = (int) (Files.size(path) / 16);
 		} catch (IOException e) {
@@ -225,22 +226,22 @@ public class BitBoardBook {
 		
 		if (piece == P || piece == p) {
 			// checking pawn diagonal attacks for special capture flag en passant case
-			if (startSquare == endSquare + 7) {
+			if (startSquare == endSquare - 7) {
 				if (getBit(bitboards[P], startSquare - 1) != 0) {
 					capture = 1;
 					enPassantLocal = 1;
 				}
-			} else if (startSquare == endSquare + 9) {
+			} else if (startSquare == endSquare - 9) {
 				if (getBit(bitboards[P], startSquare + 1) != 0) {
 					capture = 1;
 					enPassantLocal = 1;
 				}
-			} else if (startSquare == endSquare - 7) {
+			} else if (startSquare == endSquare + 7) {
 				if (getBit(bitboards[p], startSquare + 1) != 0) {
 					capture = 1;
 					enPassantLocal = 1;
 				}
-			} else if (startSquare == endSquare - 9) {
+			} else if (startSquare == endSquare + 9) {
 				if (getBit(bitboards[p], startSquare - 1) != 0) {
 					capture = 1;
 					enPassantLocal = 1;

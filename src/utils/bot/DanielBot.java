@@ -82,7 +82,6 @@ public class DanielBot extends ChessBot {
 //		}
 		
 		Move move = convertIntToMove(getBitBoardMove(super.getBoard()));
-		System.out.println(move);
 		return move;
 //		startSearch();
 //		System.out.print("Depth: ");

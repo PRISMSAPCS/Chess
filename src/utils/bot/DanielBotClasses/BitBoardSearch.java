@@ -46,19 +46,16 @@ public class BitBoardSearch {
 	static boolean inBook = true;
 	
 	public static int searchPosition() {
-		if (inBook) {
-			//return 0b001000000000100100110100;
-			openBook();
-			int bookMove = getBookMove();
-			
-			if (bookMove == -1) inBook = false;
-			
-			if (inBook) {
-				makeMove(bookMove, allMoves);
+		int bookMove = getBookMove();
+		
+		if (bookMove != -1) {
+			makeMove(bookMove, allMoves);
+			if (useUCIIO) {
+				System.out.print("bestmove ");
 				printMove(bookMove);
-				System.out.println(Integer.toBinaryString(bookMove));
-				return bookMove;
+				System.out.println();
 			}
+			return bookMove;
 		}
 		
 		clearHashTable();
@@ -101,6 +98,8 @@ public class BitBoardSearch {
 				}
 				
 				System.out.println();
+				
+				if (score >= 48000 || score <= -48000) break;
 			}
 		}
 		
@@ -118,6 +117,8 @@ public class BitBoardSearch {
 	}
 	
 	public static int negamax(int alpha, int beta, int depth) {
+		pvLength[ply] = ply;
+		
 		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
 			keepSearching = false;
 			
@@ -128,15 +129,22 @@ public class BitBoardSearch {
 			return 0;
 		}
 		
+		// is king in check
+		boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
+		
+		if (inCheck) {
+			depth++;
+		}
+		
 		int hashFlag = hashFlagAlpha;
 		
+		boolean isPVNode = beta - alpha > 1;
+		
 		int ttVal = readHashEntry(alpha, beta, depth);
-		if (ply != 0 && ttVal != noHashEntry) {
+		if (ply != 0 && ttVal != noHashEntry && !isPVNode) {
 			transpositions++;
 			return ttVal;
 		}
-		
-		pvLength[ply] = ply;
 		
 		// found principle variation (for Principle Variation Search)
 		boolean foundPV = false;
@@ -147,9 +155,6 @@ public class BitBoardSearch {
 		}
 		
 		nodes++;
-		
-		// is king in check
-		boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
 		
 		// legal moves counter
 		int legalMoves = 0;

@@ -165,11 +165,28 @@ public class BitBoardConsts {
 										1, 1, 1, 1, 1, 1, 1, 1,
 										0, 0, 0, 0, 0, 0, 0, 0};
 	
-	public static final int doubledPawnPenalty = -10;
-	public static final int isolatedPawnPenalty = -10;
+	public static final int doubledPawnPenaltyOpening = -5;
+	public static final int doubledPawnPenaltyEndgame = -10;
+	public static final int isolatedPawnPenaltyOpening = -5;
+	public static final int isolatedPawnPenaltyEndgame = -10;
 	public static final int passedPawnBonus[] = { 0, 10, 30, 50, 75, 100, 150, 200 };
 	public static final int semiOpenFileScore = 10;
 	public static final int openFileScore = 15;
+	
+	public static final int knightUnit = 4;
+	public static final int knightMobilityOpening = 4;
+	public static final int knightMobilityEndgame = 4;
+	public static final int bishopUnit = 4;
+	public static final int bishopMobilityOpening = 5;
+	public static final int bishopMobilityEndgame = 5;
+	public static final int rookUnit = 7;
+	public static final int rookMobilityOpening = 2;
+	public static final int rookMobilityEndgame = 4;
+	public static final int queenUnit = 9;
+	public static final int queenMobilityOpening = 1;
+	public static final int queenMobilityEndgame = 2;
+	
+	public static final int kingShieldBonus = 5;
 	
 	public static final int materialScore[][] = {{82, 337, 365, 477, 1025, 12000, -82, -337, -365, -477, -1025, -12000},
 												 {94, 281, 297, 512,  936, 12000, -94, -281, -297, -512,  -936, -12000}};

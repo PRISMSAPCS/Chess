@@ -4,8 +4,10 @@ import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
+import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 
 public class BitBoardEvaluation {
+	public static int evalCalled = 0;
 	static long fileMasks[] = new long[64];
 	static long rankMasks[] = new long[64];
 	static long isolatedMasks[] = new long[64];
@@ -95,6 +97,28 @@ public class BitBoardEvaluation {
 		
 		int doubledPawns = 0;
 		
+		long whitePawnAttacks = 0L;
+		long blackPawnAttacks = 0L;
+		
+		long whitePawnBitboard = bitboards[P];
+		long blackPawnBitboard = bitboards[p];
+		
+		while (whitePawnBitboard != 0) {
+			int pawnSquare = getLS1BIndex(whitePawnBitboard);
+			
+			whitePawnAttacks |= pawnAttacks[white][pawnSquare];
+			
+			whitePawnBitboard &= ~(1L << pawnSquare);
+		}
+		
+		while (blackPawnBitboard != 0) {
+			int pawnSquare = getLS1BIndex(blackPawnBitboard);
+			
+			blackPawnAttacks |= pawnAttacks[black][pawnSquare];
+			
+			blackPawnBitboard &= ~(1L << pawnSquare);
+		}
+		
 		for (int bbPiece = P; bbPiece <= k; bbPiece++) {
 			bitboard = bitboards[bbPiece];
 			
@@ -112,24 +136,33 @@ public class BitBoardEvaluation {
 					
 					doubledPawns = countBits(bitboards[P] & fileMasks[square]);
 					if (doubledPawns > 1) {
-						score += doubledPawns * doubledPawnPenalty;
+						scoreOpening += (doubledPawns - 1) * doubledPawnPenaltyOpening;
+						scoreEndgame += (doubledPawns - 1) * doubledPawnPenaltyEndgame;
 					}
 					
 					if ((bitboards[P] & isolatedMasks[square]) == 0) {
-						score += isolatedPawnPenalty;
+						scoreOpening += isolatedPawnPenaltyOpening;
+						scoreEndgame += isolatedPawnPenaltyEndgame;
 					}
 					
 					if ((passedMasks[white][square] & bitboards[p]) == 0) {
-						score += passedPawnBonus[getRank[square]];
+						scoreOpening += passedPawnBonus[getRank[square]];
+						scoreEndgame += passedPawnBonus[getRank[square]];
 					}
 					break;
 				case N:
 					scoreOpening += positionalScore[opening][KNIGHT][square];
 					scoreEndgame += positionalScore[endgame][KNIGHT][square];
+					
+					scoreOpening += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityOpening;
+					scoreEndgame += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityEndgame;
 					break;
 				case B:
 					scoreOpening += positionalScore[opening][BISHOP][square];
 					scoreEndgame += positionalScore[endgame][BISHOP][square];
+					
+					scoreOpening += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityOpening;
+					scoreEndgame += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityEndgame;
 					break;
 				case R:
 					scoreOpening += positionalScore[opening][ROOK][square];
@@ -142,21 +175,30 @@ public class BitBoardEvaluation {
 						score += openFileScore;
 					}
 					
+					scoreOpening += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityOpening;
+					scoreEndgame += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityEndgame;
 					break;
 				case Q:
 					scoreOpening += positionalScore[opening][QUEEN][square];
 					scoreEndgame += positionalScore[endgame][QUEEN][square];
+					
+					scoreOpening += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityOpening;
+					scoreEndgame += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityEndgame;
 					break;
 				case K:
 					scoreOpening += positionalScore[opening][KING][square];
 					scoreEndgame += positionalScore[endgame][KING][square];
 					if ((bitboards[P] & fileMasks[square]) == 0) {
-						score -= semiOpenFileScore;
+						scoreOpening -= semiOpenFileScore;
 					}
 					
 					if (((bitboards[P] | bitboards[p]) & fileMasks[square]) == 0) {
-						score -= openFileScore;
+						scoreOpening -= openFileScore;
 					}
+					
+					// king safety bonus
+					scoreOpening += countBits(kingAttacks[square] & occupancies[white]) * kingShieldBonus;
+					scoreEndgame += countBits(kingAttacks[square] & occupancies[white]) * kingShieldBonus;
 					
 					break;
 				
@@ -166,24 +208,33 @@ public class BitBoardEvaluation {
 
 					doubledPawns = countBits(bitboards[p] & fileMasks[square]);
 					if (doubledPawns > 1) {
-						score -= doubledPawns * doubledPawnPenalty;
+						scoreOpening -= doubledPawns * doubledPawnPenaltyOpening;
+						scoreEndgame -= doubledPawns * doubledPawnPenaltyEndgame;
 					}
 					
 					if ((bitboards[p] & isolatedMasks[square]) == 0) {
-						score -= isolatedPawnPenalty;
+						scoreOpening -= isolatedPawnPenaltyOpening;
+						scoreEndgame -= isolatedPawnPenaltyEndgame;
 					}
 					
 					if ((passedMasks[black][square] & bitboards[P]) == 0) {
-						score -= passedPawnBonus[getRank[mirrorScore[square]]];
+						scoreOpening -= passedPawnBonus[getRank[mirrorScore[square]]];
+						scoreEndgame -= passedPawnBonus[getRank[mirrorScore[square]]];
 					}
 					break;
 				case n:
 					scoreOpening -= positionalScore[opening][KNIGHT][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][KNIGHT][mirrorScore[square]];
+					
+					scoreOpening -= (countBits(knightAttacks[square] & ~whitePawnAttacks) - knightUnit) * knightMobilityOpening;
+					scoreEndgame -= (countBits(knightAttacks[square] & ~whitePawnAttacks) - knightUnit) * knightMobilityEndgame;
 					break;
 				case b:
 					scoreOpening -= positionalScore[opening][BISHOP][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][BISHOP][mirrorScore[square]];
+					
+					scoreOpening -= (countBits(getBishopAttacks(square, occupancies[both]) & ~whitePawnAttacks) - bishopUnit) * bishopMobilityOpening;
+					scoreEndgame -= (countBits(getBishopAttacks(square, occupancies[both]) & ~whitePawnAttacks) - bishopUnit) * bishopMobilityEndgame;
 					break;
 				case r:
 					scoreOpening -= positionalScore[opening][ROOK][mirrorScore[square]];
@@ -197,23 +248,31 @@ public class BitBoardEvaluation {
 						score -= openFileScore;
 					}
 					
+					scoreOpening -= (countBits(getRookAttacks(square, occupancies[both]) & ~whitePawnAttacks) - rookUnit) * rookMobilityOpening;
+					scoreEndgame -= (countBits(getRookAttacks(square, occupancies[both]) & ~whitePawnAttacks) - rookUnit) * rookMobilityEndgame;
 					break;
 				case q:
 					scoreOpening -= positionalScore[opening][QUEEN][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][QUEEN][mirrorScore[square]];
 					
+					scoreOpening -= (countBits(getQueenAttacks(square, occupancies[both]) & ~whitePawnAttacks) - queenUnit) * queenMobilityOpening;
+					scoreEndgame -= (countBits(getQueenAttacks(square, occupancies[both]) & ~whitePawnAttacks) - queenUnit) * queenMobilityEndgame;
 					break;
 				case k:
 					scoreOpening -= positionalScore[opening][KING][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][KING][mirrorScore[square]];
 					
 					if ((bitboards[p] & fileMasks[square]) == 0) {
-						score += semiOpenFileScore;
+						scoreOpening += semiOpenFileScore;
 					}
 					
 					if (((bitboards[P] | bitboards[p]) & fileMasks[square]) == 0) {
-						score += openFileScore;
+						scoreOpening += openFileScore;
 					}
+					
+					// king safety bonus
+					scoreOpening -= countBits(kingAttacks[square] & occupancies[black]) * kingShieldBonus;
+					scoreEndgame -= countBits(kingAttacks[square] & occupancies[black]) * kingShieldBonus;
 					
 					break;
 				}

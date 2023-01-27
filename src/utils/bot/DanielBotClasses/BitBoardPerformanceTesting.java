@@ -11,7 +11,7 @@ public class BitBoardPerformanceTesting {
 	public static long nodes = 0;
 	
 	static void perftDriver(int depth) {
-		if (depth == 0) {
+		if (depth == 1) {
 			nodes++;
 			return;
 		}

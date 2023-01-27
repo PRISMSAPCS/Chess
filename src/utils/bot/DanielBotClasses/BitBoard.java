@@ -16,9 +16,12 @@ import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
+import static utils.bot.DanielBotClasses.NNUE.NNUE.*;
+
 import java.util.ArrayList;
 
 import utils.*;
+import utils.bot.DanielBotClasses.NNUE.*;
 
 public class BitBoard {
 	static boolean init = false;
@@ -59,22 +62,12 @@ public class BitBoard {
 		initSlidersAttacks(rook);
 		initRandomKeys();
 		initEvaluationMasks();
+		openBook();
 	}
 	
 	public static void main(String[] args) {
 		initAll();
-		
-		openBook();
-		
-		parseFen("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2");
-		
-		for (int i = 0; i < 10; i++) {
-			int move = getBookMove();
-			printMove(move);
-			System.out.println();
-			makeMove(move, allMoves);
-		}
-		
-		//uciLoop();
+		parseFen("6r1/2p1k3/4p3/1P2P3/4nqPp/2r2N1P/5PK1/1R1Q1R2 w - - 1 35");
+		searchPosition();
 	}
 }
