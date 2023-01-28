@@ -22,6 +22,7 @@ import utils.Rook;
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
+// searches moves
 public class BitBoardSearch {	
 	static final int maxPly = 100;
 	

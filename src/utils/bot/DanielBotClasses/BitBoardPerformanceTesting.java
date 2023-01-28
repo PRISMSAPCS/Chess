@@ -6,10 +6,12 @@ import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 
-
+// performance testing class to ensure that move generation and make move logic is functioning properly
+// also gives time, so you can compare speed
 public class BitBoardPerformanceTesting {
 	public static long nodes = 0;
 	
+	// sets # of nodes from given depth
 	static void perftDriver(int depth) {
 		if (depth == 1) {
 			nodes++;
@@ -20,6 +22,7 @@ public class BitBoardPerformanceTesting {
 		
 		generateMoves(moveList);
 		
+		// iterate through all moves, make move, make a recursive call, undo move
 		for (int i = 0; i < moveList.count; i++) {
 			if (!makeMove(moveList.moves[i], allMoves)) {
 				continue;
@@ -31,6 +34,8 @@ public class BitBoardPerformanceTesting {
 		}
 	}
 	
+	// it's like perftDriver, but it prints the number of nodes that each legal move has
+	// this allows for debugging to find which move is causing unexpected behavior
 	static void perftTest(int depth) {
 		System.out.println("\n     Performance Test \n");
 		
@@ -46,6 +51,7 @@ public class BitBoardPerformanceTesting {
 				continue;
 			}
 			
+			// we need this to find the # of nodes from a single move
 			long cumulativeNodes = nodes;
 			
 			perftDriver(depth - 1);

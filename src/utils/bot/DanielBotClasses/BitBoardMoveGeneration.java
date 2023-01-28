@@ -11,12 +11,15 @@ import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 
 import java.util.Arrays;
 
+// stuff to do with move generation
 public class BitBoardMoveGeneration {
+	// adds a move to a move list
 	public static void addMove(moves moveList, int move) {
 		moveList.moves[moveList.count] = move;
 		moveList.count++;
 	}
 	
+	// checks if a square is attacked. mostly used for checking checks
 	public static boolean isSquareAttacked(int square, int side) {
 		// white pawn attack
 		if ((side == white) && ((pawnAttacks[black][square] & bitboards[P]) != 0)) return true;
@@ -39,6 +42,7 @@ public class BitBoardMoveGeneration {
 		return false;
 	}
 	
+	// generates pseudo-legal moves (ignores pins)
 	public static void generateMoves(moves moveList) {
 		int sourceSquare, targetSquare;
 		
@@ -386,6 +390,7 @@ public class BitBoardMoveGeneration {
 		}
 	}
 	
+	// makes the move on the board with a flag denoting all moves, or captures only for quiescence search
 	public static boolean makeMove(int move, int flag) {
 		// preserve board state
         copyBoard();
@@ -467,6 +472,7 @@ public class BitBoardMoveGeneration {
         	}
         }
         
+        // handle en passant variable
         if (enPassant != no_sq) hashKey ^= enPassantKeys[enPassant];
         
         enPassant = no_sq;

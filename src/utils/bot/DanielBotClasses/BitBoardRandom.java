@@ -1,5 +1,7 @@
 package utils.bot.DanielBotClasses;
 
+// a deterministic pseudorandom number generator
+// deterministic randomness makes stuff like zobrist keys always the same, so zobrist hashes will always be the same
 public class BitBoardRandom {
 	static int randomState = 1804289383;
 	

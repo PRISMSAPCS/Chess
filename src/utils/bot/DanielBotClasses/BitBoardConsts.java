@@ -15,7 +15,9 @@ import utils.Pawn;
 import utils.Queen;
 import utils.Rook;
 
+// many, many, many, many assorted constants
 public class BitBoardConsts {
+	// square to int. literally all listed out in lines because there is no C enum
 	public static final int a8 = 0;
 	public static final int b8 = 1;
 	public static final int c8 = 2;
@@ -82,6 +84,7 @@ public class BitBoardConsts {
 	public static final int h1 = 63;
 	public static final int no_sq = 64;
 	
+	// our pieces
 	public static final int P = 0;
 	public static final int N = 1;
 	public static final int B = 2;
@@ -95,23 +98,28 @@ public class BitBoardConsts {
 	public static final int q = 10;
 	public static final int k = 11;
 	
+	// castling rights (powers of 2 for bitwise operations)
 	public static final int wk = 1;
 	public static final int wq = 2;
 	public static final int bk = 4;
 	public static final int bq = 8;
 	
+	// sides
 	public static final int white = 0;
 	public static final int black = 1;
 	public static final int both = 2;
 	
+	// used for sliding piece generation
 	public static final int rook = 0;
 	public static final int bishop = 1;
 	
+	// used for generating knight, pawn, and king attacks
 	public static final long not_a_file = -72340172838076674L;
 	public static final long not_ab_file = -217020518514230020L;
 	public static final long not_h_file = 9187201950435737471L;
 	public static final long not_hg_file = 4557430888798830399L;
 	
+	// for printing stuff
 	public static final String squareToCoordinates[] = {
 			"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
 			"a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
@@ -123,28 +131,35 @@ public class BitBoardConsts {
 			"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"
 			};
 	
+	// for printing stuff
 	public static final char asciiPieces[] = {'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'};
 	public static final int charPieces[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 1, 0, 0, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 7, 0, 6, 10, 9 };
 	public static final char unicodePieces[] = {'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'};
 	
+	// just some positions
 	public static final String emptyBoard = "8/8/8/8/8/8/8/8 w - - ";
 	public static final String startPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";
 	public static final String trickyPosition = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ";
 	public static final String killerPosition = "rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1";
-	public static final String cmkPosition = "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9 ";
 	public static final String endgamePosition = "8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - - 0 1";
 	
+	// flags for move generation
 	public static final int allMoves = 0;
 	public static final int nonQuietOnly = 1;
 	
+	// flags for transposition table
 	public static final int hashFlagExact = 0;
 	public static final int hashFlagAlpha = 1;
 	public static final int hashFlagBeta = 2;
 	
+	// random number indicating no hash found
 	public static final int noHashEntry = -823471;
 	
+	// mate score
 	public static final int mateScore = 49000;
 	
+	// when something moves, we bitwise & the castling variable with the corresponding thing in here. that automatically
+	// updates the castling rights for us
 	public static final int castlingRights[] = {
 		     7, 15, 15, 15,  3, 15, 15, 11,
 		    15, 15, 15, 15, 15, 15, 15, 15,
@@ -156,6 +171,7 @@ public class BitBoardConsts {
 		    13, 15, 15, 15, 12, 15, 15, 14
 		};
 	
+	// nice helper array
 	public static final int getRank[] ={7, 7, 7, 7, 7, 7, 7, 7,
 										6, 6, 6, 6, 6, 6, 6, 6,
 										5, 5, 5, 5, 5, 5, 5, 5,
@@ -165,6 +181,7 @@ public class BitBoardConsts {
 										1, 1, 1, 1, 1, 1, 1, 1,
 										0, 0, 0, 0, 0, 0, 0, 0};
 	
+	// score penalties for evaluation
 	public static final int doubledPawnPenaltyOpening = -5;
 	public static final int doubledPawnPenaltyEndgame = -10;
 	public static final int isolatedPawnPenaltyOpening = -5;
@@ -173,6 +190,7 @@ public class BitBoardConsts {
 	public static final int semiOpenFileScore = 10;
 	public static final int openFileScore = 15;
 	
+	// mobility constants for evaluation
 	public static final int knightUnit = 4;
 	public static final int knightMobilityOpening = 4;
 	public static final int knightMobilityEndgame = 4;
@@ -186,18 +204,24 @@ public class BitBoardConsts {
 	public static final int queenMobilityOpening = 1;
 	public static final int queenMobilityEndgame = 2;
 	
+	// king safety multiplier
 	public static final int kingShieldBonus = 5;
 	
+	// material worth in opening and endgame
 	public static final int materialScore[][] = {{82, 337, 365, 477, 1025, 12000, -82, -337, -365, -477, -1025, -12000},
 												 {94, 281, 297, 512,  936, 12000, -94, -281, -297, -512,  -936, -12000}};
 	
+	// opening and endgame phase boundaries
 	public static final int openingPhaseScore = 6192;
 	public static final int endgamePhaseScore = 518;
 	
+	// flags for evaluation
 	public static final int opening = 0;
 	public static final int endgame = 1;
 	public static final int midgame = 2;
 	
+	// other flags for pieces, used in evaluation
+	// they are technically the same as the PNBRQK that we defined before, but these can be both colors
 	public static final int PAWN = 0;
 	public static final int KNIGHT = 1;
 	public static final int BISHOP = 2;
@@ -205,7 +229,7 @@ public class BitBoardConsts {
 	public static final int QUEEN = 4;
 	public static final int KING = 5;
 	
-	// pesto tables
+	// positional square tables from pesto
 	public static final int positionalScore[][][] =
 
 			// opening positional piece scores //
@@ -347,6 +371,7 @@ public class BitBoardConsts {
 		a8, b8, c8, d8, e8, f8, g8, h8
 	};
 	
+	// most valuable victim, least valuable attacker tabls for move ordering
 	public static final int mvv_lva[][] = {
 		 	{105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
 			{104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
@@ -387,6 +412,7 @@ public class BitBoardConsts {
 	    12, 11, 11, 11, 11, 11, 11, 12
 	};
 	
+	// "preset" magic numbers for rook (generated, but if it's a constant it doesn't need to be generated on startup"
 	public static final long rookMagicNumbers[] = {
 		    0x8A80104000800020L,
 		    0x140002000100040L,
@@ -453,7 +479,8 @@ public class BitBoardConsts {
 		    0x2006104900A0804L,
 		    0x1004081002402L
 		};
-
+		
+		// same for bishop
 		public static final long bishopMagicNumbers[] = {
 		    0x40040844404084L,
 		    0x2004208A004208L,
@@ -521,8 +548,10 @@ public class BitBoardConsts {
 		    0x4010011029020020L
 		};
 		
+		// polyglot enumerates its pieces differently, so we use this to "translate"
 		public static final int polyglotPiece[] = { 1, 3, 5, 7, 9, 11, 0, 2, 4, 6, 8, 10 };
 		
+		// polyglot's 781 random zobrist numbers
 		public static final long Random64[] = {
 				   0x9D39247E33776D41L, 0x2AF7398005AAA5C7L, 0x44DB015024623547L, 0x9C15F73E62A76AE2L,
 				   0x75834465489C0C89L, 0x3290AC3A203001BFL, 0x0FBBAD1F61042279L, 0xE83A908FF2FB60CAL,

@@ -7,12 +7,16 @@ import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 
 public class BitBoardEvaluation {
+	// diagnostic
 	public static int evalCalled = 0;
+	
+	// some useful stuff for basic pawn structure
 	static long fileMasks[] = new long[64];
 	static long rankMasks[] = new long[64];
 	static long isolatedMasks[] = new long[64];
 	static long passedMasks[][] = new long[2][64];
-
+	
+	// returns the file / rank mask of a square
 	public static long setFileRankMask(int file, int rank) {
 		long mask = 0L;
 		
@@ -35,6 +39,7 @@ public class BitBoardEvaluation {
 		return mask;
 	}
 	
+	// initiates file, rank, isolated, and passed masks
 	public static void initEvaluationMasks() {
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
@@ -64,6 +69,7 @@ public class BitBoardEvaluation {
 		}
 	}
 	
+	// gets the phase of the game, based on how much material is still on the board
 	public static int getGamePhaseScore() {
 		int whitePieceScores = 0, blackPieceScores = 0;
 		
@@ -78,15 +84,18 @@ public class BitBoardEvaluation {
 		return whitePieceScores + blackPieceScores;
 	}
 	
+	// basic eval function
 	public static int evaluate() {
 		int gamePhaseScore = getGamePhaseScore();
 		
 		int gamePhase = -1;
 		
+		// determine phase of the game based on game phase score
 		if (gamePhaseScore > openingPhaseScore) gamePhase = opening;
 		else if (gamePhaseScore < endgamePhaseScore) gamePhase = endgame;
 		else gamePhase = midgame;
 		
+		// split up score into 3 categories for interpolation
 		int score = 0;
 		int scoreOpening = 0;
 		int scoreEndgame = 0;
@@ -97,6 +106,8 @@ public class BitBoardEvaluation {
 		
 		int doubledPawns = 0;
 		
+		// we do some stuff to find all the squares that white pawns attack, and all the squares that black pawns attack
+		// we do this for mobility - pieces that can only move the squares defended by pawns really can't move at all
 		long whitePawnAttacks = 0L;
 		long blackPawnAttacks = 0L;
 		
@@ -134,17 +145,20 @@ public class BitBoardEvaluation {
 					scoreOpening += positionalScore[opening][PAWN][square];
 					scoreEndgame += positionalScore[endgame][PAWN][square];
 					
+					// doubled pawns
 					doubledPawns = countBits(bitboards[P] & fileMasks[square]);
 					if (doubledPawns > 1) {
 						scoreOpening += (doubledPawns - 1) * doubledPawnPenaltyOpening;
 						scoreEndgame += (doubledPawns - 1) * doubledPawnPenaltyEndgame;
 					}
 					
+					// isolated pawns
 					if ((bitboards[P] & isolatedMasks[square]) == 0) {
 						scoreOpening += isolatedPawnPenaltyOpening;
 						scoreEndgame += isolatedPawnPenaltyEndgame;
 					}
 					
+					// passed pawn bonus
 					if ((passedMasks[white][square] & bitboards[p]) == 0) {
 						scoreOpening += passedPawnBonus[getRank[square]];
 						scoreEndgame += passedPawnBonus[getRank[square]];
@@ -154,6 +168,7 @@ public class BitBoardEvaluation {
 					scoreOpening += positionalScore[opening][KNIGHT][square];
 					scoreEndgame += positionalScore[endgame][KNIGHT][square];
 					
+					// added score for knight mobility
 					scoreOpening += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityOpening;
 					scoreEndgame += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityEndgame;
 					break;
@@ -161,12 +176,15 @@ public class BitBoardEvaluation {
 					scoreOpening += positionalScore[opening][BISHOP][square];
 					scoreEndgame += positionalScore[endgame][BISHOP][square];
 					
+					// added score for bishop mobility
 					scoreOpening += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityOpening;
 					scoreEndgame += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityEndgame;
 					break;
 				case R:
 					scoreOpening += positionalScore[opening][ROOK][square];
 					scoreEndgame += positionalScore[endgame][ROOK][square];
+					
+					// bonus for semiopen and open files
 					if ((bitboards[P] & fileMasks[square]) == 0) {
 						score += semiOpenFileScore;
 					}
@@ -175,6 +193,7 @@ public class BitBoardEvaluation {
 						score += openFileScore;
 					}
 					
+					// added score for rook mobility
 					scoreOpening += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityOpening;
 					scoreEndgame += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityEndgame;
 					break;
@@ -182,12 +201,15 @@ public class BitBoardEvaluation {
 					scoreOpening += positionalScore[opening][QUEEN][square];
 					scoreEndgame += positionalScore[endgame][QUEEN][square];
 					
+					// added score for queen mobility
 					scoreOpening += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityOpening;
 					scoreEndgame += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityEndgame;
 					break;
 				case K:
 					scoreOpening += positionalScore[opening][KING][square];
 					scoreEndgame += positionalScore[endgame][KING][square];
+					
+					// penalty for being on a semiopen or open file
 					if ((bitboards[P] & fileMasks[square]) == 0) {
 						scoreOpening -= semiOpenFileScore;
 					}
@@ -202,6 +224,7 @@ public class BitBoardEvaluation {
 					
 					break;
 				
+				// everything below is the same thing, but for black. so we invert the sign
 				case p:
 					scoreOpening -= positionalScore[opening][PAWN][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][PAWN][mirrorScore[square]];
@@ -281,6 +304,7 @@ public class BitBoardEvaluation {
 			}
 		}
 		
+		// interpolate scores. this is called tapered eval
 		if (gamePhase == midgame) {
 			score += (scoreOpening * openingPhaseScore + scoreEndgame * (openingPhaseScore - gamePhaseScore)) / openingPhaseScore;
 		} else if (gamePhase == opening) {
@@ -289,6 +313,7 @@ public class BitBoardEvaluation {
 			score += scoreEndgame;
 		}
 		
+		// since we use negamax, return in the perspective of the side to play
 		return (side == white) ? score : score * -1;
 	}
 }

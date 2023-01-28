@@ -8,6 +8,8 @@ import static utils.bot.DanielBotClasses.BitBoardRandom.generateMagicNumber;
 
 import java.util.Arrays;
 
+// literally black magic. absurdly confusing. it's like a goofy hashing thing that does stuff and works
+// these functions are never used because we already computed the magic numbers and then set them as a constant
 public class BitBoardMagic {
 	static long findMagicNumber(int square, int relevantBits, int bishop) {
 		long occupancies[] = new long[4096];

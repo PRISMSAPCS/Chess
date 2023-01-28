@@ -6,7 +6,9 @@ import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 
+// basic IO functions that make debugging a lot easier
 public class BitBoardIO {
+	// print a bitboard
 	public static void print(long bitboard) {
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
@@ -26,6 +28,7 @@ public class BitBoardIO {
 		System.out.printf("       Bitboard: %d\n\n", bitboard);
 	}
 	
+	// print the whole chess board
 	public static void printBoard() {
 	    // print offset
 	    System.out.println();
@@ -76,13 +79,13 @@ public class BitBoardIO {
 	    System.out.printf("     Hash Key: %x\n\n", generateHashKey());
 	}
 	
-	// print move (for UCI purposes)
+	// print a move (for UCI purposes)
 	public static void printMove(int move) {
 		System.out.printf("%s%s%c", squareToCoordinates[getMoveSource(move)], squareToCoordinates[getMoveTarget(move)], (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ');
 	}
 
 
-	// print move list
+	// print a move list
 	public static void printMoveList(moves moveList) {
 		System.out.printf("\n    move    piece   capture   double    enpass    castling\n\n");
 	    

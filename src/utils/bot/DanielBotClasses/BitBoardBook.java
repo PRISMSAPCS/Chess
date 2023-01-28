@@ -20,27 +20,24 @@ import java.util.Scanner;
 
 import utils.*;
 
+// uses the polyglot format
+// http://hgm.nubati.net/book_format.html is a good explanation for how the format works
 public class BitBoardBook {
 	static int bookSize;
 	static RandomAccessFile bookFile;
 	
-	
+	// initiates the file and book size
 	public static void openBook() {
 		try {
 			bookFile = new RandomAccessFile("src//utils//bot//DanielBotResources//" + bookFilePath, "r");
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		Path path = Paths.get("src//utils//bot//DanielBotResources//" + bookFilePath);
-		try {
+			Path path = Paths.get("src//utils//bot//DanielBotResources//" + bookFilePath);
 			bookSize = (int) (Files.size(path) / 16);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	// generates the zobrist key for the current position, using polyglot's random numbers
 	public static long getPolyglotZobrist() {
 		long finalHash = 0L;
 		
@@ -50,6 +47,7 @@ public class BitBoardBook {
 			while (bitboard != 0) {
 				int square = getLS1BIndex(bitboard);
 				
+				// polyglot's zobrist hashes only hash en passant if there's a pawn that can capture en passant, hence this complication
 				if (side == white && bbPiece == P) {
 					// generate enPassant captures
 					if (enPassant != no_sq) {
@@ -93,6 +91,7 @@ public class BitBoardBook {
 		return finalHash;
 	}
 	
+	// polyglot books are sorted in order of zobrist key, from lowest to highest. this uses binary search to find out key
 	public static int findPos(long key) {
 		int left, right, mid;
 		
@@ -101,6 +100,7 @@ public class BitBoardBook {
 		left = 0;
 		right = bookSize - 1;
 		
+		// standard binary search
 		while (Long.compareUnsigned(left, right) < 0) {
 			mid = (left + right) / 2;
 			
@@ -114,9 +114,11 @@ public class BitBoardBook {
 		
 		polyglotEntry = readEntry(left);
 		
+		// check if entry's key matches our board's key
 		return (polyglotEntry.key == key) ? left : bookSize;
 	}
 	
+	// reads the nth entry in the file
 	public static PolyglotEntry readEntry(int n) {
 		try {
 			bookFile.seek(n * 16);
@@ -134,45 +136,48 @@ public class BitBoardBook {
 		return null;
 	}
 	
+	// given the zobrist key, this function finds the move
 	public static int bookMove(long key) {
-		int firstPos, score;
+		int firstPos;
 		PolyglotEntry polyglotEntry = null;
 		
 		firstPos = findPos(key);
 		
+		// if we did not find the position in the book, we leave
 		if (firstPos == bookSize) return -1;
-		
-		int sum = 0;
-		
-		for (int pos = firstPos; pos < bookSize; pos++) {
-			polyglotEntry = readEntry(pos);
-			
-			if (polyglotEntry.key != key) break;
-			
-			sum += polyglotEntry.count;
-		}
 		
 		int bestMove = -1;
 		int bestScore = 0;
 		
+		// because a position can have multiple moves, we have to choose one
 		for (int pos = firstPos; pos < bookSize; pos++) {
 			polyglotEntry = readEntry(pos);
 			
 			if (polyglotEntry.key != key) break;
 			
-			bestScore += polyglotEntry.count;
-			
-			if (Math.abs((int) (Math.random() * (bestScore))) < polyglotEntry.count) bestMove = polyglotEntry.move; 
+			// chooses one randomly based off of weight
+			if (!bestBookMoveOnly) {
+				bestScore += polyglotEntry.count;
+				if (Math.abs((int) (Math.random() * (bestScore))) < polyglotEntry.count) bestMove = polyglotEntry.move;
+			} else { // chooses the one with the highest weight
+				if (polyglotEntry.count > bestScore) {
+					bestScore = polyglotEntry.count;
+					bestMove = polyglotEntry.move;
+				}
+			}
 		}
 		
 		return bestMove;
 	}
 	
+	// gets a book move
 	public static int getBookMove() {
 		int move = bookMove(getPolyglotZobrist());
 		
+		// no move found, just break
 		if (move == -1) return -1;
 		
+		// polyglot represents its moves differently than we do, so we have to do a bit of translation
 		int endFile = 			(move & 0b000000000000111) >> 0;
 		int endRank = 			(move & 0b000000000111000) >> 3;
 		int startFile = 		(move & 0b000000111000000) >> 6;
@@ -187,8 +192,10 @@ public class BitBoardBook {
 		int doublePush = 0;
 		int enPassantLocal = 0;
 		
+		// adding 6 changes sides
 		if (side == black && promotionPiece != 0) promotionPiece += 6;
 		
+		// a bit of manual checking to see if the move is castling
 		if (startSquare == e1 && endSquare == h1) {
 			if (getBit(bitboards[K], e1) != 0 && getBit(occupancies[both], f1) == 0 && getBit(occupancies[both], g1) == 0) {
 				endSquare = g1;
@@ -214,6 +221,7 @@ public class BitBoardBook {
 			}
 		}
 		
+		// checking for capture flag
 		for (int bbPiece = P; bbPiece <= k; bbPiece++) {
 			if (getBit(bitboards[bbPiece], startSquare) != 0) {
 				piece = bbPiece;
