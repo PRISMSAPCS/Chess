@@ -1,5 +1,6 @@
 package utils.bot.DanielBotClasses;
 
+// an entry from the polyglot opening book
 public class PolyglotEntry {
 	long key;
 	short move;

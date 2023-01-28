@@ -1,5 +1,6 @@
 package utils.bot.DanielBotClasses;
 
+// transposition table entry
 public class Entry {
 	long hashKey;
 	byte depth;

@@ -36,17 +36,20 @@ public class BitBoardSearch {
 	
 	public static int ply = 0;
 	
+	// killer and history moves heuristic
 	public static int killerMoves[][] = new int[2][maxPly];
 	public static int historyMoves[][] = new int[12][maxPly];
 	
+	// triangular principle variation table
 	public static int pvLength[] = new int[maxPly];
 	public static int pvTable[][] = new int[100][maxPly];
 	
+	// diagnostic
 	static int transpositions;
 	
-	static boolean inBook = true;
-	
+	// search driver which does book moves and iterative deepening
 	public static int searchPosition() {
+		// book move stuff
 		int bookMove = getBookMove();
 		
 		if (bookMove != -1) {
@@ -59,7 +62,10 @@ public class BitBoardSearch {
 			return bookMove;
 		}
 		
+		// clear hash table between moves
 		clearHashTable();
+		
+		// initiate stuff
 		int score = 0;
 		nodes = 0;
 		transpositions = 0;
@@ -67,11 +73,13 @@ public class BitBoardSearch {
 		startTime = System.currentTimeMillis();
 		keepSearching = true;
 		
+		// reset stuff
 		killerMoves = new int[2][maxPly];
 		historyMoves = new int[12][maxPly];
 		pvLength = new int[maxPly];
 		pvTable = new int[maxPly][maxPly];
 		
+		// for printing
 		int bestMove = 0;
 		int finalScore = 0;
 		int maxDepthSearched = 0;
@@ -82,17 +90,21 @@ public class BitBoardSearch {
 			
 			score = negamax(-50000, 50000, currentDepth);
 			
+			// we finished the search all the way to the end
 			if (keepSearching) {
+				// for diagnostics
 				finalScore = score;
 				maxDepthSearched = currentDepth;
 				bestMove = pvTable[0][0];
 				
+				// special IO for uci, more pretty when not using UCI
 				if (useUCIIO) {
 					System.out.printf("info score cp %d depth %d nodes %d pv ", score, currentDepth, nodes);
 				} else {
 					System.out.printf("Depth: %d\tEval: %d \tNodes: %d\tPV: ", currentDepth, score, nodes- oldNodes);
 				}
 				
+				// print principle variation
 				for (int i = 0; i < pvLength[0]; i++) {
 					printMove(pvTable[0][i]);
 					System.out.print(" ");
@@ -100,11 +112,14 @@ public class BitBoardSearch {
 				
 				System.out.println();
 				
+				// we found a mate, no need to continue searching
 				if (score >= 48000 || score <= -48000) break;
 			}
 		}
 		
 		ply = 0;
+		
+		// if we're using UCI, print standard. if we're not, print pretty
 		if (!useUCIIO) {
 			System.out.printf("\nDepth: %d\nEvaluation: %d\nNodes: %d\nTranspositions: %d\n\n", maxDepthSearched, finalScore, nodes, transpositions);
 		}
@@ -117,14 +132,17 @@ public class BitBoardSearch {
 		return bestMove;
 	}
 	
+	// standard negamax with alpha beta pruning. and like, a bunch of other crap
 	public static int negamax(int alpha, int beta, int depth) {
-		pvLength[ply] = ply;
-		
+		// if time limit is reached, leave
 		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
 			keepSearching = false;
 			
 			return 0;
 		}
+		
+		// set ply for pv table
+		pvLength[ply] = ply;
 		
 		if (positionRepeated() || moveRule >= 50) {
 			return 0;
@@ -133,23 +151,30 @@ public class BitBoardSearch {
 		// is king in check
 		boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
 		
+		// check extension
 		if (inCheck) {
 			depth++;
 		}
 		
+		// for hash
 		int hashFlag = hashFlagAlpha;
 		
+		// is a principle variation node
 		boolean isPVNode = beta - alpha > 1;
 		
-		int ttVal = readHashEntry(alpha, beta, depth);
-		if (ply != 0 && ttVal != noHashEntry && !isPVNode) {
-			transpositions++;
-			return ttVal;
+		// read from transposition table, and only use TT if it's not a pv node
+		if (ply != 0 && !isPVNode) {
+			int ttVal = readHashEntry(alpha, beta, depth);
+			if (ttVal != noHashEntry) {
+				transpositions++;
+				return ttVal;
+			}
 		}
 		
 		// found principle variation (for Principle Variation Search)
 		boolean foundPV = false;
 		
+		// if depth is 0, we run quiescence
 		if (depth == 0) {
 			// run quiescence search
 			return quiescence(alpha, beta);
@@ -201,6 +226,7 @@ public class BitBoardSearch {
 			}
 		}
 		
+		// generate moves
 		moves moveList = new moves();
 		
 		generateMoves(moveList);
@@ -211,10 +237,11 @@ public class BitBoardSearch {
 		// number of moves searched (for Late Move Reduction)
 		int movesSearched = 0;
 		
+		// loop over all moves
 		for (int count = 0; count < moveList.count; count++) {
 			ply++;
 						
-			// only make a legal move
+			// only make a legal move (because we're using pseudolegal move generation)
 			if (!makeMove(moveList.moves[count], allMoves)) {
 				ply--;
 				continue;
@@ -286,6 +313,7 @@ public class BitBoardSearch {
 			if (score > alpha) {
 				bestMoveInThisPosition = moveList.moves[count];
 				
+				// history moves heuristic
 				if (getMoveCapture(moveList.moves[count]) == 0) {
 					historyMoves[getMovePiece(moveList.moves[count])][getMoveTarget(moveList.moves[count])] += depth;
 				}
@@ -335,7 +363,9 @@ public class BitBoardSearch {
 		return alpha;
 	}
 	
+	// only search captures, to limit horizon effect
 	public static int quiescence(int alpha, int beta) {
+		// time limit reached
 		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
 			keepSearching = false;
 			
@@ -356,12 +386,13 @@ public class BitBoardSearch {
 			alpha = evaluation;
 		}
 	
-		
+		// generate moves
 		moves moveList = new moves();
 		
 		generateMoves(moveList);
 		sortMoves(moveList);
 		
+		// loop over moves
 		for (int count = 0; count < moveList.count; count++) {
 			ply++;
 			
@@ -393,11 +424,14 @@ public class BitBoardSearch {
 		return alpha;
 	}
 	
+	// score a move for move ordering
 	public static int scoreMove(int move) {
+		// if it's the best recommended move in the transposition table, score it super high
 		if (move == getStoredMove()) {
 			return 20000;
 		}
 		
+		// if it's a capture, score it high
 		if (getMoveCapture(move) != 0) {
 			int targetPiece = P;
 			
@@ -412,18 +446,21 @@ public class BitBoardSearch {
 				}
 			}
 			
+			// score it higher or less higher based on how valuable the victim is, and how valuable the attacker is
 			return mvv_lva[getMovePiece(move)][targetPiece] + 10000;
 		} else {
+			// if it's a killer move, score it kinda high
 			if (killerMoves[0][ply] == move) {
 				return 9000;
 			} else if (killerMoves[1][ply] == move) {
 				return 8000;
-			} else {
+			} else { // if not, default to history moves
 				return historyMoves[getMovePiece(move)][getMoveTarget(move)];
 			}
 		}
 	}
 	
+	// sort moves for move ordering
 	public static void sortMoves(moves moveList) {
 		int moveScores[] = new int[moveList.count];
 		
@@ -431,6 +468,7 @@ public class BitBoardSearch {
 			moveScores[count] = scoreMove(moveList.moves[count]);
 		}
 		
+		// lazy O(n^2) sort
 		for (int currentMove = 0; currentMove < moveList.count; currentMove++) {
 			for (int nextMove = 0; nextMove < moveList.count; nextMove++) {
 				if (moveScores[currentMove] > moveScores[nextMove]) {

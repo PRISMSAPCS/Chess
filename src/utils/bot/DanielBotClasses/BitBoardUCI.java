@@ -13,15 +13,19 @@ import java.util.Scanner;
 
 import utils.ChessBoard;
 
+// implements UCI protocol, so the bot works with stuff like arena
 public class BitBoardUCI {
+	// parses a UCI move
 	public static int parseMove(String moveString) {
+		// generates a move list. we parse moves by just checking moves from our move list and seeing if they match
 		moves moveList = new moves();
-		
 		generateMoves(moveList);
 		
+		// get source and target squares from the input
 		int sourceSquare = (moveString.charAt(0) - 'a') + (8 - (moveString.charAt(1) - '0')) * 8;
 		int targetSquare = (moveString.charAt(2) - 'a') + (8 - (moveString.charAt(3) - '0')) * 8;
-				
+		
+		// loop through move list
 		for (int moveCount = 0; moveCount < moveList.count; moveCount++) {
 			int move = moveList.moves[moveCount];
 			
@@ -60,12 +64,14 @@ public class BitBoardUCI {
 		return 0;
 	}
 	
+	// parses a position command from the UCI
 	public static void parsePosition(String command) {
 		int index = 9;
 		
+		// starting position
 		if (command.contains("startpos")) {
 			parseFen(startPosition);
-		} else {
+		} else { // position includes a fen
 			index = command.indexOf("fen");
 			
 			if (index == -1) {
@@ -79,6 +85,7 @@ public class BitBoardUCI {
 		
 		index = command.indexOf("moves");
 		
+		// parse the moves
 		if (index != -1) {
 			index += 6;
 			command = command.substring(index);
@@ -96,10 +103,12 @@ public class BitBoardUCI {
 		clearHistory();
 	}
 	
+	// upon go, just search
 	public static void parseGo(String command) {
 		searchPosition();
 	}
 	
+	// main UCI loop
 	public static void uciLoop() {
 		Scanner input = new Scanner(System.in);
 		String command = "";
