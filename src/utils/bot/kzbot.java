@@ -102,6 +102,13 @@ public class kzbot extends ChessBot{
     
 
     public thing minimax1(int depth, Boolean maxing, ChessBoard b, int alpha, int beta, Move m){
+        if(m!=null){
+            if(m.getPiece2() != null){
+                if(m.getPiece2().getColor()) return new thing(m, -100000);
+                else return new thing(m, 100000);
+            }
+        }
+
         if(depth == 4){
             return new thing(m, b.evaluate());
         }
