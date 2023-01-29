@@ -5,6 +5,7 @@ package utils.bot.DanielBotClasses;
 public class BitBoardRandom {
 	static int randomState = 1804289383;
 	
+	// 32 bit int, use XOR shift
 	static int getRandomInt() {
 		int number = randomState;
 		
@@ -17,6 +18,7 @@ public class BitBoardRandom {
 		return number;
 	}
 	
+	// 64 bit long, using 4 32 bit ints
 	static long getRandomLong() {
 		long n1, n2, n3, n4;
 		
@@ -28,6 +30,7 @@ public class BitBoardRandom {
 		return n1 | (n2 << 16) | (n3 << 32) | (n4 << 48);
 	}
 	
+	// used for generating magics. honestly useless
 	static long generateMagicNumber() {
 		return getRandomLong() & getRandomLong() & getRandomLong();
 	}

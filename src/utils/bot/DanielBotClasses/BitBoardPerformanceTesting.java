@@ -13,7 +13,7 @@ public class BitBoardPerformanceTesting {
 	
 	// sets # of nodes from given depth
 	static void perftDriver(int depth) {
-		if (depth == 1) {
+		if (depth == 0) {
 			nodes++;
 			return;
 		}

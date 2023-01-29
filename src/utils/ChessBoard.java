@@ -147,15 +147,15 @@ public class ChessBoard {
 			if(getBoard(theMove.getCapture()) instanceof King) {
 				kingPos[this.side? 0: 1] = new Pair(-1, -1);
 			}
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getCapture().first, theMove.getCapture().second)];
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
+		toAdd.add(new unMove((board[theMove.getEnd().first][theMove.getEnd().second] != null) ? board[theMove.getEnd().first][theMove.getEnd().second].clone() : null, theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
 		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd().first, theMove.getEnd().second)];
 		
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
 		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart().first, theMove.getStart().second)];
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
@@ -164,7 +164,7 @@ public class ChessBoard {
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd2().first, theMove.getEnd2().second)];
 
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart2().first, theMove.getStart2().second)];
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
@@ -965,9 +965,6 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
-			if (piece != null) {
-				piece.undoMoveCounter();
-			}
 			board[location.first][location.second] = piece;
 			// undo the position of king
 			if(piece instanceof King) {
