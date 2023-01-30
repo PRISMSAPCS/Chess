@@ -371,7 +371,7 @@ public class BitBoardConsts {
 		a8, b8, c8, d8, e8, f8, g8, h8
 	};
 	
-	// most valuable victim, least valuable attacker tabls for move ordering
+	// most valuable victim, least valuable attacker tables for move ordering
 	public static final int mvv_lva[][] = {
 		 	{105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
 			{104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},

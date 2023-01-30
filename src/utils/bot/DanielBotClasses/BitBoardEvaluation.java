@@ -84,6 +84,58 @@ public class BitBoardEvaluation {
 		return whitePieceScores + blackPieceScores;
 	}
 	
+	// checks if a player is drawing due to lack of mating material
+	public static boolean drawing(int side) {
+		// if pawns or queen exists, mate can occur
+		if (bitboards[P + side * 6] != 0) return false;
+		if (bitboards[Q + side * 6] != 0) return false;
+		
+		int knightsUs = countBits(bitboards[N + side * 6]);
+		int bishopsUs = countBits(bitboards[B + side * 6]);
+		int rooksUs = countBits(bitboards[R + side * 6]);
+		int minorPiecesUs = knightsUs + bishopsUs;
+		int allPiecesUs = minorPiecesUs + rooksUs;
+		
+		// no need to worry about their heavy pieces, or pawns. if we're losing, eval function won't consider our lack of mating material
+		int knightsThem = countBits(bitboards[n - side * 6]);
+		int bishopsThem = countBits(bitboards[b - side * 6]);
+		int minorPiecesThem = knightsThem + bishopsThem;
+		
+		// first, consider no rooks
+		if (rooksUs == 0) { 
+			// no pieces on the board
+			if (allPiecesUs == 0 && minorPiecesThem == 0) return true;
+			
+			// one piece each is a draw
+			if (minorPiecesUs <= 1 && minorPiecesThem <= 1) return true;
+			
+			// two knights (or less) is a draw
+			if (bishopsUs == 0 && knightsUs <= 2 && minorPiecesThem <= 1) return true;
+			
+			// bishop pair only
+			if (bishopsUs == 2 && allPiecesUs == 2) {
+				// bishop pair wins against knight pair
+				if (knightsThem <= 2 && bishopsThem == 0) return false;
+				
+				// bishop pair draws against any bishop
+				if (bishopsThem != 0) return true;
+			}
+			
+			// two minor pieces against one draws (if no bishop pair)
+			if (bishopsUs <= 2 && minorPiecesUs == 2 && minorPiecesThem == 1) return true; 
+		}
+		
+		// only one rook
+		if (rooksUs == 1 && allPiecesUs == 1) {
+			// rook vs one minor piece is a draw, unless there are tactics.
+			// tactics will be detected in the search
+			if (minorPiecesThem == 1) return true;
+		}
+		
+		// default to not a draw
+		return false;
+	}
+	
 	// basic eval function
 	public static int evaluate() {
 		int gamePhaseScore = getGamePhaseScore();
@@ -312,6 +364,12 @@ public class BitBoardEvaluation {
 		} else if (gamePhase == endgame) {
 			score += scoreEndgame;
 		}
+		
+		// white is winning, but lacks sufficient material to mate
+		if (score > 0 && drawing(white)) score /= 16;
+		
+		// black is winning, but lacks sufficient material to mate
+		if (score < 0 && drawing(black)) score /= 16;
 		
 		// since we use negamax, return in the perspective of the side to play
 		return (side == white) ? score : score * -1;

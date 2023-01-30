@@ -67,7 +67,8 @@ public class BitBoard {
 	
 	public static void main(String[] args) {
 		initAll();
-		parseFen(startPosition);
-		perftTest(6);
+		parseFen("4k1n1/8/8/8/8/8/8/4KBN1 w - - 0 1");
+		printBoard();
+		System.out.println(evaluate());
 	}
 }

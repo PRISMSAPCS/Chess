@@ -50,16 +50,18 @@ public class BitBoardSearch {
 	// search driver which does book moves and iterative deepening
 	public static int searchPosition() {
 		// book move stuff
-		int bookMove = getBookMove();
-		
-		if (bookMove != -1) {
-			makeMove(bookMove, allMoves);
-			if (useUCIIO) {
-				System.out.print("bestmove ");
-				printMove(bookMove);
-				System.out.println();
+		if (useBook) {
+			int bookMove = getBookMove();
+			
+			if (bookMove != -1) {
+				makeMove(bookMove, allMoves);
+				if (useUCIIO) {
+					System.out.print("bestmove ");
+					printMove(bookMove);
+					System.out.println();
+				}
+				return bookMove;
 			}
-			return bookMove;
 		}
 		
 		// clear hash table between moves
