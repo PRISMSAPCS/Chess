@@ -10,8 +10,8 @@ import utils.bot.KZBotResources.*;
 
 public class kzbot extends ChessBot{
     Random rand = new Random();
-    static private int MIN = -100000;
-    static private int MAX = 100000;
+    static private int MIN = -1000000;
+    static private int MAX = 1000000;
     class thing{
         public Move m;
         public int v;
@@ -110,8 +110,8 @@ public class kzbot extends ChessBot{
             }
         }
 
-        if(depth == 4){
-            return new thing(m, /*b.evaluate()*/ KZEval.eval(b, depth, maxing));
+        if(depth == 2){
+            return new thing(m, /*b.evaluate()*/ KZEval.eval(b, depth));
         }
 
         ArrayList<Move> allLegal = b.getAllLegalMoves();
@@ -177,7 +177,8 @@ public class kzbot extends ChessBot{
     public Move getMove(){
         Move finalMove = null;
         ChessBoard b1 = new ChessBoard(super.getBoard());
-        thing d = minimax1(0, side, b1, MIN, MAX, null);
+        System.out.println(KZEval.eval(b1, 1));
+        thing d = minimax1(0, !side, b1, MIN, MAX, null);
         finalMove = d.m;
         return finalMove;
     }

@@ -7,6 +7,7 @@ import utils.ChessBoard;
 import utils.King;
 import utils.Knight;
 import utils.Move;
+import utils.Pair;
 import utils.Pawn;
 import utils.Piece;
 import utils.Queen;
@@ -153,14 +154,14 @@ public class KZEval {
 
         int counter = 0;
         int material = rateMaterial(b, side);
-        counter += rateAttack(b);
-        counter += rateMoveability(board, b, side);
+        counter += rateAttack(board, b, side);
+        counter += rateMoveability(board, b, side, depth);
         counter += ratePosition(board, b, material, !side);
         counter += material;
 
         material = rateMaterial(b, !side);
-        counter -= rateAttack(b);
-        counter -= rateMoveability(board, b, !side);
+        counter -= rateAttack(board, b, side);
+        counter -= rateMoveability(board, b, !side, depth);
         counter -= ratePosition(board, b, material, !side);
         counter -= material;
 
@@ -200,8 +201,33 @@ public class KZEval {
         return counter;
     }
 
-    public static int rateAttack(Piece[][] b){
-        return 0;
+    public static int rateAttack(ChessBoard board, Piece[][] b, boolean side){
+        int counter = 0;
+        int threatening = 0;
+        for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+                if (b[i][j] != null && b[i][j].getColor() == side) {
+                    threatening = attackedBy(board, i, j, side);
+                    if(threatening == 0){
+                        continue;
+                    }
+                    if(b[i][j] instanceof Pawn){
+                        counter -= threatening * 30;
+                    }else if(b[i][j] instanceof Rook){
+                        counter -= threatening * 70;
+                    }else if(b[i][j] instanceof Knight){
+                        counter -= threatening * 40;
+                    }else if(b[i][j] instanceof Bishop){
+                        counter -= threatening * 50;
+                    }else if(b[i][j] instanceof Queen){
+                        counter -= threatening * 100;
+                    }else if(b[i][j] instanceof King){
+                        counter -= threatening * 200;
+                    }
+                }
+            }
+        }
+        return counter;
     }
 
     public static int moveNumber(ChessBoard board, Piece[][] b, boolean side){
@@ -219,13 +245,22 @@ public class KZEval {
 		return allLegalMoves;
     }
 
+    public static int attackedBy(ChessBoard board, int row, int column, boolean side /*defending side*/){
+        int counter  = 0;
+        counter  = board.piecesThreatened(new Pair(row, column), !side).size();
+        return counter;
+    }
 
-    public static int rateMoveability(ChessBoard board, Piece[][] b, boolean side){
+    public static int rateMoveability(ChessBoard board, Piece[][] b, boolean side, int depth){
         int counter = 0;
         int numOfMoves = moveNumber(board, b, side);
         counter = numOfMoves * 5;
         if(numOfMoves == 0){
-            counter -= 20000;
+            if(board.gameOver(side) == 1){
+                counter -= 200000 * depth;
+            }if(board.gameOver(side) == 2){
+                counter -= 150000 * depth;
+            }
         }
         return counter;
 
