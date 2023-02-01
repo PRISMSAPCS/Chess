@@ -158,34 +158,34 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 				if(board.getBoard()[x][y] instanceof Pawn) {
 					if(board.getBoard()[x+1][y+1] instanceof Pawn && board.getBoard()[x+1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
 						if(board.getBoard()[x][y].getColor()) {
-							evalMod += 0.5;
+							evalMod += 5;
 						}
 						else {
-							evalMod -= 0.5;
+							evalMod -= 5;
 						}
 					}
 					if(board.getBoard()[x-1][y+1] instanceof Pawn && board.getBoard()[x-1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
 						if(board.getBoard()[x][y].getColor()) {
-							evalMod += 0.5;
+							evalMod += 5;
 						}
 						else {
-							evalMod -= 0.5;
+							evalMod -= 5;
 						}
 					}
 					if(board.getBoard()[x+1][y-1] instanceof Pawn && board.getBoard()[x+1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
 						if(board.getBoard()[x][y].getColor()) {
-							evalMod += 0.5;
+							evalMod += 5;
 						}
 						else {
-							evalMod -= 0.5;
+							evalMod -= 5;
 						}
 					}
 					if(board.getBoard()[x-1][y-1] instanceof Pawn && board.getBoard()[x-1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
 						if(board.getBoard()[x][y].getColor()) {
-							evalMod += 0.5;
+							evalMod += 5;
 						}
 						else {
-							evalMod -= 0.5;
+							evalMod -= 5;
 						}
 					}
 				}
