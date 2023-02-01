@@ -193,7 +193,7 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 	if(depth == 0) {
 		int eval = board.evaluate();
 		double evalMod = 0;
-		for(int x = 0; x<8; x++) {
+		/*for(int x = 0; x<8; x++) {
 			for(int y = 0; y<8; y++) {
 				if(board.getBoard()[x][y] instanceof Pawn) {
 					if(board.getBoard()[x+1][y+1] instanceof Pawn && board.getBoard()[x+1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
@@ -212,7 +212,8 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 							evalMod -= 5;
 						}
 					}
-					if(board.getBoard()[x+1][y-1] instanceof Pawn && board.getBoard()[x+1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
+					
+					if(board.getBoard()[x+1][y-1] && board.getBoard()[x+1][y-1] instanceof Pawn && board.getBoard()[x+1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
 						if(board.getBoard()[x][y].getColor()) {
 							evalMod += 5;
 						}
@@ -231,7 +232,7 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 				}
 			}
 			eval += (int)evalMod;
-		}
+		}*/
 			evalMod = 0;
 			double endGameW;
 			int piece = 0;
@@ -254,7 +255,7 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 					}
 				}
 			}
-			endGameW = (1/16)*piece;
+			endGameW = 1-((1/16)*piece);
 			int opKingCentRank =  Math.max(3 - opKingRank, opKingRank - 4);
 			int opKingCentFile = Math.max(3 - opKingFile, opKingFile - 4);
 			int opKingDisCent = opKingCentFile + opKingCentRank;
