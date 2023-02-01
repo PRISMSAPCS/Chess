@@ -48,7 +48,6 @@ public class DanielBot extends ChessBot {
 	static final String bookFile = "final.pgn";
 	
 	Entry[] entries;
-	int evalMult;
 	
 	int posCounter;
 	int transpositionCounter;
@@ -65,11 +64,10 @@ public class DanielBot extends ChessBot {
 	
 	boolean finishedSearching;
 	private boolean inBook;
-	public DanielBot(ChessBoard board, boolean side) {
+	public DanielBot(ChessBoard board) {
 		super(board);
 		inBook = true;
-		evalMult = (side) ? 1 : -1;
-		entries = new Entry[64000];
+		//entries = new Entry[64000];
 		initAll();
 	}
 

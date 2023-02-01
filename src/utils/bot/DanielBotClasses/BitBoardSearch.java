@@ -4,21 +4,12 @@ import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
-import static utils.bot.DanielBotClasses.BitBoardUCI.parseMove;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
-
-import utils.Bishop;
-import utils.Knight;
-import utils.Piece;
-import utils.PromotionMove;
-import utils.Queen;
-import utils.Rook;
-
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
@@ -43,6 +34,10 @@ public class BitBoardSearch {
 	// triangular principle variation table
 	public static int pvLength[] = new int[maxPly];
 	public static int pvTable[][] = new int[100][maxPly];
+	
+	// scoring and following PV nodes for move ordering
+	static boolean scorePV = false;
+	static boolean followPV = false;
 	
 	// diagnostic
 	static int transpositions;
@@ -80,6 +75,8 @@ public class BitBoardSearch {
 		historyMoves = new int[12][maxPly];
 		pvLength = new int[maxPly];
 		pvTable = new int[maxPly][maxPly];
+		scorePV = false;
+		followPV = false;
 		
 		// for printing
 		int bestMove = 0;
@@ -90,14 +87,27 @@ public class BitBoardSearch {
 		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
 			long oldNodes = nodes;
 			
-			score = negamax(-50000, 50000, currentDepth);
-			
+			// aspiration search
+			if (currentDepth == 1) {
+				score = negamax(-50000, 50000, currentDepth);
+			} else {
+				int alpha = score - 50, beta = score + 50;
+				
+				score = negamax(alpha, beta, currentDepth);
+				
+				if (score <= alpha || score >= beta) {
+					score = negamax(-50000, 50000, currentDepth);
+				}
+			}
 			// we finished the search all the way to the end
 			if (keepSearching) {
 				// for diagnostics
 				finalScore = score;
 				maxDepthSearched = currentDepth;
 				bestMove = pvTable[0][0];
+				
+				// enable following PV
+				followPV = true;
 				
 				// special IO for uci, more pretty when not using UCI
 				if (useUCIIO) {
@@ -148,6 +158,11 @@ public class BitBoardSearch {
 		
 		if (positionRepeated() || moveRule >= 50) {
 			return 0;
+		}
+		
+		// we have reached max ply so some of our arrays are overflowing, break out
+		if (ply >= maxPly) {
+			return evaluate();
 		}
 		
 		// is king in check
@@ -232,6 +247,7 @@ public class BitBoardSearch {
 		moves moveList = new moves();
 		
 		generateMoves(moveList);
+		if (followPV) enablePVScoring(moveList);
 		sortMoves(moveList);
 		
 		int bestMoveInThisPosition = noHashEntry;
@@ -280,7 +296,7 @@ public class BitBoardSearch {
 					/**
 					 * Operates under the observation that, with good move ordering, a beta cutoff will usually happen at the first node,
 					 * or not at all. Thus, we only enter LMR if movesSearched is not 0. We apply LMR to non-forcing moves, which means that
-					 * we don't do reduced depth searches for positions in check, or for moves that capture or promoted. Then, if the move
+					 * we don't do reduced depth searches for positions in check, or for moves that capture or promote. Then, if the move
 					 * surprises us with a score above alpha, we do a full depth search.
 					 */
 					if (movesSearched >= fullDepthMoves
@@ -378,6 +394,11 @@ public class BitBoardSearch {
 
 		int evaluation = evaluate();
 		
+		// we have reached our max ply, so we just leave
+		if (ply >= maxPly) {
+			return evaluation;
+		}
+		
 		// beta cutoff
 		if (evaluation >= beta) {
 			return beta;
@@ -426,8 +447,29 @@ public class BitBoardSearch {
 		return alpha;
 	}
 	
+	public static void enablePVScoring(moves moveList) {
+		// disable by default, in case we do not find a pv node
+		followPV = false;
+		
+		for (int count = 0; count < moveList.count; count++) {
+			if (pvTable[0][ply] == moveList.moves[count]) {
+				// enable pv stuff
+				scorePV = true;
+				followPV = true;
+			}
+		}
+	}
+	
 	// score a move for move ordering
 	public static int scoreMove(int move) {
+		// if it's the best move in the PV table, score it ultra super mega high
+		if (scorePV) {
+			if (pvTable[0][ply] == move) {
+				scorePV = false;
+				return 30000;
+			}
+		}
+		
 		// if it's the best recommended move in the transposition table, score it super high
 		if (move == getStoredMove()) {
 			return 20000;

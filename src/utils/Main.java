@@ -33,7 +33,7 @@ public class Main {
 					GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Wins!");
 					break;
 				} else if(board.gameOver(board.getSide()) == 2) {
-					GUI.popInfo("Game Over! Stalemate");
+					GUI.popInfo("Game Over! Draw");
 					break;
 				}
 				//            	board.restart();
@@ -62,7 +62,7 @@ public class Main {
 				if(board.gameOver(board.getSide()) == 1) {
 					GUI.popInfo("Game Over! " + ((board.getSide())? "Black": "White") + " Win!");
 				} else if(board.gameOver(board.getSide()) == 2) {
-					GUI.popInfo("Game Over! Stalemate");
+					GUI.popInfo("Game Over! Draw");
 				}
 				//board.restart();
 				//gui.drawBoard();
@@ -89,13 +89,13 @@ public class Main {
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 			GUI gui = new GUI(board, true);
-			normalGame(board, gui, new CanGetMove[] {new kzbot(board, false), new kzbot(board, true)});
+			normalGame(board, gui, new CanGetMove[] {new DanielBot(board), new TonyNegaMaxPVSTT(board, true)});
 		} else if (list.getSelectedValue().equals("Play Against Bot As White")){
 			GUI gui = new GUI(board, false);
-			normalGame(board, gui, new CanGetMove[] {new DanielBot(board, false), gui});
+			normalGame(board, gui, new CanGetMove[] {new DanielBot(board), gui});
 		} else if (list.getSelectedValue().equals("Play Against Bot As Black")){
 			GUI gui = new GUI(board, false);
-			normalGame(board, gui, new CanGetMove[] {gui, new DanielBot(board, true)});
+			normalGame(board, gui, new CanGetMove[] {gui, new DanielBot(board)});
 		}
     }
 }
