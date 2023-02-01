@@ -8,6 +8,6 @@ public class BitBoardSettings {
 	public static final int hashTableSize = 640000;
 	
 	public static final boolean useBook = true;
-	public static final String bookFilePath = "finalBook.bin";
+	public static final String bookFilePath = "bigBook.bin";
 	public static final boolean bestBookMoveOnly = false;
 }

@@ -44,6 +44,10 @@ public class BitBoardSearch {
 	public static int pvLength[] = new int[maxPly];
 	public static int pvTable[][] = new int[100][maxPly];
 	
+	// scoring and following PV nodes for move ordering
+	static boolean scorePV = false;
+	static boolean followPV = false;
+	
 	// diagnostic
 	static int transpositions;
 	
@@ -80,6 +84,8 @@ public class BitBoardSearch {
 		historyMoves = new int[12][maxPly];
 		pvLength = new int[maxPly];
 		pvTable = new int[maxPly][maxPly];
+		scorePV = false;
+		followPV = false;
 		
 		// for printing
 		int bestMove = 0;
@@ -98,6 +104,9 @@ public class BitBoardSearch {
 				finalScore = score;
 				maxDepthSearched = currentDepth;
 				bestMove = pvTable[0][0];
+				
+				// enable following PV
+				followPV = true;
 				
 				// special IO for uci, more pretty when not using UCI
 				if (useUCIIO) {
@@ -232,6 +241,7 @@ public class BitBoardSearch {
 		moves moveList = new moves();
 		
 		generateMoves(moveList);
+		if (followPV) enablePVScoring(moveList);
 		sortMoves(moveList);
 		
 		int bestMoveInThisPosition = noHashEntry;
@@ -280,7 +290,7 @@ public class BitBoardSearch {
 					/**
 					 * Operates under the observation that, with good move ordering, a beta cutoff will usually happen at the first node,
 					 * or not at all. Thus, we only enter LMR if movesSearched is not 0. We apply LMR to non-forcing moves, which means that
-					 * we don't do reduced depth searches for positions in check, or for moves that capture or promoted. Then, if the move
+					 * we don't do reduced depth searches for positions in check, or for moves that capture or promote. Then, if the move
 					 * surprises us with a score above alpha, we do a full depth search.
 					 */
 					if (movesSearched >= fullDepthMoves
@@ -426,8 +436,29 @@ public class BitBoardSearch {
 		return alpha;
 	}
 	
+	public static void enablePVScoring(moves moveList) {
+		// disable by default, in case we do not find a pv node
+		followPV = false;
+		
+		for (int count = 0; count < moveList.count; count++) {
+			if (pvTable[0][ply] == moveList.moves[count]) {
+				// enable pv stuff
+				scorePV = true;
+				followPV = true;
+			}
+		}
+	}
+	
 	// score a move for move ordering
 	public static int scoreMove(int move) {
+		// if it's the best move in the PV table, score it ultra super mega high
+		if (scorePV) {
+			if (pvTable[0][ply] == move) {
+				scorePV = false;
+				return 30000;
+			}
+		}
+		
 		// if it's the best recommended move in the transposition table, score it super high
 		if (move == getStoredMove()) {
 			return 20000;

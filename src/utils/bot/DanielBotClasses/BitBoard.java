@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import utils.*;
 import utils.bot.DanielBotClasses.NNUE.*;
 
-public class BitBoard {
-	static boolean init = false;
-	
+public class BitBoard {	
 	public static int getBitBoardMove(ChessBoard board) {
 		setUpBitBoard(board);
 		clearHistory();
@@ -33,7 +31,6 @@ public class BitBoard {
 	}
 	
 	public static void setUpBitBoard(ChessBoard board) {
-		if (!init) initAll();
 		clearRepetitionTable();
 		ArrayList<Move> previousMoves = board.getPreviousMoves();
 		parseFen(startPosition);
@@ -56,7 +53,6 @@ public class BitBoard {
 	}
 	
 	public static void initAll() {
-		init = true;
 		initLeapersAttacks();
 		initSlidersAttacks(bishop);
 		initSlidersAttacks(rook);
@@ -67,8 +63,8 @@ public class BitBoard {
 	
 	public static void main(String[] args) {
 		initAll();
-		parseFen("4k1n1/8/8/8/8/8/8/4KBN1 w - - 0 1");
+		parseFen("4kb1r/5ppb/p1p4p/6qP/P3PPn1/7B/1NPKNQ2/2R4R b - - 0 0");
 		printBoard();
-		System.out.println(evaluate());
+		searchPosition();
 	}
 }

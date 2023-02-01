@@ -365,6 +365,8 @@ public class BitBoardEvaluation {
 			score += scoreEndgame;
 		}
 		
+		score += mopUpEval();
+		
 		// white is winning, but lacks sufficient material to mate
 		if (score > 0 && drawing(white)) score /= 16;
 		
@@ -373,5 +375,62 @@ public class BitBoardEvaluation {
 		
 		// since we use negamax, return in the perspective of the side to play
 		return (side == white) ? score : score * -1;
+	}
+	
+	// gets how much material one side has
+	public static int materialScore(int side) {
+		int materialScores = 0;
+		
+		if (side == white) {
+			for (int piece = P; piece <= Q; piece++) {
+				materialScores += countBits(bitboards[piece]) * materialScore[opening][piece];
+			}
+		} else {
+			for (int piece = p; piece <= q; piece++) {
+				materialScores += countBits(bitboards[piece]) * -materialScore[opening][piece];
+			}
+		}
+		
+		return materialScores;
+	}
+	
+	public static double mopUpEval() {
+		int mopUpScore = 0;
+		
+		int whiteMaterialScore = materialScore(white);
+		int blackMaterialScore = materialScore(black);
+		
+		double multiplier = (double) (whiteMaterialScore - blackMaterialScore) / ((whiteMaterialScore + blackMaterialScore) * (whiteMaterialScore + blackMaterialScore)) * 3000;
+		
+		int friendlyKingRank = -1, friendlyKingFile = -1;
+		int enemyKingRank = -1, enemyKingFile = -1;
+		
+		if (multiplier > 0) {
+			int friendlySquare = getLS1BIndex(bitboards[K]);
+			int enemySquare = getLS1BIndex(bitboards[k]);
+			
+			friendlyKingRank = friendlySquare / 8;
+			friendlyKingFile = friendlySquare % 8;
+			
+			enemyKingRank = enemySquare / 8;
+			enemyKingFile = enemySquare % 8;
+		} else {
+			int friendlySquare = getLS1BIndex(bitboards[k]);
+			int enemySquare = getLS1BIndex(bitboards[K]);
+			
+			friendlyKingRank = friendlySquare / 8;
+			friendlyKingFile = friendlySquare % 8;
+			
+			enemyKingRank = enemySquare / 8;
+			enemyKingFile = enemySquare % 8;
+		}
+		
+		int enemyKingDstFromCenter = Math.max(3 - enemyKingRank, enemyKingRank - 4) + Math.max(3 - enemyKingFile, enemyKingFile - 4);
+		int kingDistance = Math.abs(friendlyKingRank - enemyKingRank) + Math.abs(friendlyKingFile - enemyKingFile);
+		
+		mopUpScore += enemyKingDstFromCenter * 10;
+		mopUpScore += (14 - kingDistance) * 4;
+		
+		return mopUpScore * multiplier;
 	}
 }
