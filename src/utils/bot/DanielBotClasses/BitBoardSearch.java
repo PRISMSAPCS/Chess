@@ -4,21 +4,12 @@ import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
-import static utils.bot.DanielBotClasses.BitBoardUCI.parseMove;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
-
-import utils.Bishop;
-import utils.Knight;
-import utils.Piece;
-import utils.PromotionMove;
-import utils.Queen;
-import utils.Rook;
-
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 

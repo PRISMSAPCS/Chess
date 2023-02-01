@@ -89,11 +89,7 @@ public class Main {
 			//* 2. replace all YourChessBot with the class name of your own chess bot
 			//// normalGame(board, gui, new YourChessBot[] {new YourChessBot(board), new YourChessBot(board)});
 			GUI gui = new GUI(board, true);
-<<<<<<< HEAD
 			normalGame(board, gui, new CanGetMove[] {new DanielBot(board), new TonyNegaMaxPVSTT(board, true)});
-=======
-			normalGame(board, gui, new CanGetMove[] {new DanielBot(board), new GraydenBot(board, 2)});
->>>>>>> aacce56cb9cafd55c35b598451098e26c169ca0b
 		} else if (list.getSelectedValue().equals("Play Against Bot As White")){
 			GUI gui = new GUI(board, false);
 			normalGame(board, gui, new CanGetMove[] {new DanielBot(board), gui});
