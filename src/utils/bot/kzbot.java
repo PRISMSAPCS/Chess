@@ -7,11 +7,21 @@ import java.util.ArrayList;
 import java.util.Random;
 import utils.bot.KZBotResources.*;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
+import utils.*;
+
+
 
 public class kzbot extends ChessBot{
     Random rand = new Random();
     static private int MIN = -1000000;
     static private int MAX = 1000000;
+    private long start = 0;
+    private int properDepth = 2;
+    private int amountUnder = 0;
+    private int amountOver = 0;
     class thing{
         public Move m;
         public int v;
@@ -48,7 +58,7 @@ public class kzbot extends ChessBot{
         return bo.getAllLegalMoves();
     }
 
-    private thing minimax(ChessBoard bo, int d){
+    /*private thing minimax(ChessBoard bo, int d){
 
             ArrayList<Move> moveArray = new ArrayList<>();
             moveArray = getAllLegal(bo);
@@ -89,7 +99,7 @@ public class kzbot extends ChessBot{
             }/*else if(temp == hiscore && rand.nextInt(3)==1){//slight randomization here, quick fix, needs to be revamped.
                 hiscoreIndex = i;
             }*/
-        }
+        /*}
 
         Move bestMove = null;
         try{
@@ -99,19 +109,30 @@ public class kzbot extends ChessBot{
             //bestMove = null;
         }
         return new thing(bestMove, hiscore);
-    }
-    
+    }*/
 
     public thing minimax1(int depth, Boolean maxing, ChessBoard b, int alpha, int beta, Move m){
+
+        if(System.currentTimeMillis() - start > 4990){
+            return null;
+        }
+
         if(m!=null){
             if(m.getPiece2() != null){
                 if(m.getPiece2().getColor()) return new thing(m, 100000); 
                 else return new thing(m, -100000);
             }
         }
+        int modifier = 0;
 
-        if(depth == 2){
-            return new thing(m, /*b.evaluate()*/ KZEval.eval(b, depth));
+        /*if(depth == 1){
+            modifier = KZEval.eval(b, maxing) * -10;
+        }*/
+
+        if(depth == properDepth){
+
+            int evaluation = KZEval.eval(b, depth);
+            return new thing(m, /*b.evaluate()*/ evaluation);
         }
 
         ArrayList<Move> allLegal = b.getAllLegalMoves();
@@ -126,15 +147,13 @@ public class kzbot extends ChessBot{
             for(int i=0; i<allLegal.size(); i++){
                 m1 = allLegal.get(i);
                 ChessBoard b2 = new ChessBoard(b);
-
                 b2.submitMove(m1);
-
                 thing a = minimax1(depth+1, false, b2, alpha, beta, m1);
 
                 if(a==null){
                     continue;
                 }
-                int val = a.v;
+                int val = a.v + modifier;
 
                 best = Math.max(best, val);
                 if(best == val){
@@ -157,7 +176,7 @@ public class kzbot extends ChessBot{
                 if(a==null){
                     continue;
                 }
-                int val = a.v;
+                int val = a.v + modifier;
                 best = Math.min(best,val);
                 if(best == val){
                     b1 = m1;
@@ -176,9 +195,25 @@ public class kzbot extends ChessBot{
 
     public Move getMove(){
         Move finalMove = null;
+        start = System.currentTimeMillis();
         ChessBoard b1 = new ChessBoard(super.getBoard());
-        System.out.println(KZEval.eval(b1, 1));
-        thing d = minimax1(0, !side, b1, MIN, MAX, null);
+        thing d = minimax1(0, side, b1, MIN, MAX, null);
+        if(System.currentTimeMillis() - start < 4000){
+            amountUnder++;
+            amountOver = 0;
+        }
+        if(amountUnder > 1){
+            amountUnder = 0;
+            properDepth++;
+        }
+        if(System.currentTimeMillis() - start >= 4990){
+            amountOver++;
+            amountUnder = 0;
+        }
+        if(amountOver > 1 && properDepth > 2){
+            amountOver = 0;
+            properDepth--;
+        }
         finalMove = d.m;
         return finalMove;
     }
