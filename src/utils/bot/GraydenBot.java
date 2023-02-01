@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import utils.Piece;
 import utils.ChessBoard;
+import utils.King;
 import utils.Move;
 import utils.Pawn;
 
@@ -13,6 +14,7 @@ public class GraydenBot extends ChessBot {
 	int test1;
 	int test2;
 	int mode;
+	boolean side;
 	public GraydenBot(ChessBoard board,int mode) {
 		super(board);
 		this.mode = mode;
@@ -21,7 +23,6 @@ public class GraydenBot extends ChessBot {
 	@Override
 	public Move getMove() {
 		thing = false;
-		boolean side;
 		int alpha = Integer.MIN_VALUE;
 		int beta = Integer.MAX_VALUE;
 		ArrayList<Move> allMove = grabMoves(this.getBoard());
@@ -125,11 +126,50 @@ public int negamax(int depth,ChessBoard board, boolean color/*, int alpha, int b
 	}
 	if(depth == 0) {
 		test2++;
+		double evalMod = 0;
+		for(int x = 0; x<8; x++) {
+			for(int y = 0; y<8; y++) {
+				if(board.getBoard()[x][y] instanceof Pawn) {
+					if(board.getBoard()[x+1][y+1] instanceof Pawn && board.getBoard()[x+1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 5;
+						}
+						else {
+							evalMod -= 5;
+						}
+					}
+					if(board.getBoard()[x-1][y+1] instanceof Pawn && board.getBoard()[x-1][y+1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 5;
+						}
+						else {
+							evalMod -= 5;
+						}
+					}
+					if(board.getBoard()[x+1][y-1] instanceof Pawn && board.getBoard()[x+1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 5;
+						}
+						else {
+							evalMod -= 5;
+						}
+					}
+					if(board.getBoard()[x-1][y-1] instanceof Pawn && board.getBoard()[x-1][y-1].getColor()==board.getBoard()[x][y].getColor()) {
+						if(board.getBoard()[x][y].getColor()) {
+							evalMod += 5;
+						}
+						else {
+							evalMod -= 5;
+						}
+					}
+				}
+			}
+		}
 		if(this.getBoard().getSide()) {
-			return board.evaluate();
+			return (int) (board.evaluate() + evalMod);
 		}
 		else {
-			return board.evaluate()*-1;
+			return (int) ((board.evaluate()*-1) + evalMod);
 		}
 	}
 	int value = Integer.MIN_VALUE;
@@ -191,9 +231,40 @@ public int miniMaxOriginal(int depth,ChessBoard board, boolean color) {
 				}
 			}
 			eval += (int)evalMod;
+		}
+			evalMod = 0;
+			double endGameW;
+			int piece = 0;
+			int opKingRank = 0;
+			int opKingFile = 0;
+			int frKingRank = 0;
+			int frKingFile = 0;
+			for(int x = 0; x<8; x++) {
+				for(int y = 0; y<8; y++) {
+					if(this.getBoard().getBoard()[x][y] instanceof Piece && this.getBoard().getBoard()[x][y].getColor() != this.side) {
+						piece += 1;
+					}
+					else if(this.getBoard().getBoard()[x][y] instanceof King) {
+						opKingRank = x;
+						opKingFile = y;
+					}
+					else if(this.getBoard().getBoard()[x][y] instanceof King && this.getBoard().getBoard()[x][y].getColor() == this.side) {
+						frKingRank = x;
+						frKingFile = y;
+					}
+				}
+			}
+			endGameW = (1/16)*piece;
+			int opKingCentRank =  Math.max(3 - opKingRank, opKingRank - 4);
+			int opKingCentFile = Math.max(3 - opKingFile, opKingFile - 4);
+			int opKingDisCent = opKingCentFile + opKingCentRank;
+			evalMod += opKingDisCent;
+			int disKingRank = Math.abs(frKingRank - opKingRank);
+			int disKingFile = Math.abs(frKingFile - opKingFile);
+			evalMod += 14 - (disKingRank+disKingFile);
+			eval += (evalMod*10*endGameW);
 			return eval;
 		}
-	}
 	if(color==this.getBoard().getSide()) {
 		int max;
 		if(this.getBoard().getSide()) {
