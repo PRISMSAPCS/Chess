@@ -96,8 +96,18 @@ public class BitBoardSearch {
 		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
 			long oldNodes = nodes;
 			
-			score = negamax(-50000, 50000, currentDepth);
-			
+			// aspiration search
+			if (currentDepth == 1) {
+				score = negamax(-50000, 50000, currentDepth);
+			} else {
+				int alpha = score - 50, beta = score + 50;
+				
+				score = negamax(alpha, beta, currentDepth);
+				
+				if (score <= alpha || score >= beta) {
+					score = negamax(-50000, 50000, currentDepth);
+				}
+			}
 			// we finished the search all the way to the end
 			if (keepSearching) {
 				// for diagnostics
@@ -157,6 +167,11 @@ public class BitBoardSearch {
 		
 		if (positionRepeated() || moveRule >= 50) {
 			return 0;
+		}
+		
+		// we have reached max ply so some of our arrays are overflowing, break out
+		if (ply >= maxPly) {
+			return evaluate();
 		}
 		
 		// is king in check
@@ -387,6 +402,11 @@ public class BitBoardSearch {
 		nodes++;
 
 		int evaluation = evaluate();
+		
+		// we have reached our max ply, so we just leave
+		if (ply >= maxPly) {
+			return evaluation;
+		}
 		
 		// beta cutoff
 		if (evaluation >= beta) {
