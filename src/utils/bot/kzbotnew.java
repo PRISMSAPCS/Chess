@@ -72,8 +72,7 @@ public class kzbotnew extends ChessBot{
         ArrayList<Move> allLegal = b.getAllLegalMoves();
         numPerLayer.add(allLegal.size());
 
-
-
+        return null;
     }
     
 

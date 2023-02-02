@@ -14,7 +14,7 @@ public class Main {
 	 * @param gui GUI corresponding to the board
 	 * @param moveSource sources of moving. An array with 2 elements, represents the two sides of players
 	 */
-	public static void normalGame(ChessBoard board, GUI gui, CanGetMove[] moveSource) {
+	public static void normalGame(ChessBoard board, GUI gui, CanGetMove[] moveSource) throws InterruptedException {
 		String whiteName = moveSource[1].getName();
 		String blackName = moveSource[0].getName();
 		board.enableLogging(whiteName, blackName);
