@@ -373,8 +373,11 @@ public class BitBoardEvaluation {
 		// black is winning, but lacks sufficient material to mate
 		if (score < 0 && drawing(black)) score /= 16;
 		
+		// add tempo bonus
+		score += (side == white) ? tempo : -tempo;
+		
 		// since we use negamax, return in the perspective of the side to play
-		return (side == white) ? score : score * -1;
+		return (side == white) ? score : -score;
 	}
 	
 	// gets how much material one side has

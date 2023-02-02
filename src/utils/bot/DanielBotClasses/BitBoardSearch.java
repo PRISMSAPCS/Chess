@@ -202,6 +202,18 @@ public class BitBoardSearch {
 		// legal moves counter
 		int legalMoves = 0;
 		
+		// get static evaluation score
+		int staticEval = evaluate();
+		
+		// static null move pruning
+		if (depth < 3 && !isPVNode && !inCheck && Math.abs(beta - 1) > -49000 + 100) {
+			int evalMargin = 120 * depth;
+			
+			if (staticEval - evalMargin >= beta) {
+				return staticEval - evalMargin;
+			}
+		}
+		
 		// Null Move Pruning
 		/**
 		 * Operates under the observation that, if the opponent getting a free move doesn't improve their position enough, we can prune
@@ -239,6 +251,30 @@ public class BitBoardSearch {
 				
 				if (score >= beta) {
 					return beta;
+				}
+			}
+		}
+		
+		// razoring
+		if (!isPVNode && !inCheck && depth <= 3) {
+			int score = staticEval + 125;
+			int newScore = 0;
+			
+			if (score < beta) {
+				if (depth == 1) {
+					newScore = quiescence(alpha, beta);
+					
+					return (newScore > score) ? newScore : score;
+				}
+				
+				score += 175;
+				
+				if (score < beta && depth <= 2) {
+					newScore = quiescence(alpha, beta);
+					
+					if (newScore < beta) {
+						return (newScore > score) ? newScore : score;
+					}
 				}
 			}
 		}
