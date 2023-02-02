@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TomChessBot extends ChessBot {
     public static final int SEARCHING_DEPTH = 3;
@@ -64,13 +66,49 @@ public class TomChessBot extends ChessBot {
         return new MovePair(optMove, optScore);
     }
 
+    public Move multiThreadSearch(ChessBoard board, boolean maximize, int depth) throws InterruptedException {
+        ArrayList<Move> allMoves = board.getAllLegalMoves();
+        Thread[] threads = new Thread[allMoves.size()];
+        final MovePair[] optMove = new MovePair[1];                          // stores the optimal move
+        optMove[0] = new MovePair(null, maximize? Integer.MIN_VALUE: Integer.MAX_VALUE);
+        for(int i = 0; i < allMoves.size(); i++) {
+            Move thisMove = allMoves.get(i);
+            threads[i] = new Thread(() -> {
+                ChessBoard nextBoard = new ChessBoard(board);
+                nextBoard.submitMove(thisMove);
+                if(depth <= 0) {
+                    // if depth is less than zero, simply use the evaluation result as the score
+                    int score = nextBoard.evaluate();
+                    synchronized (optMove[0]) {
+                        if((score < optMove[0].score) ^ maximize) {
+                            optMove[0] = new MovePair(thisMove, score);
+                        }
+                    }
+                } else {
+                    MovePair postEvaluation = optimizeScore(nextBoard, !maximize, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    synchronized (optMove[0]) {
+                        if((postEvaluation.score < optMove[0].score) ^ maximize) {
+                            optMove[0] = new MovePair(thisMove, postEvaluation.score);
+                        }
+                    }
+                }
+            });
+            threads[i].start();
+        }
+        for(int i = 0; i < allMoves.size(); i++) {
+            threads[i].join();
+        }
+        return optMove[0].move;
+    }
+
     @Override
-    public Move getMove() {
+    public Move getMove() throws InterruptedException {
         long time1 = System.currentTimeMillis();
 
         ChessBoard boardClone = new ChessBoard(getBoard());
         boardClone.disableLogging();
-        Move move =  optimizeScore(boardClone, getBoard().getSide(), SEARCHING_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE).move;
+        // Move move =  optimizeScore(boardClone, getBoard().getSide(), SEARCHING_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE).move;
+        Move move =  multiThreadSearch(boardClone, getBoard().getSide(), SEARCHING_DEPTH);
 
         long time2 = System.currentTimeMillis();
         System.out.println((time2 - time1) / 1000.0F + "s");
