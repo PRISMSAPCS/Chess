@@ -16,6 +16,9 @@ public class BitBoardEvaluation {
 	static long isolatedMasks[] = new long[64];
 	static long passedMasks[][] = new long[2][64];
 	
+	// king ring squares
+	static long kingRingMasks[] = new long[64];
+	
 	// returns the file / rank mask of a square
 	public static long setFileRankMask(int file, int rank) {
 		long mask = 0L;
@@ -32,6 +35,29 @@ public class BitBoardEvaluation {
 					if (r == rank) {
 						mask |= (1L << square);
 					}
+				}
+			}
+		}
+		
+		return mask;
+	}
+	
+	// returns the king ring mask of a square
+	public static long setKingRingMask(int file, int rank) {
+		long mask = 0L;
+		
+		for (int r = 0; r < 8; r++) {
+			for (int f = 0; f < 8; f++) {
+				int square = r * 8 + f;
+				
+				int fileMargin = 1;
+				int rankMargin = 1;
+				
+				if (file == 0 || file == 7) fileMargin = 2;
+				if (rank == 0 || rank == 7) rankMargin = 2;
+				
+				if (Math.abs(f - file) <= fileMargin && Math.abs(r - rank) <= rankMargin) {
+					mask |= (1L << square);
 				}
 			}
 		}
@@ -65,6 +91,8 @@ public class BitBoardEvaluation {
 						passedMasks[black][square] &= ~setFileRankMask(-1, 7 - i);
 					}
 				}
+				
+				kingRingMasks[square] = setKingRingMask(file, rank);
 			}
 		}
 	}
@@ -158,8 +186,23 @@ public class BitBoardEvaluation {
 		
 		int doubledPawns = 0;
 		
+		// record attack pressure for both sides
+		int whiteAttackPressure = 0;
+		int blackAttackPressure = 0;
+		
+		// record # of attackers for both sides
+		int whiteAttackers = 0;
+		int blackAttackers = 0;
+		
+		// king positions
+		int whiteKingSquare = getLS1BIndex(bitboards[K]);
+		int blackKingSquare = getLS1BIndex(bitboards[k]);
+		
+		long attacks;
+		long kingRingAttacks;
+		
 		// we do some stuff to find all the squares that white pawns attack, and all the squares that black pawns attack
-		// we do this for mobility - pieces that can only move the squares defended by pawns really can't move at all
+		// we do this for mobility - pieces that can only move to the squares defended by pawns really can't move at all
 		long whitePawnAttacks = 0L;
 		long blackPawnAttacks = 0L;
 		
@@ -220,17 +263,33 @@ public class BitBoardEvaluation {
 					scoreOpening += positionalScore[opening][KNIGHT][square];
 					scoreEndgame += positionalScore[endgame][KNIGHT][square];
 					
+					attacks = knightAttacks[square];
+					kingRingAttacks = attacks & kingRingMasks[blackKingSquare];
+					
 					// added score for knight mobility
-					scoreOpening += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityOpening;
-					scoreEndgame += (countBits(knightAttacks[square] & ~blackPawnAttacks) - knightUnit) * knightMobilityEndgame;
+					scoreOpening += (countBits(attacks & ~blackPawnAttacks) - knightUnit) * knightMobilityOpening;
+					scoreEndgame += (countBits(attacks & ~blackPawnAttacks) - knightUnit) * knightMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						whiteAttackers++;
+						whiteAttackPressure += countBits(kingRingAttacks) * minorPieceAttackUnit;
+					}
 					break;
 				case B:
 					scoreOpening += positionalScore[opening][BISHOP][square];
 					scoreEndgame += positionalScore[endgame][BISHOP][square];
 					
+					attacks = getBishopAttacks(square, occupancies[both] & ~(bitboards[Q]));
+					kingRingAttacks = attacks & kingRingMasks[blackKingSquare];
+					
 					// added score for bishop mobility
-					scoreOpening += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityOpening;
-					scoreEndgame += (countBits(getBishopAttacks(square, occupancies[both]) & ~blackPawnAttacks) - bishopUnit) * bishopMobilityEndgame;
+					scoreOpening += (countBits(attacks & ~blackPawnAttacks) - bishopUnit) * bishopMobilityOpening;
+					scoreEndgame += (countBits(attacks & ~blackPawnAttacks) - bishopUnit) * bishopMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						whiteAttackers++;
+						whiteAttackPressure += countBits(kingRingAttacks) * minorPieceAttackUnit;
+					}
 					break;
 				case R:
 					scoreOpening += positionalScore[opening][ROOK][square];
@@ -245,17 +304,33 @@ public class BitBoardEvaluation {
 						score += openFileScore;
 					}
 					
+					attacks = getRookAttacks(square, occupancies[both] & ~(bitboards[R] | bitboards[Q]));
+					kingRingAttacks = attacks & kingRingMasks[blackKingSquare];
+					
 					// added score for rook mobility
-					scoreOpening += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityOpening;
-					scoreEndgame += (countBits(getRookAttacks(square, occupancies[both]) & ~blackPawnAttacks) - rookUnit) * rookMobilityEndgame;
+					scoreOpening += (countBits(attacks & ~blackPawnAttacks) - rookUnit) * rookMobilityOpening;
+					scoreEndgame += (countBits(attacks & ~blackPawnAttacks) - rookUnit) * rookMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						whiteAttackers++;
+						whiteAttackPressure += countBits(kingRingAttacks) * rookAttackUnit;
+					}
 					break;
 				case Q:
 					scoreOpening += positionalScore[opening][QUEEN][square];
 					scoreEndgame += positionalScore[endgame][QUEEN][square];
 					
+					attacks = getQueenAttacks(square, occupancies[both] & ~(bitboards[R] | bitboards[Q]));
+					kingRingAttacks = attacks & kingRingMasks[blackKingSquare];
+					
 					// added score for queen mobility
-					scoreOpening += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityOpening;
-					scoreEndgame += (countBits(getQueenAttacks(square, occupancies[both]) & ~blackPawnAttacks) - queenUnit) * queenMobilityEndgame;
+					scoreOpening += (countBits(attacks & ~blackPawnAttacks) - queenUnit) * queenMobilityOpening;
+					scoreEndgame += (countBits(attacks & ~blackPawnAttacks) - queenUnit) * queenMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						whiteAttackers++;
+						whiteAttackPressure += countBits(kingRingAttacks) * queenAttackUnit;
+					}
 					break;
 				case K:
 					scoreOpening += positionalScore[opening][KING][square];
@@ -301,15 +376,31 @@ public class BitBoardEvaluation {
 					scoreOpening -= positionalScore[opening][KNIGHT][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][KNIGHT][mirrorScore[square]];
 					
-					scoreOpening -= (countBits(knightAttacks[square] & ~whitePawnAttacks) - knightUnit) * knightMobilityOpening;
-					scoreEndgame -= (countBits(knightAttacks[square] & ~whitePawnAttacks) - knightUnit) * knightMobilityEndgame;
+					attacks = knightAttacks[square];
+					kingRingAttacks = attacks & kingRingMasks[whiteKingSquare];
+					
+					scoreOpening -= (countBits(attacks & ~whitePawnAttacks) - knightUnit) * knightMobilityOpening;
+					scoreEndgame -= (countBits(attacks & ~whitePawnAttacks) - knightUnit) * knightMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						blackAttackers++;
+						blackAttackPressure += countBits(kingRingAttacks) * minorPieceAttackUnit;
+					}
 					break;
 				case b:
 					scoreOpening -= positionalScore[opening][BISHOP][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][BISHOP][mirrorScore[square]];
 					
-					scoreOpening -= (countBits(getBishopAttacks(square, occupancies[both]) & ~whitePawnAttacks) - bishopUnit) * bishopMobilityOpening;
-					scoreEndgame -= (countBits(getBishopAttacks(square, occupancies[both]) & ~whitePawnAttacks) - bishopUnit) * bishopMobilityEndgame;
+					attacks = getBishopAttacks(square, occupancies[both] & ~(bitboards[q]));
+					kingRingAttacks = attacks & kingRingMasks[whiteKingSquare];
+					
+					scoreOpening -= (countBits(attacks & ~whitePawnAttacks) - bishopUnit) * bishopMobilityOpening;
+					scoreEndgame -= (countBits(attacks & ~whitePawnAttacks) - bishopUnit) * bishopMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						blackAttackers++;
+						blackAttackPressure += countBits(kingRingAttacks) * minorPieceAttackUnit;
+					}
 					break;
 				case r:
 					scoreOpening -= positionalScore[opening][ROOK][mirrorScore[square]];
@@ -323,15 +414,31 @@ public class BitBoardEvaluation {
 						score -= openFileScore;
 					}
 					
-					scoreOpening -= (countBits(getRookAttacks(square, occupancies[both]) & ~whitePawnAttacks) - rookUnit) * rookMobilityOpening;
-					scoreEndgame -= (countBits(getRookAttacks(square, occupancies[both]) & ~whitePawnAttacks) - rookUnit) * rookMobilityEndgame;
+					attacks = getRookAttacks(square, occupancies[both] & ~(bitboards[r] | bitboards[q]));
+					kingRingAttacks = attacks & kingRingMasks[whiteKingSquare];
+					
+					scoreOpening -= (countBits(attacks & ~whitePawnAttacks) - rookUnit) * rookMobilityOpening;
+					scoreEndgame -= (countBits(attacks & ~whitePawnAttacks) - rookUnit) * rookMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						blackAttackers++;
+						blackAttackPressure += countBits(kingRingAttacks) * rookAttackUnit;
+					}
 					break;
 				case q:
 					scoreOpening -= positionalScore[opening][QUEEN][mirrorScore[square]];
 					scoreEndgame -= positionalScore[endgame][QUEEN][mirrorScore[square]];
 					
-					scoreOpening -= (countBits(getQueenAttacks(square, occupancies[both]) & ~whitePawnAttacks) - queenUnit) * queenMobilityOpening;
-					scoreEndgame -= (countBits(getQueenAttacks(square, occupancies[both]) & ~whitePawnAttacks) - queenUnit) * queenMobilityEndgame;
+					attacks = getQueenAttacks(square, occupancies[both] & ~(bitboards[r] | bitboards[q]));
+					kingRingAttacks = attacks & kingRingMasks[whiteKingSquare];
+					
+					scoreOpening -= (countBits(attacks & ~whitePawnAttacks) - queenUnit) * queenMobilityOpening;
+					scoreEndgame -= (countBits(attacks & ~whitePawnAttacks) - queenUnit) * queenMobilityEndgame;
+					
+					if (kingRingAttacks != 0) {
+						blackAttackers++;
+						blackAttackPressure += countBits(kingRingAttacks) * queenAttackUnit;
+					}
 					break;
 				case k:
 					scoreOpening -= positionalScore[opening][KING][mirrorScore[square]];
@@ -356,6 +463,10 @@ public class BitBoardEvaluation {
 			}
 		}
 		
+		// add king attack bonus
+		scoreOpening += scaleAttacks(whiteAttackPressure, whiteAttackers);
+		scoreOpening -= scaleAttacks(blackAttackPressure, blackAttackers);
+		
 		// interpolate scores. this is called tapered eval
 		if (gamePhase == midgame) {
 			score += (scoreOpening * openingPhaseScore + scoreEndgame * (openingPhaseScore - gamePhaseScore)) / openingPhaseScore;
@@ -378,6 +489,18 @@ public class BitBoardEvaluation {
 		
 		// since we use negamax, return in the perspective of the side to play
 		return (side == white) ? score : -score;
+	}
+	
+	// scales attack bonus based on # of attackers
+	public static int scaleAttacks(int attackValue, int numberOfAttackers) {
+		switch (numberOfAttackers) {
+		case 0: return 0;
+		case 1: return 0;
+		case 2: return attackValue;
+		case 3: return attackValue * 4 / 3;
+		case 4: return attackValue * 3 / 2;
+		default: return attackValue * 2;
+		}
 	}
 	
 	// gets how much material one side has
