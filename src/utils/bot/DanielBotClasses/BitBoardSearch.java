@@ -4,21 +4,12 @@ import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
-import static utils.bot.DanielBotClasses.BitBoardUCI.parseMove;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
-
-import utils.Bishop;
-import utils.Knight;
-import utils.Piece;
-import utils.PromotionMove;
-import utils.Queen;
-import utils.Rook;
-
 import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
@@ -96,8 +87,18 @@ public class BitBoardSearch {
 		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
 			long oldNodes = nodes;
 			
-			score = negamax(-50000, 50000, currentDepth);
-			
+			// aspiration search
+			if (currentDepth == 1) {
+				score = negamax(-50000, 50000, currentDepth);
+			} else {
+				int alpha = score - 50, beta = score + 50;
+				
+				score = negamax(alpha, beta, currentDepth);
+				
+				if (score <= alpha || score >= beta) {
+					score = negamax(-50000, 50000, currentDepth);
+				}
+			}
 			// we finished the search all the way to the end
 			if (keepSearching) {
 				// for diagnostics
@@ -159,6 +160,11 @@ public class BitBoardSearch {
 			return 0;
 		}
 		
+		// we have reached max ply so some of our arrays are overflowing, break out
+		if (ply >= maxPly) {
+			return evaluate();
+		}
+		
 		// is king in check
 		boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
 		
@@ -195,6 +201,18 @@ public class BitBoardSearch {
 		
 		// legal moves counter
 		int legalMoves = 0;
+		
+		// get static evaluation score
+		int staticEval = evaluate();
+		
+		// static null move pruning
+		if (depth < 3 && !isPVNode && !inCheck && Math.abs(beta - 1) > -49000 + 100) {
+			int evalMargin = 120 * depth;
+			
+			if (staticEval - evalMargin >= beta) {
+				return staticEval - evalMargin;
+			}
+		}
 		
 		// Null Move Pruning
 		/**
@@ -233,6 +251,30 @@ public class BitBoardSearch {
 				
 				if (score >= beta) {
 					return beta;
+				}
+			}
+		}
+		
+		// razoring
+		if (!isPVNode && !inCheck && depth <= 3) {
+			int score = staticEval + 125;
+			int newScore = 0;
+			
+			if (score < beta) {
+				if (depth == 1) {
+					newScore = quiescence(alpha, beta);
+					
+					return (newScore > score) ? newScore : score;
+				}
+				
+				score += 175;
+				
+				if (score < beta && depth <= 2) {
+					newScore = quiescence(alpha, beta);
+					
+					if (newScore < beta) {
+						return (newScore > score) ? newScore : score;
+					}
 				}
 			}
 		}
@@ -387,6 +429,11 @@ public class BitBoardSearch {
 		nodes++;
 
 		int evaluation = evaluate();
+		
+		// we have reached our max ply, so we just leave
+		if (ply >= maxPly) {
+			return evaluation;
+		}
 		
 		// beta cutoff
 		if (evaluation >= beta) {

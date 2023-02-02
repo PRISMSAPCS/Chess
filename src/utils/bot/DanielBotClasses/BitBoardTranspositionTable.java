@@ -91,6 +91,6 @@ public class BitBoardTranspositionTable {
 	
 	// helper function, fast hash
 	public static int getHashIndex() {
-		return Math.abs((int) (hashKey % hashTableSize));
+		return Math.abs(((int) hashKey % hashTableSize));
 	}
 }

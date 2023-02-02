@@ -9,5 +9,5 @@ public class BitBoardSettings {
 	
 	public static final boolean useBook = true;
 	public static final String bookFilePath = "bigBook.bin";
-	public static final boolean bestBookMoveOnly = false;
+	public static final boolean bestBookMoveOnly = true;
 }

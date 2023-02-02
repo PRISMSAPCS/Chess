@@ -204,6 +204,9 @@ public class BitBoardConsts {
 	public static final int queenMobilityOpening = 1;
 	public static final int queenMobilityEndgame = 2;
 	
+	// tempo bonus
+	public static final int tempo = 10;
+	
 	// king safety multiplier
 	public static final int kingShieldBonus = 5;
 	
