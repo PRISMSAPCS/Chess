@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 
 import utils.ChessBoard;
 import utils.Move;
+import utils.Piece;
 import utils.bot.TonyNegaMaxPVSTT.MoveScore;
 import utils.bot.KZBotResources.KZEval;
 
@@ -17,8 +18,8 @@ import utils.bot.KZBotResources.KZEval;
 
 public class kzbot extends ChessBot{
     Random rand = new Random();
-    static private int MIN = -1000000;
-    static private int MAX = 1000000;
+    static private int MIN = -10000000;
+    static private int MAX = 10000000;
     private long start = 0;
     private int properDepth = 3;
     private int amountUnder = 0;
@@ -111,6 +112,79 @@ public class kzbot extends ChessBot{
         }
         return new thing(bestMove, hiscore);
     }*/
+
+    public Integer negaMax(ChessBoard b, int alpha, int beta, int depth){
+        if(System.currentTimeMillis() - start > 4990){
+            return null;
+        }
+
+        if(depth == properDepth){
+            //return quiesce(b, alpha, beta, depth+1);
+            return KZEval.eval(b, depth);
+        }
+        ArrayList<Move> allLegal = b.getAllLegalMoves();
+        if(allLegal.size()==0){
+            return KZEval.eval(b, depth);
+        }
+
+        for(Move m:allLegal){
+            b.submitMove(m);
+            Integer score = -negaMax(b, -beta, -alpha, depth+1);
+            if(score == null){
+                continue;
+            }
+            b.undoMove();
+            if(score>=beta){
+                return beta;
+            }if(score>alpha){
+                alpha=score;
+            }
+        }
+        return alpha;
+
+    }
+
+    public ArrayList<Move> getAllCaptures(ChessBoard b){
+        Piece[][] pl = b.getBoard();
+        ArrayList<Move> moveA = new ArrayList<>();
+        ArrayList<Move> moveB = new ArrayList<>();
+
+        moveA = b.getAllLegalMoves();
+        for(Move m : moveA){
+            if(m.getCapture() != null){
+                moveB.add(m);
+            }
+        }
+        return moveB;
+        
+    }
+
+    public Integer quiesce(ChessBoard b, int alpha, int beta, int depth){
+        if(System.currentTimeMillis() - start > 4990){
+            return null;
+        }
+
+        int standard = KZEval.eval(b, depth);
+        if(standard >= beta){
+            return beta;
+        }if(alpha < standard){
+            alpha = standard;
+        }
+        ArrayList<Move> captureMoves = getAllCaptures(b);
+        for(Move m:captureMoves){
+            b.submitMove(m);
+            int score = -quiesce(b, -beta, -alpha, depth+1);
+            b.undoMove();
+            if(standard >= beta){
+                return beta;
+            }if(alpha < standard){
+                alpha = score;
+            }
+        }
+        return alpha;
+
+        
+    }
 
     public thing minimax1(int depth, Boolean maxing, ChessBoard b, int alpha, int beta, Move m){
 
@@ -250,6 +324,64 @@ public class kzbot extends ChessBot{
 
     }
 
+    public Move negaMaxMultiThreadDistributer(boolean side, ChessBoard b){
+        Move bestMove = null;
+        int bestNum = 0;
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() -2);
+        List<Future<Integer>> futures = new ArrayList<>();
+        ArrayList<Move> allLegal = b.getAllLegalMoves();
+        for(Move m:allLegal){
+            ChessBoard b2 = new ChessBoard(b);
+            b2.submitMove(m);
+            futures.add(
+                executor.submit(() -> {
+                    Integer tmp = negaMax(b2, MIN, MAX, 1);
+                    return tmp;
+            }));
+        }
+        
+        ArrayList<Integer> values = new ArrayList<>();
+
+        try {
+                for (Future<Integer> f : futures) {
+                    Integer move = f.get();
+                    values.add(move);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+        if(side){
+            bestNum = MIN;
+            for(int i = 0; i < values.size(); i++){
+                Integer m = values.get(i);
+                if(m == null){
+                    continue;
+                }
+                if (m > bestNum){
+                    bestMove = allLegal.get(i);
+                    bestNum = m;
+                }
+            }
+        }else if(!side){
+            bestNum = MAX;
+            for(int i = 0; i < values.size(); i++){
+                Integer m = values.get(i);
+                if(m == null){
+                    continue;
+                }
+                if (m < bestNum){
+                    bestMove = allLegal.get(i);
+                    bestNum = m;
+                }
+            }
+        }
+
+
+        return bestMove;
+
+    }
+
 
     public Move getMove(){
         Move finalMove = null;
@@ -257,7 +389,12 @@ public class kzbot extends ChessBot{
         ChessBoard b1 = new ChessBoard(super.getBoard());
         System.out.println(b1.evaluate());
         //thing d = minimax1(0, side, b1, MIN, MAX, null);
-        Move bestMove = minimaxMultiThreadDistributer(this.side, b1);
+        //Move bestMove = minimaxMultiThreadDistributer(this.side, b1);
+        Move bestMove = negaMaxMultiThreadDistributer(this.side, b1);
+        if(bestMove == null){
+            bestMove = b1.chooseRandomMove();
+            System.out.println("FAIL");
+        }
         if(System.currentTimeMillis() - start < 500){
             amountUnder++;
             amountOver = 0;

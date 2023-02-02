@@ -19,6 +19,7 @@ public class kzbotnew extends ChessBot{
     Random rand = new Random();
     static private int MIN = -1000000;
     static private int MAX = 1000000;
+    static private int maxDepth = 15;
     private long start = 0;
     private int properDepth = 3;
     private int amountUnder = 0;
@@ -46,6 +47,13 @@ public class kzbotnew extends ChessBot{
 
     private ArrayList<Move> getAllLegal(ChessBoard bo){
         return bo.getAllLegalMoves();
+    }
+
+    public Move breadthSearchThreadDistributor(boolean side, ChessBoard b){
+        Move bestMove = null;
+        int bestNum = 0;
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() -2);
+        List<Future<Integer>> futures = new ArrayList<>();
     }
 
 
