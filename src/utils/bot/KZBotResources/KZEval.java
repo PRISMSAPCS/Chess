@@ -1,6 +1,11 @@
 package utils.bot.KZBotResources;
 
+
 import java.util.ArrayList;
+import java.util.concurrent.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import utils.Bishop;
 import utils.ChessBoard;
@@ -118,9 +123,9 @@ public class KZEval {
         {-20,-30,-30,-40,-40,-30,-30,-20},
         {-10,-20,-20,-20,-20,-20,-20,-10},
         { 20, 20,  0,  0,  0,  0, 20, 20},
-        { 20, 30, 10,  0,  0, 10, 30, 20}};
+        { 20, 30, 100,  0,  0, 10, 100, 20}};
     static int kingMidBoardRev[][]={
-        {20, 30, 10, 0, 0, 10, 30, 20},
+        {20, 30, 100, 0, 0, 10, 100, 20},
         {20, 20, 0, 0, 0, 0, 20, 20},
         {-10, -20, -20, -20, -20, -20, -20, -10},
         {-20, -30, -30, -40, -40, -30, -30, -20},
@@ -148,22 +153,87 @@ public class KZEval {
         {-30, -20, -10, 0, 0, -10, -20, -30},
         {-50, -40, -30, -20, -20, -30, -40, -50}};
 
+    public static class evalAttackCallable implements Callable<Integer>{
+        boolean side;
+        ChessBoard board;
+        Piece[][] b;
+
+        public evalAttackCallable(ChessBoard board, Piece[][] b, boolean side){
+            this.board = board;
+            this.b = b;
+            this.side = side;
+        }
+
+        @Override
+        public Integer call() throws Exception{
+            int x = rateAttack(this.board, this.b, this.side);
+            if(this.side){
+                return x;
+            }else{
+                return -x;
+            }
+        }
+    }
+
+    //private static ExecutorService executor = Executors.newFixedThreadPool(4);
+
+    public static int eval(ChessBoard board, boolean side){
+
+
+        //long start = System.currentTimeMillis();
+
+        Piece[][] b = board.getBoard();
+        
+        
+        return rateAttack(board, b, side) * 2;
+    }
+
     public static int eval(ChessBoard board, int depth){
+
+
+        //long start = System.currentTimeMillis();
+
         Piece[][] b = board.getBoard();
         boolean side = true;
+        
+        if (depth == 1){
+            return rateAttack(board, b, side) * 2;
+        }
 
         int counter = 0;
-        int material = rateMaterial(b, side);
-        counter += rateAttack(board, b, side);
-        counter += rateMoveability(board, b, side, depth);
-        counter += ratePosition(board, b, material, !side);
-        counter += material;
 
-        material = rateMaterial(b, !side);
-        counter -= rateAttack(board, b, side);
+        /*List<Future<Integer>> futures = new ArrayList<>();
+        final Future<Integer> whiteAttack = executor.submit(new evalAttackCallable(board, b, side));
+        futures.add(whiteAttack);
+
+        final Future<Integer> blackAttack = executor.submit(new evalAttackCallable(board, b, !side));
+        futures.add(blackAttack);*/
+
+
+        int material = rateMaterial(b, side) * 4;
+        counter += rateMoveability(board, b, side, depth);
+        counter += ratePosition(board, b, material, side) * 0.7;
+        counter += material;
+        material = rateMaterial(b, !side) * 4;
         counter -= rateMoveability(board, b, !side, depth);
-        counter -= ratePosition(board, b, material, !side);
+        counter -= ratePosition(board, b, material, !side) * 0.7;
         counter -= material;
+        //counter -= rateAttack(board, b, !side) * 2;
+        
+
+        /*for(Future<Integer> f : futures){
+            try{
+                counter += f.get();
+
+            }catch (InterruptedException | ExecutionException ex){
+            }
+        }*/
+        
+
+
+        //long end = System.currentTimeMillis();
+        //System.out.println(end-start);
+
 
         return counter * (1 + depth/10); //prioritizes higher depth
     }
@@ -247,7 +317,9 @@ public class KZEval {
 
     public static int attackedBy(ChessBoard board, int row, int column, boolean side /*defending side*/){
         int counter  = 0;
+
         counter  = board.piecesThreatened(new Pair(row, column), !side).size();
+
         return counter;
     }
 
@@ -261,6 +333,7 @@ public class KZEval {
             }if(board.gameOver(side) == 2){
                 counter -= 150000 * depth;
             }
+            counter -= 150000 * depth;
         }
         return counter;
 
@@ -286,10 +359,10 @@ public class KZEval {
                         } else if (piece instanceof King) {
                             if (material>=1750) {
                                 counter += kingMidBoard[i][j];
-                                counter += board.getLegalMoves(i, j, true).size() * 10;
+                                //counter += board.getLegalMoves(i, j, true).size() * 10;
                             } else {
                                 counter += kingEndBoard[i][j];
-                                counter += board.getLegalMoves(i, j, true).size() * 30;
+                                //counter += board.getLegalMoves(i, j, true).size() * 30;
                             }
                         }
                     }else{
@@ -307,10 +380,10 @@ public class KZEval {
                         } else if (piece instanceof King) {
                             if (material>=1750) {
                                 counter += kingMidBoardRev[i][j];
-                                counter += board.getLegalMoves(i, j, true).size() * 10;
+                                //counter += board.getLegalMoves(i, j, true).size() * 10;
                             } else {
                                 counter += kingEndBoardRev[i][j];
-                                counter += board.getLegalMoves(i, j, true).size() * 30;
+                                //counter += board.getLegalMoves(i, j, true).size() * 30;
                             }
                         }
                     }
