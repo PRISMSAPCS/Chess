@@ -159,7 +159,7 @@ public class BitBoardSearch {
 		// set ply for pv table
 		pvLength[ply] = ply;
 		
-		if (positionRepeated() || moveRule >= 50) {
+		if (depth > 0 && (positionRepeated() || moveRule >= 50)) {
 			return 0;
 		}
 		
@@ -215,6 +215,11 @@ public class BitBoardSearch {
 			if (staticEval - evalMargin >= beta) {
 				return staticEval - evalMargin;
 			}
+		}
+		
+		// futility pruning
+		if (depth < 8 && staticEval - depth * 60 >= beta && staticEval >= beta && staticEval < 49000) {
+			return staticEval;
 		}
 		
 		// Null Move Pruning
@@ -443,6 +448,16 @@ public class BitBoardSearch {
 		// beta cutoff
 		if (evaluation >= beta) {
 			return beta;
+		}
+		
+		// delta pruning
+		int bigDelta = 1025;
+		
+		// increase bigDelta if pawn might be able to promote
+		if ((bitboards[P + side * 6] & rankMasks[(side == white) ? a7 : a2]) != 0) bigDelta += 925;
+		
+		if (evaluation < alpha - bigDelta) {
+			return alpha;
 		}
 		
 		// found better move
