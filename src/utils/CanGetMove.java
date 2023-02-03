@@ -6,6 +6,6 @@ package utils;
  * ChessBot can return move automatically.
  */
 public interface CanGetMove {
-    Move getMove();
+    Move getMove() throws InterruptedException;
     String getName();
 }

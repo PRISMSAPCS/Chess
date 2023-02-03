@@ -44,6 +44,8 @@ public class BitBoardSearch {
 	
 	// search driver which does book moves and iterative deepening
 	public static int searchPosition() {
+		startTime = System.currentTimeMillis();
+		
 		// book move stuff
 		if (useBook) {
 			int bookMove = getBookMove();
@@ -67,7 +69,6 @@ public class BitBoardSearch {
 		nodes = 0;
 		transpositions = 0;
 		
-		startTime = System.currentTimeMillis();
 		keepSearching = true;
 		
 		// reset stuff
@@ -126,6 +127,8 @@ public class BitBoardSearch {
 				
 				// we found a mate, no need to continue searching
 				if (score >= 48000 || score <= -48000) break;
+			} else { // we did not finish searching due to the time limit
+				break;
 			}
 		}
 		
@@ -147,7 +150,7 @@ public class BitBoardSearch {
 	// standard negamax with alpha beta pruning. and like, a bunch of other crap
 	public static int negamax(int alpha, int beta, int depth) {
 		// if time limit is reached, leave
-		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
+		if (!keepSearching || (((nodes & 4096) == 0) && System.currentTimeMillis() - startTime >= (timeLimit - timeLimitMargin))) {
 			keepSearching = false;
 			
 			return 0;
@@ -252,6 +255,8 @@ public class BitBoardSearch {
 				if (score >= beta) {
 					return beta;
 				}
+				
+				if (!keepSearching) return 0;
 			}
 		}
 		
@@ -420,7 +425,7 @@ public class BitBoardSearch {
 	// only search captures, to limit horizon effect
 	public static int quiescence(int alpha, int beta) {
 		// time limit reached
-		if (!keepSearching || System.currentTimeMillis() - startTime >= timeLimit) {
+		if (!keepSearching || (((nodes & 4096) == 0) && System.currentTimeMillis() - startTime >= (timeLimit - timeLimitMargin))) {
 			keepSearching = false;
 			
 			return 0;

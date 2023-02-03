@@ -1,20 +1,5 @@
 package utils.bot.DanielBotClasses;
 
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.generateMoves;
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.makeMove;
-
-import java.util.ArrayList;
-
-import utils.Bishop;
-import utils.ChessBoard;
-import utils.King;
-import utils.Knight;
-import utils.Move;
-import utils.Pair;
-import utils.Pawn;
-import utils.Queen;
-import utils.Rook;
-
 // many, many, many, many assorted constants
 public class BitBoardConsts {
 	// square to int. literally all listed out in lines because there is no C enum
@@ -232,6 +217,11 @@ public class BitBoardConsts {
 	public static final int QUEEN = 4;
 	public static final int KING = 5;
 	
+	// attack units for king safety
+	public static final int minorPieceAttackUnit = 2;
+	public static final int rookAttackUnit = 4;
+	public static final int queenAttackUnit = 8;
+	
 	// positional square tables from pesto
 	public static final int positionalScore[][][] =
 
@@ -415,7 +405,7 @@ public class BitBoardConsts {
 	    12, 11, 11, 11, 11, 11, 11, 12
 	};
 	
-	// "preset" magic numbers for rook (generated, but if it's a constant it doesn't need to be generated on startup"
+	// "preset" magic numbers for rook (generated, but if it's a constant it doesn't need to be generated on startup)
 	public static final long rookMagicNumbers[] = {
 		    0x8A80104000800020L,
 		    0x140002000100040L,
