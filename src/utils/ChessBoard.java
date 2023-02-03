@@ -101,11 +101,11 @@ public class ChessBoard {
 			}
 		}
 		this.enPassant = new Pair(other.enPassant.first, other.enPassant.second);
-		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
-		this.undoMoveRuleStack = new ArrayList<Integer>();
-		this.undoEnPassantStack = new ArrayList<Pair>();
-		this.previousMoves = new ArrayList<Move>();
-		this.previousZobrists = new ArrayList<Long>();
+		this.undoMoveStack = new ArrayList<ArrayList<unMove>>(other.undoMoveStack);
+		this.undoMoveRuleStack = new ArrayList<Integer>(other.undoMoveRuleStack);
+		this.undoEnPassantStack = new ArrayList<Pair>(other.undoEnPassantStack);
+		this.previousMoves = new ArrayList<Move>(other.previousMoves);
+		this.previousZobrists = new ArrayList<Long>(other.previousZobrists);
 		this.zobristArray = getZobristArray();
 		this.zobristKey = other.getZobristKey();
 	}
