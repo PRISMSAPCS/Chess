@@ -66,7 +66,7 @@ public class kzbotnew extends ChessBot{
         int bestNum = 0;
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() -2);
         List<Future<Integer>> futures = new ArrayList<>();
-        ArrayList<Integer> numPerLayer = new ArrayList<>();
+        ArrayList<Integer> numPerLayer = new ArrayList<>(); 
         Queue<otherThing> q = new LinkedList<>();
 
         ArrayList<Move> allLegal = b.getAllLegalMoves();
