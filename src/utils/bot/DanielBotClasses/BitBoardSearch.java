@@ -191,7 +191,7 @@ public class BitBoardSearch {
 			}
 		}
 		
-		// found principle variation (for Principle Variation Search)
+		// found principal variation (for Principal Variation Search)
 		boolean foundPV = false;
 		
 		// if depth is 0, we run quiescence
@@ -317,7 +317,7 @@ public class BitBoardSearch {
 			// get score
 			int score = 0;
 			
-			// principle variation search
+			// principal variation search
 			/**
 			 * If we find a possible good move, we use the Principle Variation Search to check if there are any moves that are better.
 			 * We set alpha and beta to be right next to each other, making the PVS very very fast. PVS will return if we fail low

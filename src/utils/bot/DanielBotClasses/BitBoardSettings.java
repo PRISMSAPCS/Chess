@@ -6,7 +6,7 @@ public class BitBoardSettings {
 	public static final int timeLimitMargin = 5;
 	public static final int maxDepth = 100;
 	public static final boolean useUCIIO = false;
-	public static final int hashTableSize = 640000;
+	public static final int hashTableSize = 1280000;
 	
 	public static final boolean useBook = true;
 	public static final String bookFilePath = "bigBook.bin";
