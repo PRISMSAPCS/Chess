@@ -191,8 +191,6 @@ public class KZEval {
     public static int eval(ChessBoard board, int depth){
 
 
-        //long start = System.currentTimeMillis();
-
         Piece[][] b = board.getBoard();
         boolean side = true;
         
@@ -229,10 +227,6 @@ public class KZEval {
             }
         }*/
         
-
-
-        //long end = System.currentTimeMillis();
-        //System.out.println(end-start);
 
 
         return counter * (1 + depth/10); //prioritizes higher depth
