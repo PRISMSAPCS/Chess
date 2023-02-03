@@ -451,10 +451,10 @@ public class BitBoardSearch {
 		}
 		
 		// delta pruning
-		int bigDelta = 1025;
+		int bigDelta = 1125;
 		
 		// increase bigDelta if pawn might be able to promote
-		if ((bitboards[P + side * 6] & rankMasks[(side == white) ? a7 : a2]) != 0) bigDelta += 925;
+		if ((bitboards[P + side * 6] & rankMasks[(side == white) ? a7 : a2]) != 0) bigDelta += 775;
 		
 		if (evaluation < alpha - bigDelta) {
 			return alpha;
