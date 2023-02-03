@@ -1,12 +1,14 @@
 package utils.bot.DanielBotClasses;
 
 public class BitBoardBitManipulation {
-	public static long getBit(long bitboard, int square) { return bitboard & (0b1L << square); }
+	// bit macros relating to getting and setting information from/for a bitboard
+	public static long getBit(long bitboard, int square) { return bitboard & (1L << square); }
 	public static long setBit(long bitboard, int square) { return bitboard | (1L << square); }
 	public static long popBit(long bitboard, int square) { return bitboard & ~(1L << (square)); }
 	public static int countBits(long bitboard) { return Long.bitCount(bitboard); }
-	public static int getLS1BIndex(long bitboard) { if (bitboard != 0) return countBits((bitboard & (bitboard * -1)) - 1); return -1; }
+	public static int getLS1BIndex(long bitboard) { return Long.numberOfTrailingZeros(bitboard); }
 	
+	// bit macros relating to getting and setting information from/for a move
 	public static int encodeMove(int source, int target, int piece, int promoted, int capture, int doubleMove, int enPassant, int castling) { return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doubleMove << 21) | (enPassant << 22) | (castling << 23); }
 	public static int getMoveSource(int move) { return move & 0x3f; }
 	public static int getMoveTarget(int move) { return (move & 0xfc0) >> 6; }

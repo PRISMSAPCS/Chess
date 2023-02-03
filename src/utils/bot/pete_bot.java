@@ -4,49 +4,120 @@ import java.util.ArrayList;
 
 import utils.ChessBoard;
 import utils.Move;
+import utils.Pair;
 
-public abstract class pete_bot {
+public class pete_bot extends ChessBot{
 	
+	private ChessBoard theBoard;
 	
-	public Move getBestMove(ChessBoard theBoard) {
+	public pete_bot(ChessBoard board) {
+		super(board);
+		theBoard = board;
+	}
+	
+	public ArrayList<Move> getAllLegalMoves(boolean side){
+		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+		for(int i=0;i<8;i++) {
+			for(int j=0;j<8;j++) {
+				if(theBoard.getBoard()[i][j]!=null) {
+					if(theBoard.getBoard()[i][j].getColor()==side)allLegalMoves.addAll(theBoard.getLegalMoves(i, j, side));
+				}
+			}
+		}
+		
+		return allLegalMoves;
+	}
+	
+	public Move getMove() {
 		ArrayList<Move> theBestMove = new ArrayList<Move>();
 		
 		ArrayList<Move> FirstMove = new ArrayList<Move>();
 		ArrayList<Move> SecondMove = new ArrayList<Move>();
-		for(int i=0;i<8;i++) {
-			for(int j=0;j<8;j++) {
-				if(theBoard.getBoard()[i][j]!=null) {
-					if(theBoard.getBoard()[i][j].getColor())FirstMove.addAll(theBoard.getLegalMoves(i, j, true));
-				}
-			}
-		}
-		ChessBoard Board1,Board2;
+		ArrayList<Move> ThirdMove = new ArrayList<Move>();
+		ArrayList<Move> FourthMove = new ArrayList<Move>();
+		
+		FirstMove = getAllLegalMoves(true);
+		
 		int min,minimax=-69420;
 		
 		for(Move theFirstMove : FirstMove) {
-			//simulate 1st move
-			Board1 = theBoard;
-			Board1.submitMove(theFirstMove);
-			//find 2nd move
-			for(int i=0;i<8;i++) {
-				for(int j=0;j<8;j++) {
-					if(theBoard.getBoard()[i][j]!=null) {
-						if(Board1.getBoard()[i][j].getColor())SecondMove.addAll(Board1.getLegalMoves(i, j, false));
-					}
-				}
-			}
 			min = 69420;
+			boolean bonus;
+			
+			//simulate 1st move
+			theBoard.submitMove(theFirstMove);
+			
+			Pair p1 = theFirstMove.getEnd();
+			bonus = false;
+			if(theBoard.getBoard(p1)!=null)bonus = true;
+			
+			//How do I know if a piece is in attack?
+			//find 2nd move
+			SecondMove = getAllLegalMoves(false);
+			
+			
 			//simulate 2nd move
 			for(Move theSecondMove : SecondMove) {
-				Board2 = Board1;
-				Board2.submitMove(theSecondMove);
-				if(Board2.evaluate()<min)min=theBoard.evaluate();
+				
+				if(theSecondMove.getPiece()==null)continue;
+				theBoard.submitMove(theSecondMove);
+				if(theBoard.evaluate()<min)min=theBoard.evaluate();
+				
+				
+				//find 3rd move
+				ThirdMove = getAllLegalMoves(true);
+				boolean badmove = false;
+				if(theBoard.checked(true))badmove = true;
+				
+				Pair p = theSecondMove.getEnd();
+				if(theBoard.getBoard(p)!=null) badmove = true;
+				if(badmove)min=-69420;
+					
+				if(!badmove)for(Move theThirdMove : ThirdMove) {
+					//simulate 3rd move
+					theBoard.submitMove(theThirdMove);
+					//find 4th move
+					FourthMove = getAllLegalMoves(false);
+					for(Move theFourthMove : FourthMove) {
+						theBoard.submitMove(theFourthMove);
+						
+						
+						
+						if(theBoard.evaluate()<min)min=theBoard.evaluate();
+						if(theBoard.checked(true))min=-69420;
+						
+						
+						theBoard.undoMove();
+					}
+					
+					theBoard.undoMove();
+				}
+				
+				theBoard.undoMove();
+				
 			}
-			if(min<minimax)theBestMove = new ArrayList<Move>();
-			if(min<=minimax)theBestMove.add(theFirstMove);
+			theBoard.undoMove();
+			
+			
+			if(min>minimax)minimax = min;
+				
+			if(min>=minimax||bonus) {
+				theBestMove.add(theFirstMove);
+			}
+			
 		}
 		
 		int a = (int)(Math.random()*theBestMove.size());
 		return theBestMove.get(a);
 	}
+	
+	public String getName() {
+		return "pete_bot";
+	}
+	
+	public ChessBoard getBoard() {
+		return theBoard;
+	}
+	
+	
 }

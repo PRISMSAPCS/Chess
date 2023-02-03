@@ -2,27 +2,49 @@ package utils.bot.DanielBotClasses;
 
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
-
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 
 import java.util.Arrays;
 
 public class BitBoardChessBoard {
+	// bitboards contains 12 bitboards - one for each chess piece and color
 	public static long bitboards[] = new long[12];
+	
+	// occupancies contains 3 bitboards which give the location of all pieces - white, black, and both
 	public static long occupancies[] = new long[3];
 	
 	public static int side = -1;
-	
 	public static int enPassant = no_sq;
-	
 	public static int castle;
+	public static long hashKey;
 	
+	public static int moveRule = 0;
+	public static int totalMoves = 0;
+	
+	// basically a giant stack that stores past versions of the board for when we undo moves
+	public static long[][] pastBitBoards = new long[1000][12];
+	public static long[][] pastOccupancies = new long[1000][3];
+	public static byte[] pastSides = new byte[1000];
+	public static byte[] pastEnPassant = new byte[1000];
+	public static byte[] pastCastle = new byte[1000];
+	public static long[] pastHashKey = new long[1000];
+	public static int[] pastMoveRule = new int[1000];
+	public static int index = 0;
+	
+	// loads a fen string
 	public static void parseFen(String fen) {
+		clearHistory();
+		clearRepetitionTable();
+		
 		// reset bitboards and occupancies
 		Arrays.fill(bitboards, 0);
 		Arrays.fill(occupancies, 0);
+		castle = 0;
 		
 		int fenIndex = 0;
 		
+		// loading all the pieces on the board (this is the main part of the fen string)
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
 				int square = rank * 8 + file;
@@ -46,10 +68,12 @@ public class BitBoardChessBoard {
 		
 		fenIndex++;
 		
+		// loading the side
 		side = (fen.charAt(fenIndex) == 'w') ? white : black;
 		
 		fenIndex += 2;
 		
+		// loading castling rights
 		while (fen.charAt(fenIndex) != ' ') {
 			switch (fen.charAt(fenIndex)) {
 			case 'K': castle |= wk; break;
@@ -70,10 +94,16 @@ public class BitBoardChessBoard {
 			int rank = 8 - (fen.charAt(fenIndex + 1) - '0');
 			
 			enPassant = rank * 8 + file;
+			
+			fenIndex += 2;
 		} else {
+			fenIndex++;
 			enPassant = no_sq;
 		}
 		
+		// load the move rule
+		moveRule = Integer.parseInt((fen.substring(index + fenIndex + 1).split(" ", 2)[0]));
+
 		// set white occupancies
 		for (int piece = P; piece <= K; piece++) {
 			occupancies[white] |= bitboards[piece];
@@ -87,5 +117,43 @@ public class BitBoardChessBoard {
 		// set both occupancies
 		occupancies[both] |= occupancies[white];
 		occupancies[both] |= occupancies[black];
+		
+		// generate a new hash key for incremental updating
+		hashKey = generateHashKey();
+		
+		addPosition();
+	}
+	
+	// push entire state of board to stack
+	public static void copyBoard() {
+		pastBitBoards[index] = bitboards.clone();
+		pastOccupancies[index] = occupancies.clone();
+		pastSides[index] = (byte) side;
+		pastEnPassant[index] = (byte) enPassant;
+		pastCastle[index] = (byte) castle;
+		pastHashKey[index] = hashKey;
+		pastMoveRule[index] = moveRule;
+		
+		index++;
+	}
+	
+	// load board from stack, and reset repetition table by 1
+	public static void takeBack() {
+		index--;
+		
+		removePosition();
+		
+		bitboards = pastBitBoards[index];
+		occupancies = pastOccupancies[index];
+		side = pastSides[index];
+		enPassant = pastEnPassant[index];
+		castle = pastCastle[index];
+		hashKey = pastHashKey[index];
+		moveRule = pastMoveRule[index];
+	}
+	
+	// resets the stack
+	public static void clearHistory() {
+		index = 0;
 	}
 }

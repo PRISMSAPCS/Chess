@@ -79,6 +79,7 @@ public class ChessBoard {
 		board[7][5] = new Bishop(false);
 		board[7][6] = new Knight(false);
 		board[7][7] = new Rook(false);
+
 		this.undoMoveStack = new ArrayList<ArrayList<unMove>>();
 		this.undoMoveRuleStack = new ArrayList<Integer>();
 		this.undoEnPassantStack = new ArrayList<Pair>();
@@ -146,15 +147,15 @@ public class ChessBoard {
 			if(getBoard(theMove.getCapture()) instanceof King) {
 				kingPos[this.side? 0: 1] = new Pair(-1, -1);
 			}
-			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second], theMove.getCapture()));
+			toAdd.add(new unMove(board[theMove.getCapture().first][theMove.getCapture().second].clone(), theMove.getCapture()));
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getCapture().first, theMove.getCapture().second)];
 			board[theMove.getCapture().first][theMove.getCapture().second] = null;
 		}
-		toAdd.add(new unMove(board[theMove.getEnd().first][theMove.getEnd().second], theMove.getEnd()));
+		toAdd.add(new unMove((board[theMove.getEnd().first][theMove.getEnd().second] != null) ? board[theMove.getEnd().first][theMove.getEnd().second].clone() : null, theMove.getEnd()));
 		board[theMove.getEnd().first][theMove.getEnd().second] = theMove.getPiece();
 		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd().first, theMove.getEnd().second)];
 		
-		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second], theMove.getStart()));
+		toAdd.add(new unMove(board[theMove.getStart().first][theMove.getStart().second].clone(), theMove.getStart()));
 		zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart().first, theMove.getStart().second)];
 		board[theMove.getStart().first][theMove.getStart().second] = null;
 		
@@ -163,7 +164,7 @@ public class ChessBoard {
 			board[theMove.getEnd2().first][theMove.getEnd2().second] = theMove.getPiece2();
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getEnd2().first, theMove.getEnd2().second)];
 
-			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second], theMove.getStart2()));
+			toAdd.add(new unMove(board[theMove.getStart2().first][theMove.getStart2().second].clone(), theMove.getStart2()));
 			zobristKey ^= zobristArray[pieceToZobristIndex(theMove.getStart2().first, theMove.getStart2().second)];
 			board[theMove.getStart2().first][theMove.getStart2().second] = null;
 		}
@@ -320,342 +321,342 @@ public class ChessBoard {
 		ArrayList<int[]> moves = board[x][y].getMoveSet(board, x, y);
 		
 		// Author: Daniel - checks if a piece is pinned or not, and generates its moveset accordingly 
-		if (!(board[x][y] instanceof King) && !(board[x][y] instanceof Pawn) && !checked(this.side)) {
-			// check distance from king
-			int xDiff = x - kingPos[this.side ? 1 : 0].first;
-			int yDiff = y - kingPos[this.side ? 1 : 0].second;
-			// piece on same bottom right top left diagonal as king
-			if (xDiff == yDiff) {
-				// possible pinning piece is to the down and right of the bishop
-				if (xDiff > 0) {
-					// check for pin
-					for (int i = 1; i < xDiff; i++) {
-						// piece isn't pinned, just return its moveset
-						if (board[x - i][y - i] != null) {
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// piece may be pinned, need to check for pinning piece
-					for (int i = 1; i < 8; i++) {
-						if (x + i >= 8 || y + i >= 8) {
-							break;
-						}
-						
-						// only bishop or queen can pin diagonally
-						if (board[x + i][y + i] instanceof Bishop || board[x + i][y + i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x + i][y + i].getColor() != this.side) {
-								// generate moves with bottom right top left pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x + i][y + i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				} else { // possible pinning piece is to the up and left of the bishop
-					// check for pin
-					for (int i = 1; i < xDiff * -1; i++) {
-						// piece isn't pinned, just return its moveset
-						if (board[x + i][y + i] != null) {
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// piece may be pinned, need to check for pinning piece
-					for (int i = 1; i < 8; i++) {
-						if (x - i < 0 || y - i < 0) {
-							break;
-						}
-						
-						// only bishop or queen can pin diagonally
-						if (board[x - i][y - i] instanceof Bishop || board[x - i][y - i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x - i][y - i].getColor() != this.side) {
-								// generate moves with bottom right top left pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x - i][y - i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				}
-			} else if (xDiff == -yDiff) { // Bottom Left to Top Right diagonal
-				// possible pinning piece is to the down and left of the bishop
-				if (xDiff > 0) {
-					// check for pin
-					for (int i = 1; i < xDiff; i++) {
-						// piece isn't pinned, just return its moveset
-						if (board[x - i][y + i] != null) {
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// piece may be pinned, need to check for pinning piece
-					for (int i = 1; i < 8; i++) {
-						if (x + i >= 8 || y - i < 0) {
-							break;
-						}
-						
-						// only bishop or queen can pin diagonally
-						if (board[x + i][y - i] instanceof Bishop || board[x + i][y - i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x + i][y - i].getColor() != this.side) {
-								// generate moves with bottom left top right pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x + i][y - i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				} else { // possible pinning piece is to the up and right of the piece
-					// check for pin
-					for (int i = 1; i < xDiff * -1; i++) {
-						// piece isn't pinned, just return its moveset
-						if (board[x + i][y - i] != null) {
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// piece may be pinned, need to check for pinning piece
-					for (int i = 1; i < 8; i++) {
-						if (x - i < 0 || y + i >= 8) {
-							break;
-						}
-						
-						// only bishop or queen can pin diagonally
-						if (board[x - i][y + i] instanceof Bishop || board[x - i][y + i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x - i][y + i].getColor() != this.side) {
-								// generate moves with bottom left top rightpin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x - i][y + i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				}
-			} else if (xDiff == 0) { // vertical pin
-				if (yDiff > 0) { // pinning piece is below pinned piece
-					for (int i = 1; i < yDiff; i++) {
-						if (board[x][y - i] != null) {
-							// no pin
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// possible pin
-					for (int i = 1; i < 8; i++) {
-						if (y + i >= 8) {
-							break;
-						}
-						
-						// only rook or queen can pin vertically
-						if (board[x][y + i] instanceof Rook || board[x][y + i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x][y + i].getColor() != this.side) {
-								// generate moves with vertical pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x][y + i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				} else { // pinning piece is above pinned piece
-					for (int i = 1; i < yDiff; i++) {
-						if (board[x][y + i] != null) {
-							// no pin
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// possible pin
-					for (int i = 1; i < 8; i++) {
-						if (y - i < 0) {
-							break;
-						}
-						
-						// only rook or queen can pin vertically
-						if (board[x][y - i] instanceof Rook || board[x][y - i] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x][y - i].getColor() != this.side) {
-								// generate moves with vertical pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x][y - i] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				}
-			} else if (yDiff == 0) { // horizontal pin
-				if (xDiff > 0) { // pinning piece is to the right of pinned piece
-					for (int i = 1; i < xDiff; i++) {
-						if (board[x - i][y] != null) {
-							// no pin
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// possible pin
-					for (int i = 1; i < 8; i++) {
-						if (x + i >= 8) {
-							break;
-						}
-						
-						// only rook or queen can pin vertically
-						if (board[x + i][y] instanceof Rook || board[x + i][y] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x + i][y].getColor() != this.side) {
-								// generate moves with horizontal pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x + i][y] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				} else { // pinning piece is to the left of pinned piece
-					for (int i = 1; i < xDiff; i++) {
-						if (board[x + i][y] != null) {
-							// no pin
-							return convertIntPairToMoves(moves, x, y);
-						}
-					}
-					
-					// possible pin
-					for (int i = 1; i < 8; i++) {
-						if (x - i < 0) {
-							break;
-						}
-						
-						// only rook or queen can pin vertically
-						if (board[x - i][y] instanceof Rook || board[x - i][y] instanceof Queen) {
-							// pinning piece is not on our side
-							if (board[x - i][y].getColor() != this.side) {
-								// generate moves with horizontal pin, convert into ArrayList of moves
-								if (board[x][y] instanceof Bishop) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Knight) {
-									return new ArrayList<Move>();
-								} else if (board[x][y] instanceof Rook) {
-									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
-								} else if (board[x][y] instanceof Queen) {
-									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
-								}
-							}
-						}
-						
-						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
-						if (board[x - i][y] != null) {
-							break;
-						}
-					}
-					
-					// no pin, return normal moveset
-					return convertIntPairToMoves(moves, x, y);
-				}
-			} else {
-				// piece is not on the same diagonal, rank, or file as the king, so it cannot be pinned
-				return convertIntPairToMoves(moves, x, y);
-			}
-		}
+//		if (!(board[x][y] instanceof King) && !(board[x][y] instanceof Pawn) && !checked(this.side)) {
+//			// check distance from king
+//			int xDiff = x - kingPos[this.side ? 1 : 0].first;
+//			int yDiff = y - kingPos[this.side ? 1 : 0].second;
+//			// piece on same bottom right top left diagonal as king
+//			if (xDiff == yDiff) {
+//				// possible pinning piece is to the down and right of the bishop
+//				if (xDiff > 0) {
+//					// check for pin
+//					for (int i = 1; i < xDiff; i++) {
+//						// piece isn't pinned, just return its moveset
+//						if (board[x - i][y - i] != null) {
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// piece may be pinned, need to check for pinning piece
+//					for (int i = 1; i < 8; i++) {
+//						if (x + i >= 8 || y + i >= 8) {
+//							break;
+//						}
+//						
+//						// only bishop or queen can pin diagonally
+//						if (board[x + i][y + i] instanceof Bishop || board[x + i][y + i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x + i][y + i].getColor() != this.side) {
+//								// generate moves with bottom right top left pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x + i][y + i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				} else { // possible pinning piece is to the up and left of the bishop
+//					// check for pin
+//					for (int i = 1; i < xDiff * -1; i++) {
+//						// piece isn't pinned, just return its moveset
+//						if (board[x + i][y + i] != null) {
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// piece may be pinned, need to check for pinning piece
+//					for (int i = 1; i < 8; i++) {
+//						if (x - i < 0 || y - i < 0) {
+//							break;
+//						}
+//						
+//						// only bishop or queen can pin diagonally
+//						if (board[x - i][y - i] instanceof Bishop || board[x - i][y - i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x - i][y - i].getColor() != this.side) {
+//								// generate moves with bottom right top left pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, false), x, y);
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, true, false, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x - i][y - i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				}
+//			} else if (xDiff == -yDiff) { // Bottom Left to Top Right diagonal
+//				// possible pinning piece is to the down and left of the bishop
+//				if (xDiff > 0) {
+//					// check for pin
+//					for (int i = 1; i < xDiff; i++) {
+//						// piece isn't pinned, just return its moveset
+//						if (board[x - i][y + i] != null) {
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// piece may be pinned, need to check for pinning piece
+//					for (int i = 1; i < 8; i++) {
+//						if (x + i >= 8 || y - i < 0) {
+//							break;
+//						}
+//						
+//						// only bishop or queen can pin diagonally
+//						if (board[x + i][y - i] instanceof Bishop || board[x + i][y - i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x + i][y - i].getColor() != this.side) {
+//								// generate moves with bottom left top right pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x + i][y - i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				} else { // possible pinning piece is to the up and right of the piece
+//					// check for pin
+//					for (int i = 1; i < xDiff * -1; i++) {
+//						// piece isn't pinned, just return its moveset
+//						if (board[x + i][y - i] != null) {
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// piece may be pinned, need to check for pinning piece
+//					for (int i = 1; i < 8; i++) {
+//						if (x - i < 0 || y + i >= 8) {
+//							break;
+//						}
+//						
+//						// only bishop or queen can pin diagonally
+//						if (board[x - i][y + i] instanceof Bishop || board[x - i][y + i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x - i][y + i].getColor() != this.side) {
+//								// generate moves with bottom left top rightpin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return convertIntPairToMoves(((Bishop) board[x][y]).getMoveSet(board, x, y, true), x, y);
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, true, false, false, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x - i][y + i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				}
+//			} else if (xDiff == 0) { // vertical pin
+//				if (yDiff > 0) { // pinning piece is below pinned piece
+//					for (int i = 1; i < yDiff; i++) {
+//						if (board[x][y - i] != null) {
+//							// no pin
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// possible pin
+//					for (int i = 1; i < 8; i++) {
+//						if (y + i >= 8) {
+//							break;
+//						}
+//						
+//						// only rook or queen can pin vertically
+//						if (board[x][y + i] instanceof Rook || board[x][y + i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x][y + i].getColor() != this.side) {
+//								// generate moves with vertical pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x][y + i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				} else { // pinning piece is above pinned piece
+//					for (int i = 1; i < yDiff; i++) {
+//						if (board[x][y + i] != null) {
+//							// no pin
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// possible pin
+//					for (int i = 1; i < 8; i++) {
+//						if (y - i < 0) {
+//							break;
+//						}
+//						
+//						// only rook or queen can pin vertically
+//						if (board[x][y - i] instanceof Rook || board[x][y - i] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x][y - i].getColor() != this.side) {
+//								// generate moves with vertical pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, false), x, y);
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, false, true), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x][y - i] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				}
+//			} else if (yDiff == 0) { // horizontal pin
+//				if (xDiff > 0) { // pinning piece is to the right of pinned piece
+//					for (int i = 1; i < xDiff; i++) {
+//						if (board[x - i][y] != null) {
+//							// no pin
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// possible pin
+//					for (int i = 1; i < 8; i++) {
+//						if (x + i >= 8) {
+//							break;
+//						}
+//						
+//						// only rook or queen can pin vertically
+//						if (board[x + i][y] instanceof Rook || board[x + i][y] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x + i][y].getColor() != this.side) {
+//								// generate moves with horizontal pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x + i][y] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				} else { // pinning piece is to the left of pinned piece
+//					for (int i = 1; i < xDiff; i++) {
+//						if (board[x + i][y] != null) {
+//							// no pin
+//							return convertIntPairToMoves(moves, x, y);
+//						}
+//					}
+//					
+//					// possible pin
+//					for (int i = 1; i < 8; i++) {
+//						if (x - i < 0) {
+//							break;
+//						}
+//						
+//						// only rook or queen can pin vertically
+//						if (board[x - i][y] instanceof Rook || board[x - i][y] instanceof Queen) {
+//							// pinning piece is not on our side
+//							if (board[x - i][y].getColor() != this.side) {
+//								// generate moves with horizontal pin, convert into ArrayList of moves
+//								if (board[x][y] instanceof Bishop) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Knight) {
+//									return new ArrayList<Move>();
+//								} else if (board[x][y] instanceof Rook) {
+//									return convertIntPairToMoves(((Rook) board[x][y]).getMoveSet(board, x, y, true), x, y);
+//								} else if (board[x][y] instanceof Queen) {
+//									return convertIntPairToMoves(((Queen) board[x][y]).getMoveSet(board, x, y, false, false, true, false), x, y);
+//								}
+//							}
+//						}
+//						
+//						// if there is something that is not empty space, that thing is gonna block any possible pin, so just break out
+//						if (board[x - i][y] != null) {
+//							break;
+//						}
+//					}
+//					
+//					// no pin, return normal moveset
+//					return convertIntPairToMoves(moves, x, y);
+//				}
+//			} else {
+//				// piece is not on the same diagonal, rank, or file as the king, so it cannot be pinned
+//				return convertIntPairToMoves(moves, x, y);
+//			}
+//		}
 		
 		if (board[x][y] instanceof King) {
 			ArrayList<int[]> kingMoves = board[x][y].getMoveSet(board, x, y);
@@ -964,9 +965,6 @@ public class ChessBoard {
 			unMove toUndo = moves.get(i);
 			Pair location = toUndo.location;
 			Piece piece = toUndo.piece;
-			if (piece != null) {
-				piece.undoMoveCounter();
-			}
 			board[location.first][location.second] = piece;
 			// undo the position of king
 			if(piece instanceof King) {
@@ -1434,7 +1432,7 @@ public class ChessBoard {
 		return index;
 	}
 	
-	private boolean[] castlingRights() {
+	public boolean[] castlingRights() {
 		boolean blackKing = board[7][4] instanceof King && board[7][4].getColor() == false && board[7][4].getFirstMove();
 		boolean blackShortRook = board[7][7] instanceof Rook && board[7][7].getColor() == false && board[7][7].getFirstMove();
 		boolean blackLongRook = board[7][0] instanceof Rook && board[7][0].getColor() == false && board[7][0].getFirstMove();

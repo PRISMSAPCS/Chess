@@ -7,33 +7,64 @@ import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 import static utils.bot.DanielBotClasses.BitBoardMagic.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
+import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
+import static utils.bot.DanielBotClasses.BitBoardUCI.*;
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
+import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
+import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
+import static utils.bot.DanielBotClasses.NNUE.NNUE.*;
 
-public class BitBoard {		
-	public static int getSquare(int rank, int file) { return rank * 8 + file; }
+import java.util.ArrayList;
+
+import utils.*;
+import utils.bot.DanielBotClasses.NNUE.*;
+
+public class BitBoard {	
+	public static int getBitBoardMove(ChessBoard board) {
+		setUpBitBoard(board);
+		clearHistory();
+		return searchPosition();
+	}
+	
+	public static void setUpBitBoard(ChessBoard board) {
+		clearRepetitionTable();
+		ArrayList<Move> previousMoves = board.getPreviousMoves();
+		parseFen(startPosition);
+		for (Move m : previousMoves) {
+			String note = "";
+			note += m.getStart().toChessNote();
+			note += m.getEnd().toChessNote();
+			
+			if (m instanceof PromotionMove) {
+				Piece piece = ((PromotionMove) m).getPromoteTo();
+				
+				if (piece instanceof Knight) note += "n";
+				if (piece instanceof Bishop) note += "b";
+				if (piece instanceof Rook) note += "r";
+				if (piece instanceof Queen) note += "q";
+			}
+			
+			makeMove(parseMove(note), allMoves);
+		}
+	}
 	
 	public static void initAll() {
 		initLeapersAttacks();
 		initSlidersAttacks(bishop);
 		initSlidersAttacks(rook);
+		initRandomKeys();
+		initEvaluationMasks();
+		openBook();
 	}
 	
 	public static void main(String[] args) {
 		initAll();
-		
-		parseFen(startPosition);
-		
-		generateMoves();
-		
-		int move = encodeMove(e2, e4, P, Q, 1, 0, 0, 0);
-		
-		System.out.println(squareToCoordinates[getMoveSource(move)]);
-		System.out.println(squareToCoordinates[getMoveTarget(move)]);
-		System.out.println(asciiPieces[getMovePiece(move)]);
-		System.out.println(asciiPieces[getMovePromoted(move)]);
-		System.out.println(getMoveCapture(move) != 0);
-		System.out.println(getMoveDouble(move) != 0);
-		System.out.println(getMoveEnPassant(move) != 0);
-		System.out.println(getMoveCastling(move) != 0);
+		parseFen(endgamePosition);
+		printBoard();
+		searchPosition();
 	}
 }

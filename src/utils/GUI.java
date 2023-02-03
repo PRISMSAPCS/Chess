@@ -154,6 +154,9 @@ public class GUI implements CanGetMove {
 
         // set evaluation bar
         evaluationBar.setValue(board.evaluate());
+        
+        // reset any chosen moves if player is messing around while bot is making move
+        firSelectedPos = null;
     }
 
     public void drawBoard() {

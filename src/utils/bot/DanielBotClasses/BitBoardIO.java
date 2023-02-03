@@ -1,11 +1,14 @@
 package utils.bot.DanielBotClasses;
 
-import static utils.bot.DanielBotClasses.BitBoardBitManipulation.getBit;
+import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 
+// basic IO functions that make debugging a lot easier
 public class BitBoardIO {
+	// print a bitboard
 	public static void print(long bitboard) {
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
@@ -24,24 +27,8 @@ public class BitBoardIO {
 		
 		System.out.printf("       Bitboard: %d\n\n", bitboard);
 	}
-
-	public static void printAttackedSquares(int side) {
-		for (int rank = 0; rank < 8; rank++) {
-			for (int file = 0; file < 8; file++) {
-				// print ranks
-				if (file == 0)
-					System.out.printf("  %d ", 8 - rank);
-					
-				System.out.printf(" %c", (isSquareAttacked(rank * 8 + file, side) == 1) ? '1' : '.');
-			}
-			
-			System.out.println();
-		}
-		
-		// print board files
-		System.out.println("\n     a b c d e f g h");
-	}
 	
+	// print the whole chess board
 	public static void printBoard() {
 	    // print offset
 	    System.out.println();
@@ -89,5 +76,34 @@ public class BitBoardIO {
 	                                           ((castle & wq) != 0) ? 'Q' : '-',
 	                                           ((castle & bk) != 0) ? 'k' : '-',
 	                                           ((castle & bq) != 0) ? 'q' : '-');
+	    System.out.printf("     Hash Key: %x\n\n", generateHashKey());
+	}
+	
+	// print a move (for UCI purposes)
+	public static void printMove(int move) {
+		System.out.printf("%s%s%c", squareToCoordinates[getMoveSource(move)], squareToCoordinates[getMoveTarget(move)], (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ');
+	}
+
+
+	// print a move list
+	public static void printMoveList(moves moveList) {
+		System.out.printf("\n    move    piece   capture   double    enpass    castling\n\n");
+	    
+	    // loop over moves within a move list
+	    for (int moveCount = 0; moveCount < moveList.count; moveCount++) {
+	        // init move
+	    	int move = moveList.moves[moveCount];
+	        System.out.printf("    %s%s%c   %c       %d         %d         %d         %d\n", squareToCoordinates[getMoveSource(move)],
+                                                                                  squareToCoordinates[getMoveTarget(move)],
+                                                                                  (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ',
+                                                                                  asciiPieces[getMovePiece(move)],
+                                                                                  getMoveCapture(move) != 0 ? 1 : 0,
+                                                                                  getMoveDouble(move) != 0 ? 1 : 0,
+                                                                                  getMoveEnPassant(move) != 0 ? 1 : 0,
+                                                                                  getMoveCastling(move) != 0 ? 1 : 0);
+	    }
+	    
+	    // print total number of moves
+        System.out.printf("\n\n    Total number of moves: %d\n\n", moveList.count);
 	}
 }

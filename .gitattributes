@@ -1,0 +1,2 @@
+*.bin filter=lfs diff=lfs merge=lfs -text
+/src/utils/bot/DanielBotResources/bigBook.bin filter=lfs diff=lfs merge=lfs -text

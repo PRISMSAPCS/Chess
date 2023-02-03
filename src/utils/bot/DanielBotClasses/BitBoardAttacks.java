@@ -5,15 +5,16 @@ import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 
 public class BitBoardAttacks {
-	static long pawnAttacks[][] = new long[2][64];
-	static long knightAttacks[] = new long[64];
-	static long kingAttacks[] = new long[64];
+	// precomputed attack arrays/tables which allow for extremely fast move generation
+	public static long pawnAttacks[][] = new long[2][64];
+	public static long knightAttacks[] = new long[64];
+	public static long kingAttacks[] = new long[64];
 	static long bishopMasks[] = new long[64];
 	static long rookMasks[] = new long[64];
 	static long bishopAttacks[][] = new long[64][512];
 	static long rookAttacks[][] = new long[64][4096];
 	
-	
+	// returns the squares a pawn attacks as a bitboard
 	static long maskPawnAttacks(int square, int side) {
 		long attacks = 0L;
 		long bitboard = 0L;
@@ -31,6 +32,7 @@ public class BitBoardAttacks {
 		return attacks;
 	}
 	
+	// returns the squares a knight attacks as a bitboard
 	static long maskKnightAttacks(int square) {
 		long attacks = 0L;
 		long bitboard = 0L;
@@ -49,6 +51,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
+	// returns the squares a king attacks as a bitboard
 	static long maskKingAttacks(int square) {
 		long attacks = 0L;
 		long bitboard = 0L;
@@ -68,6 +71,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
+	// returns the squares a bishop attacks, except the borders. no borders because this is just a mask for magic bitboards
 	static long maskBishopAttacks(int square) {
 		long attacks = 0L;
 		
@@ -86,6 +90,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
+	// same as above, but for rook
 	static long maskRookAttacks(int square) {
 		long attacks = 0L;
 		
@@ -103,6 +108,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
+	// generates the squares a bishop attacks, given the blocked squares
 	static long bishopAttacksOnTheFly(int square, long block)
 	{
 	    long attacks = 0L;
@@ -140,6 +146,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 
+	// same as above, but for rooks
 	static long rookAttacksOnTheFly(int square, long block)
 	{
 	    long attacks = 0L;
@@ -177,7 +184,7 @@ public class BitBoardAttacks {
 	    return attacks;
 	}
 	
-
+	// gets bishop attacks using magic bitboards
 	public static long getBishopAttacks(int square, long occupancy) {
 		occupancy &= bishopMasks[square];
 		occupancy *= bishopMagicNumbers[square];
@@ -186,6 +193,7 @@ public class BitBoardAttacks {
 		return bishopAttacks[square][(int) (occupancy)];
 	}
 	
+	// gets rook attacks using magic bitboards
 	public static long getRookAttacks(int square, long occupancy) {
 		occupancy &= rookMasks[square];
 		occupancy *= rookMagicNumbers[square];
@@ -194,10 +202,13 @@ public class BitBoardAttacks {
 		return rookAttacks[square][(int) (occupancy)];
 	}
 	
+	
+	// gets queen attacks using bishop and rook attacks
 	public static long getQueenAttacks(int square, long occupancy) {
 		return getBishopAttacks(square, occupancy) | getRookAttacks(square, occupancy);
 	}
 	
+	// initiates precomputed attack tables/arrays for pieces that can't be blocked
 	static void initLeapersAttacks() {
 		for (int square = 0; square < 64; square++) {
 			pawnAttacks[white][square] = maskPawnAttacks(square, white);
@@ -209,7 +220,7 @@ public class BitBoardAttacks {
 		}
 	}
 	
-
+	// initiates precomputed attack tables/arrays for pieces that can be blocked
 	public static void initSlidersAttacks(int bishop) {
 		for (int square = 0; square < 64; square++) {
 			bishopMasks[square] = maskBishopAttacks(square);
@@ -237,6 +248,7 @@ public class BitBoardAttacks {
 		}
 	}
 	
+	// assigns an occupancy bitboard to an index
 	static long setOccupancy(int index, int bitsInMask, long attackMask) {
 		long occupancy = 0L;
 		

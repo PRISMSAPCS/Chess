@@ -9,6 +9,13 @@ import java.util.Comparator;
 import java.util.Random;
 import java.util.Scanner;
 import utils.*;
+import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
+import static utils.bot.DanielBotClasses.BitBoardConsts.*;
+import static utils.bot.DanielBotClasses.BitBoard.*;
+
+
+import java.util.Arrays;
+
 
 public class DanielBot extends ChessBot {
 	class Entry {
@@ -36,12 +43,11 @@ public class DanielBot extends ChessBot {
 	static final boolean useFixedDepthSearch = false;
 	static final int timeLimit = 5000;
 	static final int mateScore = 50000;
-	static final boolean infiniteBook = true;
+	static final boolean infiniteBook = false;
 	static final int bookLimit = 10;
 	static final String bookFile = "final.pgn";
 	
 	Entry[] entries;
-	int evalMult;
 	
 	int posCounter;
 	int transpositionCounter;
@@ -58,30 +64,33 @@ public class DanielBot extends ChessBot {
 	
 	boolean finishedSearching;
 	private boolean inBook;
-	public DanielBot(ChessBoard board, boolean side) {
+	public DanielBot(ChessBoard board) {
 		super(board);
 		inBook = true;
-		evalMult = (side) ? 1 : -1;
-		entries = new Entry[64000];
+		//entries = new Entry[64000];
+		initAll();
 	}
 
 	@Override
 	public Move getMove() {
-		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
-			return bestMove;
-		} else {
-			inBook = false;
-		}
-		startSearch();
-		System.out.print("Depth: ");
-		System.out.println(depthSearched);
-		System.out.print("Positions evaluated: ");
-		System.out.println(posCounter);
-		System.out.print("Transpositions: ");
-		System.out.println(transpositionCounter);
-		System.out.print("Evaluation: ");
-		System.out.println(bestEval);
-		return bestMove;
+//		if (inBook && bookMove() && (infiniteBook || super.getBoard().getPreviousMoves().size() < bookLimit)) {
+//			return bestMove;
+//		} else {
+//			inBook = false;
+//		}
+		
+		Move move = convertIntToMove(getBitBoardMove(super.getBoard()));
+		return move;
+//		startSearch();
+//		System.out.print("Depth: ");
+//		System.out.println(depthSearched);
+//		System.out.print("Positions evaluated: ");
+//		System.out.println(posCounter);
+//		System.out.print("Transpositions: ");
+//		System.out.println(transpositionCounter);
+//		System.out.print("Evaluation: ");
+//		System.out.println(bestEval);
+//		return bestMove;
 	}
 	
 	private void startSearch() {		
@@ -153,6 +162,21 @@ public class DanielBot extends ChessBot {
 		int ttVal = lookupEvaluationTT(depth, plyFromRoot, alpha, beta);
 		if (ttVal != lookupFailed) {
 			transpositionCounter++;
+			int occurrences = 0;
+			for (long x : boardCopy.getPreviousZobrists()) {
+				if (boardCopy.getZobristKey() == x) {
+					occurrences++;
+				}
+			}
+			
+			for (long x : super.getBoard().getPreviousZobrists()) {
+				if (boardCopy.getZobristKey() == x) {
+					occurrences++;
+				}
+			}
+			
+			if (occurrences >= 2) return 0;
+			if (boardCopy.getMoveRule() >= 50) return 0;
 			if (plyFromRoot == 0) {
 				bestMoveThisIteration = entries[indexTT()].move;
 				bestEvalThisIteration = entries[indexTT()].value;
@@ -402,7 +426,7 @@ public class DanielBot extends ChessBot {
 		
 		int rnd = new Random().nextInt(possibleContinuations.size());
 		String result = possibleContinuations.get(rnd);
-		System.out.println(result);
+
 		Move move = null;
 		
 		if (Character.isLowerCase(result.charAt(0))) { // pawn move
@@ -633,6 +657,134 @@ public class DanielBot extends ChessBot {
 		}
 		
 		return score;
+	}
+	
+	private String generateFen(ChessBoard board) {
+		String fenString = "";
+		Piece[][] pieceArray = board.getBoard();
+		for (int r = 7; r >= 0; r--) {
+			for (int c = 0; c < 8; c++) {
+				Piece piece = pieceArray[r][c];
+				if (piece == null) {
+					if (fenString.length() != 0 && Character.isDigit(fenString.charAt(fenString.length() - 1))) {
+						int numberEmpty = fenString.charAt(fenString.length() - 1) - '0' + 1;
+						fenString = fenString.substring(0, fenString.length() - 1);
+						fenString += numberEmpty;
+					} else {
+						fenString += "1";
+					}
+				} else {
+					if (piece instanceof King) {
+						if (piece.getColor()) { fenString += "K"; }
+						else { fenString += 'k'; }
+					} else if (piece instanceof Queen) {
+						if (piece.getColor()) { fenString += "Q"; }
+						else { fenString += 'q'; }
+					} else if (piece instanceof Bishop) {
+						if (piece.getColor()) { fenString += "B"; }
+						else { fenString += 'b'; }
+					} else if (piece instanceof Knight) {
+						if (piece.getColor()) { fenString += "N"; }
+						else { fenString += 'n'; }
+					} else if (piece instanceof Rook) {
+						if (piece.getColor()) { fenString += "R"; }
+						else { fenString += 'r'; }
+					} else if (piece instanceof Pawn) {
+						if (piece.getColor()) { fenString += "P"; }
+						else { fenString += 'p'; }
+					}
+				}
+			}
+			fenString += "/";
+		}
+		
+		fenString = fenString.substring(0, fenString.length() - 1);
+		
+		fenString += " ";
+		
+		fenString += board.getSide() ? "w" : "b";
+		
+		fenString += " ";
+		
+		boolean[] castling = board.castlingRights();
+		
+		if (castling[2]) { fenString += "K"; }		
+		if (castling[3]) { fenString += "Q"; }		
+		if (castling[0]) { fenString += "k"; }		
+		if (castling[1]) { fenString += "q"; }
+		
+		if (fenString.charAt(fenString.length() - 1) == ' ') { fenString += "-"; }
+		
+		fenString += " ";
+		
+		if (board.getEnPassant().second != -1) {
+			Pair enPassant = board.getEnPassant();
+			Pair newPair = new Pair(enPassant.first, enPassant.second);
+			
+			if (enPassant.first == 4) newPair.first = 3;
+			if (enPassant.first == 5) newPair.first = 6;
+			
+			fenString += newPair.toChessNote();
+		} else {
+			fenString += "-";
+		}
+		
+		fenString += " ";
+		
+		fenString += board.getMoveRule();
+		
+		fenString += " ";
+		
+		fenString += board.getPreviousMoves().size();
+		
+		return fenString;
+	}
+	
+	private Move convertIntToMove(int move) {
+		int sourceSquare = getMoveSource(move);
+        int targetSquare = getMoveTarget(move);
+        int promoted = getMovePromoted(move);
+        int enPassant = getMoveEnPassant(move);
+        int castling = getMoveCastling(move);
+        
+        if (castling != 0) {
+    	if (targetSquare == 62) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 6, super.getBoard().getBoard()[0][7], 0, 7, 0, 5);
+    	if (targetSquare == 58) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 2, super.getBoard().getBoard()[0][0], 0, 0, 0, 3);
+    	if (targetSquare == 6) return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 6, super.getBoard().getBoard()[7][7], 7, 7, 7, 5);
+    	if (targetSquare == 2) return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 2, super.getBoard().getBoard()[7][0], 7, 0, 7, 3);
+    	}
+        
+        int sourceRank = 7 - sourceSquare / 8;
+        int sourceFile = sourceSquare % 8;
+        Pair start = new Pair(sourceRank, sourceFile);
+        
+        int targetRank = 7 - targetSquare / 8;
+        int targetFile = targetSquare % 8;
+        Pair end = new Pair(targetRank, targetFile);
+        
+        Piece piece = super.getBoard().getBoard(start);
+        
+    	if (enPassant != 0) {
+    		Pair captureSquare = new Pair((sourceRank + targetRank) / 2, targetFile);
+    		return new Move(piece, start, end, captureSquare);
+    	}
+        
+    	if (promoted != 0) {
+    		Piece promoteTo = null;
+    		switch (promoted) {
+    		case N: promoteTo = new Knight(true); break;
+    		case B: promoteTo = new Bishop(true); break;
+    		case R: promoteTo = new Rook(true); break;
+    		case Q: promoteTo = new Queen(true); break;
+    		case n: promoteTo = new Knight(false); break;
+    		case b: promoteTo = new Bishop(false); break;
+    		case r: promoteTo = new Rook(false); break;
+    		case q: promoteTo = new Queen(false); break;
+    		}
+    		return new PromotionMove(piece, start.first, start.second, end.first, end.second, promoteTo);
+    	}
+    	
+    	return new Move(piece, start, end);
 	}
 	
 	private int getPieceValue(Piece piece) {
