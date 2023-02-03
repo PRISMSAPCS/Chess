@@ -42,6 +42,11 @@ public class pete_bot extends ChessBot{
 		
 		for(Move theFirstMove : FirstMove) {
 			min = 69420;
+			boolean bonus=false;
+			
+			Pair p1 = theFirstMove.getEnd();
+			
+			if(theBoard.getBoard(p1)!=null)bonus = true;
 			
 			//simulate 1st move
 			theBoard.submitMove(theFirstMove);
@@ -51,6 +56,7 @@ public class pete_bot extends ChessBot{
 			//How do I know if a piece is in attack?
 			//find 2nd move
 			SecondMove = getAllLegalMoves(false);
+			
 			
 			//simulate 2nd move
 			for(Move theSecondMove : SecondMove) {
@@ -62,14 +68,22 @@ public class pete_bot extends ChessBot{
 				
 				//find 3rd move
 				ThirdMove = getAllLegalMoves(true);
+				boolean badmove = false;
+				if(theBoard.checked(true))badmove = true;
 				
-				for(Move theThirdMove : ThirdMove) {
+				Pair p = theSecondMove.getEnd();
+				if(theBoard.getBoard(p)!=null) badmove = true;
+				if(badmove)min=-69420;
+					
+				if(!badmove)for(Move theThirdMove : ThirdMove) {
 					//simulate 3rd move
 					theBoard.submitMove(theThirdMove);
 					//find 4th move
 					FourthMove = getAllLegalMoves(false);
 					for(Move theFourthMove : FourthMove) {
 						theBoard.submitMove(theFourthMove);
+						
+						
 						
 						if(theBoard.evaluate()<min)min=theBoard.evaluate();
 						if(theBoard.checked(true))min=-69420;
@@ -85,20 +99,17 @@ public class pete_bot extends ChessBot{
 				
 			}
 			theBoard.undoMove();
-			//
-			System.out.print(theFirstMove.toString());
-			System.out.println(" "+min);
-		
-			//
+			
 			
 			if(min>minimax) {
 				theBestMove = new ArrayList<Move>();
 				minimax = min;
 			}
+				
 			if(min>=minimax) {
 				theBestMove.add(theFirstMove);
 			}
-			
+			if(bonus) return theFirstMove;
 		}
 		
 		int a = (int)(Math.random()*theBestMove.size());

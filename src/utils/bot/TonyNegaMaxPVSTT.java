@@ -11,7 +11,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
     public record MoveScore(Move move, int score) {
     }
 
-    private record TTEntry(MoveScore movScore, NodeType type, int remDep) {
+    private record TTEntry(MoveScore movScore, NodeType type, int remDep, long zobrist) {
     }
 
     private enum NodeType {
@@ -71,7 +71,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
     private int totZeroWindowSearch = 0, totFullSearch = 0;
     private int totSearch = 0, totCacheHit = 0;
     private Hashtable<ChessBoard, TTEntry> transposTable = new Hashtable<>();
-    private final int MAX_THREADS = Runtime.getRuntime().availableProcessors() - 2;
+    private final int MAX_THREADS = Runtime.getRuntime().availableProcessors() - 1;
     private ExecutorService thPool = Executors.newFixedThreadPool(MAX_THREADS);
 
     public TonyNegaMaxPVSTT(ChessBoard board, boolean side) {
@@ -83,6 +83,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         TTEntry e = transposTable.get(b);
         if (e == null)
             return null;
+        assert(e.zobrist == b.getZobristKey()) : "zobrist key not match";
         if (e.remDep >= remDep) {
             // means e have more remianing depth until search end
             // this is because e.depth means the current depth of e
@@ -210,6 +211,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         MoveScore probeRet = null;
         if ((probeRet = probeTT(b, remDep, alpha, beta)) != null) {
             totCacheHit++;
+            assert probeRet != null : "TT returned null value";
             return probeRet;
         }
 
@@ -233,7 +235,7 @@ public class TonyNegaMaxPVSTT extends ChessBot {
             } else {
                 // null window at first
                 curScore = -negaMax(-color, curDep + 1, remDep - 1, -(alpha + 1), -alpha, b).score;
-
+                
                 totZeroWindowSearch++;
                 if (alpha < curScore && curScore < beta) {
                     // full search
@@ -254,16 +256,20 @@ public class TonyNegaMaxPVSTT extends ChessBot {
         MoveScore ret = new MoveScore(bestMove, maxScore);
         NodeType type;
         if (betaCutoff) {
+            // this branch is too good to be true, the father tree will not choose this branch
+            // however, it is possible for this to be better, so it is a lower bound
             type = NodeType.LOWER;
         } else if (curScore <= alphaOrig) {
+            // didn't improve alpha at all, it is lower bound
             type = NodeType.UPPER;
         } else {
             type = NodeType.EXACT;
         }
 
         // store transposition table
-        TTEntry entry = new TTEntry(ret, type, curDep);
+        TTEntry entry = new TTEntry(ret, type, curDep, b.getZobristKey());
         transposTable.put(b, entry);
+        assert ret != null : "bestmove returned is null";
         return ret;
     }
 
