@@ -42,14 +42,16 @@ public class pete_bot extends ChessBot{
 		
 		for(Move theFirstMove : FirstMove) {
 			min = 69420;
-			boolean bonus;
+			boolean bonus=false;
+			
+			Pair p1 = theFirstMove.getEnd();
+			
+			if(theBoard.getBoard(p1)!=null)bonus = true;
 			
 			//simulate 1st move
 			theBoard.submitMove(theFirstMove);
 			
-			Pair p1 = theFirstMove.getEnd();
-			bonus = false;
-			if(theBoard.getBoard(p1)!=null)bonus = true;
+			
 			
 			//How do I know if a piece is in attack?
 			//find 2nd move
@@ -99,12 +101,15 @@ public class pete_bot extends ChessBot{
 			theBoard.undoMove();
 			
 			
-			if(min>minimax)minimax = min;
+			if(min>minimax) {
+				theBestMove = new ArrayList<Move>();
+				minimax = min;
+			}
 				
-			if(min>=minimax||bonus) {
+			if(min>=minimax) {
 				theBestMove.add(theFirstMove);
 			}
-			
+			if(bonus) return theFirstMove;
 		}
 		
 		int a = (int)(Math.random()*theBestMove.size());
