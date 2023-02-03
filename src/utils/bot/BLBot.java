@@ -8,17 +8,26 @@ import utils.Piece;
 
 public class BLBot extends ChessBot {
 	
-	int depth = 4;
+	int depth = 3;
 	Move bestMove = null;
+	int initialSide;
 	
 	public BLBot(ChessBoard board) {
 		super(board);
 	}
 	
-	public int bestMove(ChessBoard curBoard, int d, boolean f) {
+	public BLBot(ChessBoard board, boolean side) {
+		super(board);
+		if(side == true)
+			initialSide = 1;
+		else
+			initialSide = -1;
+	}
+	
+	public int bestMove(ChessBoard curBoard, int d, int a, int b, int f) {
 		if(d > depth)
 			return curBoard.evaluate();
-		int minVal = Integer.MAX_VALUE, maxVal = Integer.MIN_VALUE;
+		int maxVal = Integer.MIN_VALUE, temp;
 		Move theMove = null;
 		boolean haveSon = false;
 		for(int i = 0; i < 8; i++)
@@ -31,56 +40,26 @@ public class BLBot extends ChessBot {
 					haveSon = true;
 					ChessBoard tempBoard = new ChessBoard(curBoard);
 					tempBoard.submitMove(move);
-					if(getBoard().getSide() == true) {
-						if(f == true) {
-							int temp = bestMove(tempBoard, d + 1, false);
-							if(temp > maxVal) {
-								maxVal = temp;
-								theMove = move;
-							}
-						}
-						else {
-							int temp = bestMove(tempBoard, d + 1, true);
-							if(temp < minVal) {
-								minVal = temp;
-								theMove = move;
-							}
-						}
+					temp = -bestMove(tempBoard, d + 1, -b, -a, -f);
+					if(temp > maxVal)
+					{
+						maxVal = temp;
+						theMove = move;
 					}
-					else {
-						if(f == false) {
-							int temp = bestMove(tempBoard, d + 1, true);
-							if(temp > maxVal) {
-								maxVal = temp;
-								theMove = move;
-							}
-						}
-						else {
-							int temp = bestMove(tempBoard, d + 1, false);
-							if(temp < minVal) {
-								minVal = temp;
-								theMove = move;
-							}
-						}
-					}
+					a = Integer.max(a, maxVal);
+					if(a >= b)
+						break;
 				}
 			}
 		if(d == 1)
 			bestMove = theMove;
 		if(haveSon == false)
 			return curBoard.evaluate();
-		if(getBoard().getSide() == true) {
-			if(f == true)
-				return maxVal;
-			return minVal;
-		}
-		if(f == false)
-			return maxVal;
-		return minVal;
+		return maxVal;
 	}
 	
 	public Move getMove() {
-		bestMove(getBoard(), 1, true);
+		bestMove(getBoard(), 1, Integer.MIN_VALUE, Integer.MAX_VALUE, initialSide);
 		return bestMove;
 	}
 	
