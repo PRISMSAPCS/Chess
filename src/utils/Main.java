@@ -95,7 +95,7 @@ public class Main {
 			normalGame(board, gui, new CanGetMove[] {new BLBot(board), gui});
 		} else if (list.getSelectedValue().equals("Play Against Bot As Black")){
 			GUI gui = new GUI(board, false);
-			normalGame(board, gui, new CanGetMove[] {gui, new BLBot(board)});
+			normalGame(board, gui, new CanGetMove[] {gui, new DanielBot(board)});
 		}
     }
 }
