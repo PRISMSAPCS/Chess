@@ -217,11 +217,6 @@ public class BitBoardSearch {
 			}
 		}
 		
-		// futility pruning
-		if (depth < 4 && staticEval - (depth + 1) * 60 >= beta && staticEval >= beta && staticEval < 49000) {
-			return staticEval;
-		}
-		
 		// Null Move Pruning
 		/**
 		 * Operates under the observation that, if the opponent getting a free move doesn't improve their position enough, we can prune
