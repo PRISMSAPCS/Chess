@@ -100,6 +100,7 @@ public class BitBoardSearch {
 					score = negamax(-50000, 50000, currentDepth);
 				}
 			}
+			
 			// we finished the search all the way to the end
 			if (keepSearching) {
 				// for diagnostics
@@ -117,7 +118,7 @@ public class BitBoardSearch {
 					System.out.printf("Depth: %d\tEval: %d \tNodes: %d\tPV: ", currentDepth, score, nodes- oldNodes);
 				}
 				
-				// print principle variation
+				// print principal variation
 				for (int i = 0; i < pvLength[0]; i++) {
 					printMove(pvTable[0][i]);
 					System.out.print(" ");
@@ -179,7 +180,7 @@ public class BitBoardSearch {
 		// for hash
 		int hashFlag = hashFlagAlpha;
 		
-		// is a principle variation node
+		// is a principal variation node
 		boolean isPVNode = beta - alpha > 1;
 		
 		// read from transposition table, and only use TT if it's not a pv node
@@ -215,11 +216,6 @@ public class BitBoardSearch {
 			if (staticEval - evalMargin >= beta) {
 				return staticEval - evalMargin;
 			}
-		}
-		
-		// futility pruning
-		if (!inCheck && depth < 4 && staticEval - (depth + 1) * 60 >= beta && staticEval >= beta && staticEval < 49000) {
-			return staticEval;
 		}
 		
 		// Null Move Pruning
