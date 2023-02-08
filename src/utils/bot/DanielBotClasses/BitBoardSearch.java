@@ -218,7 +218,7 @@ public class BitBoardSearch {
 		}
 		
 		// futility pruning
-		if (depth < 4 && staticEval - (depth + 1) * 60 >= beta && staticEval >= beta && staticEval < 49000) {
+		if (!inCheck && depth < 4 && staticEval - (depth + 1) * 60 >= beta && staticEval >= beta && staticEval < 49000) {
 			return staticEval;
 		}
 		
