@@ -63,7 +63,7 @@ public class BitBoard {
 	
 	public static void main(String[] args) {
 		initAll();
-		parseFen("1r1k3r/p1p1q3/1pQbpp1p/1B1p1bp1/3P4/2P1P3/PP1N1PPP/R3K2R b - - 0 0");
+		parseFen("1k1rr3/1pp1n1Qp/p7/3Np3/2PP2Pq/P3PP1P/1P2K3/R6R b - - 0 0");
 		printBoard();
 		searchPosition();
 	}

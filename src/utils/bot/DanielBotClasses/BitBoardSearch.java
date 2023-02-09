@@ -139,7 +139,7 @@ public class BitBoardSearch {
 		if (!useUCIIO) {
 			System.out.printf("\nDepth: %d\nEvaluation: %d\nNodes: %d\nTranspositions: %d\n\n", maxDepthSearched, finalScore, nodes, transpositions);
 		}
-		
+
 		if (useUCIIO) {
 			System.out.print("bestmove ");
 			printMove(bestMove);
@@ -309,6 +309,27 @@ public class BitBoardSearch {
 			
 			// increment legal moves
 			legalMoves++;
+			
+			// futility pruning
+			/**
+			 * Conditions:
+			 * 1. not in check
+			 * 2. move does not give check
+			 * 3. depth <= 2
+			 * 4. neither alpha nor beta is a mating value
+			 */
+			if (!inCheck
+				&& !isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)
+				&& getMoveCapture(moveList.moves[count]) == 0
+				&& depth <= 2
+				&& !(Math.max(Math.abs(alpha), Math.abs(beta)) > 48000)) {
+				staticEval = -evaluate();
+				if (staticEval + depth * 100 < alpha) {
+					takeBack();
+					ply--;
+					continue;
+				}
+			}
 			
 			// get score
 			int score = 0;
