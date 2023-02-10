@@ -313,18 +313,20 @@ public class BitBoardSearch {
 			// futility pruning
 			/**
 			 * Conditions:
-			 * 1. not in check
-			 * 2. move does not give check
-			 * 3. depth <= 2
-			 * 4. neither alpha nor beta is a mating value
+			 * 1. not a PV node
+			 * 2. not in check
+			 * 3. move does not give check
+			 * 4. depth <= 2
+			 * 5. neither alpha nor beta is a mating value
 			 */
-			if (!inCheck
+			if (!isPVNode
+				&& !inCheck
 				&& !isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)
 				&& getMoveCapture(moveList.moves[count]) == 0
 				&& depth <= 2
 				&& !(Math.max(Math.abs(alpha), Math.abs(beta)) > 48000)) {
 				staticEval = -evaluate();
-				if (staticEval + depth * 100 < alpha) {
+				if (staticEval + depth * 120 <= alpha) {
 					takeBack();
 					ply--;
 					continue;
