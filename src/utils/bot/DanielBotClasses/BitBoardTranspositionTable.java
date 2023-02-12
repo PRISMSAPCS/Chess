@@ -73,9 +73,9 @@ public class BitBoardTranspositionTable {
 		score *= sideMultiplier;
 		
 		if (score >= mateScoreThreshold) {
-			return mateScore;
+			return mateScore + ply;
 		} else if (score <= -mateScoreThreshold) {
-			return -mateScore;
+			return -(mateScore + ply);
 		}
 		
 		return score;
@@ -86,9 +86,9 @@ public class BitBoardTranspositionTable {
 		score *= sideMultiplier;
 		
 		if (score == mateScore) {
-			return mateScore - ply - depth;
+			return mateScore - ply;
 		} else if (score == -mateScore) {
-			return -(mateScore - ply - depth);
+			return -(mateScore - ply);
 		}
 		
 		return score;

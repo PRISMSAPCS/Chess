@@ -526,9 +526,9 @@ public class BitBoardEvaluation {
 		int whiteMaterialScore = materialScore(white);
 		int blackMaterialScore = materialScore(black);
 		
-		double multiplier = (double) (whiteMaterialScore - blackMaterialScore) / ((whiteMaterialScore + blackMaterialScore) * (whiteMaterialScore + blackMaterialScore)) * 3000;
+		double multiplier = (double) (whiteMaterialScore - blackMaterialScore) / ((whiteMaterialScore + blackMaterialScore) * (whiteMaterialScore + blackMaterialScore)) * 1000;
 		
-		if (multiplier > 5) multiplier = 5;
+		if (multiplier > 2) multiplier = 2;
 		
 		int friendlyKingRank = -1, friendlyKingFile = -1;
 		int enemyKingRank = -1, enemyKingFile = -1;
