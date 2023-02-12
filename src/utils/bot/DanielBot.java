@@ -744,10 +744,10 @@ public class DanielBot extends ChessBot {
 		int sourceSquare = getMoveSource(move);
         int targetSquare = getMoveTarget(move);
         int promoted = getMovePromoted(move);
-        int enPassant = getMoveEnPassant(move);
-        int castling = getMoveCastling(move);
+        boolean enPassant = getMoveEnPassant(move);
+        boolean castling = getMoveCastling(move);
         
-        if (castling != 0) {
+        if (castling) {
     	if (targetSquare == 62) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 6, super.getBoard().getBoard()[0][7], 0, 7, 0, 5);
     	if (targetSquare == 58) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 2, super.getBoard().getBoard()[0][0], 0, 0, 0, 3);
     	if (targetSquare == 6) return new Move(super.getBoard().getBoard()[7][4], 7, 4, 7, 6, super.getBoard().getBoard()[7][7], 7, 7, 7, 5);
@@ -764,7 +764,7 @@ public class DanielBot extends ChessBot {
         
         Piece piece = super.getBoard().getBoard(start);
         
-    	if (enPassant != 0) {
+    	if (enPassant) {
     		Pair captureSquare = new Pair((sourceRank + targetRank) / 2, targetFile);
     		return new Move(piece, start, end, captureSquare);
     	}

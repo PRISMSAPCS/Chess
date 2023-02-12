@@ -21,23 +21,24 @@ public class BitBoardTranspositionTable {
 	public static int readHashEntry(int alpha, int beta, int depth) {
 		Entry hashEntry = hashTable[getHashIndex()];
 		if (hashEntry == null) return noHashEntry;
-		if (hashEntry.hashKey == hashKey) {
-			if (hashEntry.depth >= depth) {
+		if (hashEntry.getHashKey() == (hashKey >>> 40)) {
+			if (hashEntry.getDepth() >= depth) {
 				// correct the mate score based off of ply from root
-				int correctedScore = correctMateScoreForRetrieval(hashEntry.score);
+				int correctedScore = correctScoreForRetrieval(hashEntry.score, depth);
+				int flag = hashEntry.getFlag();
 				
 				// exact entry, return
-				if (hashEntry.flag == hashFlagExact) {
+				if (flag == hashFlagExact) {
 					return correctedScore;
 				}
 				
 				// alpha entry, return if it's less than alpha
-				if (hashEntry.flag == hashFlagAlpha && hashEntry.score <= alpha) {
+				if (flag == hashFlagAlpha && hashEntry.score <= alpha) {
 					return correctedScore;
 				}
 				
 				// beta entry, return if it's greater than beta
-				if (hashEntry.flag == hashFlagBeta && hashEntry.score >= beta) {
+				if (flag == hashFlagBeta && hashEntry.score >= beta) {
 					return correctedScore;
 				}
 			}
@@ -48,7 +49,7 @@ public class BitBoardTranspositionTable {
 	
 	// write a hash entry
 	public static void writeHashEntry(int score, int depth, int hashFlag, int best) {
-		Entry toAdd = new Entry(hashKey, depth, hashFlag, correctMateScoreForStorage(score), best);
+		Entry toAdd = new Entry(hashKey, depth, hashFlag, correctScoreForStorage(score), best);
 		
 		hashTable[getHashIndex()] = toAdd;
 	}
@@ -59,7 +60,7 @@ public class BitBoardTranspositionTable {
 		
 		if (toCheck != null) {
 			// make sure that the hash keys are the same, since collisions do occur
-			if (toCheck.hashKey == hashKey) {
+			if (toCheck.getHashKey() == (hashKey >>> 40)) {
 				return toCheck.best;
 			}
 		}
@@ -68,10 +69,12 @@ public class BitBoardTranspositionTable {
 	}
 	
 	// mate score for storage is just mate score
-	public static int correctMateScoreForStorage(int score) {
-		if (score >= mateScore - 100) {
+	public static int correctScoreForStorage(int score) {
+		score *= sideMultiplier;
+		
+		if (score >= mateScoreThreshold) {
 			return mateScore;
-		} else if (score <= -(mateScore - 100)) {
+		} else if (score <= -mateScoreThreshold) {
 			return -mateScore;
 		}
 		
@@ -79,11 +82,13 @@ public class BitBoardTranspositionTable {
 	}
 	
 	// adjust mate score to be ply from root
-	public static int correctMateScoreForRetrieval(int score) {
+	public static int correctScoreForRetrieval(int score, int depth) {
+		score *= sideMultiplier;
+		
 		if (score == mateScore) {
-			return mateScore - ply;
+			return mateScore - ply - depth;
 		} else if (score == -mateScore) {
-			return -(mateScore - ply);
+			return -(mateScore - ply - depth);
 		}
 		
 		return score;

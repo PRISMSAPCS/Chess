@@ -141,7 +141,8 @@ public class BitBoardConsts {
 	public static final int noHashEntry = -823471;
 	
 	// mate score
-	public static final int mateScore = 49000;
+	public static final int mateScore = 30100;
+	public static final int mateScoreThreshold = 30000;
 	
 	// when something moves, we bitwise & the castling variable with the corresponding thing in here. that automatically
 	// updates the castling rights for us

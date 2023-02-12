@@ -97,10 +97,10 @@ public class BitBoardIO {
                                                                                   squareToCoordinates[getMoveTarget(move)],
                                                                                   (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ',
                                                                                   asciiPieces[getMovePiece(move)],
-                                                                                  getMoveCapture(move) != 0 ? 1 : 0,
-                                                                                  getMoveDouble(move) != 0 ? 1 : 0,
-                                                                                  getMoveEnPassant(move) != 0 ? 1 : 0,
-                                                                                  getMoveCastling(move) != 0 ? 1 : 0);
+                                                                                  getMoveCapture(move) ? 1 : 0,
+                                                                                  getMoveDouble(move) ? 1 : 0,
+                                                                                  getMoveEnPassant(move) ? 1 : 0,
+                                                                                  getMoveCastling(move) ? 1 : 0);
 	    }
 	    
 	    // print total number of moves

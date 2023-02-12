@@ -15,7 +15,7 @@ import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 // searches moves
 public class BitBoardSearch {	
-	static final int maxPly = 100;
+	static final int maxPly = maxDepth;
 	
 	// for Late Move Reduction
 	static final int fullDepthMoves = 4;
@@ -42,6 +42,9 @@ public class BitBoardSearch {
 	// diagnostic
 	static int transpositions;
 	
+	// for transposition table, adjusting score
+	public static int sideMultiplier = (side == white) ? 1 : -1;
+	
 	// search driver which does book moves and iterative deepening
 	public static int searchPosition() {
 		startTime = System.currentTimeMillis();
@@ -60,9 +63,6 @@ public class BitBoardSearch {
 				return bookMove;
 			}
 		}
-		
-		// clear hash table between moves
-		clearHashTable();
 		
 		// initiate stuff
 		int score = 0;
@@ -90,14 +90,14 @@ public class BitBoardSearch {
 			
 			// aspiration search
 			if (currentDepth == 1) {
-				score = negamax(-50000, 50000, currentDepth);
+				score = negamax(-32000, 32000, currentDepth);
 			} else {
 				int alpha = score - 50, beta = score + 50;
 				
 				score = negamax(alpha, beta, currentDepth);
 				
 				if (score <= alpha || score >= beta) {
-					score = negamax(-50000, 50000, currentDepth);
+					score = negamax(-32000, 32000, currentDepth);
 				}
 			}
 			
@@ -127,7 +127,7 @@ public class BitBoardSearch {
 				System.out.println();
 				
 				// we found a mate, no need to continue searching
-				if (score >= 48000 || score <= -48000) break;
+				if (score >= mateScoreThreshold || score <= -mateScoreThreshold) break;
 			} else { // we did not finish searching due to the time limit
 				break;
 			}
@@ -210,7 +210,7 @@ public class BitBoardSearch {
 		int staticEval = evaluate();
 		
 		// static null move pruning
-		if (depth < 3 && !isPVNode && !inCheck && Math.abs(beta - 1) > -49000 + 100) {
+		if (depth < 3 && !isPVNode && !inCheck && beta > -mateScoreThreshold) {
 			int evalMargin = 120 * depth;
 			
 			if (staticEval - evalMargin >= beta) {
@@ -322,9 +322,9 @@ public class BitBoardSearch {
 			if (!isPVNode
 				&& !inCheck
 				&& !isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)
-				&& getMoveCapture(moveList.moves[count]) == 0
+				&& !getMoveCapture(moveList.moves[count])
 				&& depth <= 2
-				&& !(Math.max(Math.abs(alpha), Math.abs(beta)) > 48000)) {
+				&& !(Math.max(Math.abs(alpha), Math.abs(beta)) > mateScoreThreshold)) {
 				staticEval = -evaluate();
 				if (staticEval + depth * 120 <= alpha) {
 					takeBack();
@@ -367,7 +367,7 @@ public class BitBoardSearch {
 					if (movesSearched >= fullDepthMoves
 						&& depth >= reductionLimit
 						&& !inCheck
-						&& getMoveCapture(moveList.moves[count]) == 0
+						&& !getMoveCapture(moveList.moves[count])
 						&& getMovePromoted(moveList.moves[count]) == 0) {
 						score = -negamax(-alpha - 1, -alpha, depth - 2);
 					} else {
@@ -397,7 +397,7 @@ public class BitBoardSearch {
 				bestMoveInThisPosition = moveList.moves[count];
 				
 				// history moves heuristic
-				if (getMoveCapture(moveList.moves[count]) == 0) {
+				if (!getMoveCapture(moveList.moves[count])) {
 					historyMoves[getMovePiece(moveList.moves[count])][getMoveTarget(moveList.moves[count])] += depth;
 				}
 				
@@ -420,7 +420,7 @@ public class BitBoardSearch {
 				if (score >= beta) {
 					writeHashEntry(beta, depth, hashFlagBeta, moveList.moves[count]);
 					
-					if (getMoveCapture(moveList.moves[count]) == 0) {
+					if (!getMoveCapture(moveList.moves[count])) {
 						killerMoves[1][ply] = killerMoves[0][ply];
 						killerMoves[0][ply] = moveList.moves[count];
 					}
@@ -551,7 +551,7 @@ public class BitBoardSearch {
 		}
 		
 		// if it's a capture, score it high
-		if (getMoveCapture(move) != 0) {
+		if (getMoveCapture(move)) {
 			int targetPiece = P;
 			
 			int startPiece, endPiece;

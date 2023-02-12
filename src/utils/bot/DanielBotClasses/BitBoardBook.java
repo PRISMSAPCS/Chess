@@ -186,38 +186,33 @@ public class BitBoardBook {
 		
 		int startSquare = (7 - startRank) * 8 + startFile;
 		int endSquare = (7 - endRank) * 8 + endFile;
-		int castling = 0;
+		int flag = 0;
+		
 		int piece = 0;
-		int capture = 0;
-		int doublePush = 0;
-		int enPassantLocal = 0;
-		
-		// adding 6 changes sides
-		if (side == black && promotionPiece != 0) promotionPiece += 6;
-		
+
 		// a bit of manual checking to see if the move is castling
 		if (startSquare == e1 && endSquare == h1) {
 			if (getBit(bitboards[K], e1) != 0 && getBit(occupancies[both], f1) == 0 && getBit(occupancies[both], g1) == 0) {
 				endSquare = g1;
-				castling = 1;
+				flag = 0b0010;
 			}
 		}
 		if (startSquare == e1 && endSquare == a1) {
 			if (getBit(bitboards[K], e1) != 0 && getBit(occupancies[both], d1) == 0 && getBit(occupancies[both], c1) == 0 && getBit(occupancies[both], b1) == 0) {
 				endSquare = c1;
-				castling = 1;
+				flag = 0b0010;
 			}
 		}
 		if (startSquare == e8 && endSquare == h8) {
 			if (getBit(bitboards[k], e8) != 0 && getBit(occupancies[both], f8) == 0 && getBit(occupancies[both], g8) == 0) {
 				endSquare = g8;
-				castling = 1;
+				flag = 0b0010;
 			}
 		}
 		if (startSquare == e8 && endSquare == a8) {
 			if (getBit(bitboards[k], e8) != 0  && getBit(occupancies[both], d8) == 0 && getBit(occupancies[both], c8) == 0 && getBit(occupancies[both], b8) == 0) {
 				endSquare = c8;
-				castling = 1;
+				flag = 0b0010;
 			}
 		}
 		
@@ -228,7 +223,7 @@ public class BitBoardBook {
 			}
 			
 			if (getBit(bitboards[bbPiece], endSquare) != 0) {
-				capture = 1;
+				flag = 0b0100;
 			}
 		}
 		
@@ -236,34 +231,40 @@ public class BitBoardBook {
 			// checking pawn diagonal attacks for special capture flag en passant case
 			if (startSquare == endSquare - 7) {
 				if (getBit(bitboards[P], startSquare - 1) != 0) {
-					capture = 1;
-					enPassantLocal = 1;
+					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare - 9) {
 				if (getBit(bitboards[P], startSquare + 1) != 0) {
-					capture = 1;
-					enPassantLocal = 1;
+					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare + 7) {
 				if (getBit(bitboards[p], startSquare + 1) != 0) {
-					capture = 1;
-					enPassantLocal = 1;
+					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare + 9) {
 				if (getBit(bitboards[p], startSquare - 1) != 0) {
-					capture = 1;
-					enPassantLocal = 1;
+					flag = 0b0101;
 				}
 			}
 			
 			// checking for double push
 			if (startSquare == endSquare + 16 || startSquare == endSquare - 16) {
-				doublePush = 1;
+				flag = 0b0001;
 			}
 		}
 		
-		int toReturn = encodeMove(startSquare, endSquare, piece, promotionPiece, capture, doublePush, enPassantLocal, castling);
-		
-		return toReturn;
+		// check promotion
+		if (promotionPiece != 0) {
+			// shift it left by 1
+			promotionPiece -= N;
+			
+			// set promotion flag
+			flag |= 0b1000;
+			
+			// set promotion piece
+			flag |= promotionPiece;
+		}
+				
+		return encodeMove(startSquare, endSquare, flag);
 	}
 }

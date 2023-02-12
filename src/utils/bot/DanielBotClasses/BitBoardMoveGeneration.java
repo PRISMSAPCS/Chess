@@ -65,19 +65,19 @@ public class BitBoardMoveGeneration {
 							// pawn promotion
 							if (sourceSquare >= a7 && sourceSquare <= h7) {
 								// pawn promotes
-								addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, Q, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, R, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, B, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, N, 0, 0, 0, 0));
+								addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1011));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1010));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1001));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1000));
 								
 							} else {
 								// one square
-								addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+								addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 
 								
 								// two squares
 								if (sourceSquare >= a2 && sourceSquare <= h2 && getBit(occupancies[both], targetSquare - 8) == 0) {
-	                                addMove(moveList, encodeMove(sourceSquare, targetSquare - 8, piece, 0, 0, 1, 0, 0));
+	                                addMove(moveList, encodeMove(sourceSquare, targetSquare - 8, 0b0001));
 								}
 							}
 						}
@@ -92,13 +92,13 @@ public class BitBoardMoveGeneration {
 							// pawn promotion
 							if (sourceSquare >= a7 && sourceSquare <= h7) {
 								// pawn promotion capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, Q, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, R, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, B, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, N, 1, 0, 0, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1111));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1110));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1101));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1100));
 							} else { // one square move
 								// pawn capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 							}
 							
 							attacks &= ~(1L << (targetSquare));
@@ -113,7 +113,7 @@ public class BitBoardMoveGeneration {
 								int targetEnPassant = getLS1BIndex(enPassantAttacks);
 								
 								// en passant capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetEnPassant, piece, 0, 1, 0, 1, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetEnPassant, 0b0101));
 							}
 						}
 						
@@ -130,7 +130,7 @@ public class BitBoardMoveGeneration {
 						if (getBit(occupancies[both], f1) == 0 && getBit(occupancies[both], g1) == 0) {
 							if (!isSquareAttacked(e1, black) && !isSquareAttacked(f1, black)) {
 								// kingside castle
-	                            addMove(moveList, encodeMove(e1, g1, piece, 0, 0, 0, 0, 1));
+	                            addMove(moveList, encodeMove(e1, g1, 0b0010));
 							}
 						}
 					}
@@ -140,7 +140,7 @@ public class BitBoardMoveGeneration {
 						if (getBit(occupancies[both], d1) == 0 && getBit(occupancies[both], c1) == 0 && getBit(occupancies[both], b1) == 0) {
 							if (!isSquareAttacked(e1, black) && !isSquareAttacked(d1, black)) {
 								// queenside castle
-	                            addMove(moveList, encodeMove(e1, c1, piece, 0, 0, 0, 0, 1));
+	                            addMove(moveList, encodeMove(e1, c1, 0b0010));
 							}
 						}
 					}
@@ -158,17 +158,17 @@ public class BitBoardMoveGeneration {
 							// pawn promotion
 							if (sourceSquare >= a2 && sourceSquare <= h2) {
 								// pawn promotes
-								addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, q, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, r, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, b, 0, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, n, 0, 0, 0, 0));								
+								addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1011));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1010));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1001));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1000));							
 							} else {
 								// one square
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+								addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 								
 								// two squares
 								if (sourceSquare >= a7 && sourceSquare <= h7 && getBit(occupancies[both], targetSquare + 8) == 0) {
-	                                addMove(moveList, encodeMove(sourceSquare, targetSquare + 8, piece, 0, 0, 1, 0, 0));
+	                                addMove(moveList, encodeMove(sourceSquare, targetSquare + 8, 0b0001));
 								}
 							}
 						}
@@ -183,13 +183,13 @@ public class BitBoardMoveGeneration {
 							// pawn promotion
 							if (sourceSquare >= a2 && sourceSquare <= h2) {
 								// pawn promotion capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, q, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, r, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, b, 1, 0, 0, 0));
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, n, 1, 0, 0, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1111));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1110));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1101));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b1100));
 							} else { // one square move
 								// pawn capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 							}
 							
 							attacks &= ~(1L << (targetSquare));
@@ -204,7 +204,7 @@ public class BitBoardMoveGeneration {
 								int targetEnPassant = getLS1BIndex(enPassantAttacks);
 
 								// en passant capture
-	                            addMove(moveList, encodeMove(sourceSquare, targetEnPassant, piece, 0, 1, 0, 1, 0));
+	                            addMove(moveList, encodeMove(sourceSquare, targetEnPassant, 0b0101));
 							}
 						}
 						
@@ -221,7 +221,7 @@ public class BitBoardMoveGeneration {
 						if (getBit(occupancies[both], f8) == 0 && getBit(occupancies[both], g8) == 0) {
 							if (!isSquareAttacked(e8, white) && !isSquareAttacked(f8, white)) {
 								// kingside castle
-	                            addMove(moveList, encodeMove(e8, g8, piece, 0, 0, 0, 0, 1));
+	                            addMove(moveList, encodeMove(e8, g8, 0b0010));
 							}
 						}
 					}
@@ -231,7 +231,7 @@ public class BitBoardMoveGeneration {
 						if (getBit(occupancies[both], d8) == 0 && getBit(occupancies[both], c8) == 0 && getBit(occupancies[both], b8) == 0) {
 							if (!isSquareAttacked(e8, white) && !isSquareAttacked(d8, white)) {
 								// queenside castle
-	                            addMove(moveList, encodeMove(e8, c8, piece, 0, 0, 0, 0, 1));
+	                            addMove(moveList, encodeMove(e8, c8, 0b0010));
 							}
 						}
 					}
@@ -254,10 +254,10 @@ public class BitBoardMoveGeneration {
 						// quiet moves
 						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 						} else {
 							// capture move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 						}
 						
 						// pop bit
@@ -284,10 +284,10 @@ public class BitBoardMoveGeneration {
 						// quiet moves
 						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 						} else {
 							// capture move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 						}
 						
 						// pop bit
@@ -314,10 +314,10 @@ public class BitBoardMoveGeneration {
 						// quiet moves
 						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 						} else {
 							// capture move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 						}
 						
 						// pop bit
@@ -344,10 +344,10 @@ public class BitBoardMoveGeneration {
 						// quiet moves
 						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 						} else {
 							// capture move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 						}
 						
 						// pop bit
@@ -374,10 +374,10 @@ public class BitBoardMoveGeneration {
 						// quiet moves
 						if (getBit(((side == white) ? occupancies[black] : occupancies[white]), targetSquare) == 0) {
 							// quiet piece move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 0, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0000));
 						} else {
 							// capture move
-	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, piece, 0, 1, 0, 0, 0));
+	                        addMove(moveList, encodeMove(sourceSquare, targetSquare, 0b0100));
 						}
 						
 						// pop bit
@@ -402,12 +402,12 @@ public class BitBoardMoveGeneration {
         int targetSquare = getMoveTarget(move);
         int piece = getMovePiece(move);
         int promoted = getMovePromoted(move);
-        int capture = getMoveCapture(move);
-        int doublePush = getMoveDouble(move);
-        int enPassantLocal = getMoveEnPassant(move);
-        int castling = getMoveCastling(move);
+        boolean capture = getMoveCapture(move);
+        boolean doublePush = getMoveDouble(move);
+        boolean enPassantLocal = getMoveEnPassant(move);
+        boolean castling = getMoveCastling(move);
         
-        boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
+        //boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
         
         // move piece
         bitboards[piece] |= (1L << targetSquare);
@@ -421,7 +421,7 @@ public class BitBoardMoveGeneration {
         }
         
         // handle captures
-        if (capture != 0) {
+        if (capture) {
         	moveRule = 0;
         	
         	int startPiece = -1, endPiece = -1;
@@ -452,14 +452,14 @@ public class BitBoardMoveGeneration {
         	bitboards[(side == white) ? P : p] &= ~(1L << targetSquare);
         	
         	hashKey ^= pieceKeys[(side == white) ? P : p][targetSquare];
-        	
+        	        	
         	// add promoted piece
         	bitboards[promoted] |= (1L << targetSquare);
         	hashKey ^= pieceKeys[promoted][targetSquare];
         }
         
         // handle en passant
-        if (enPassantLocal != 0) {
+        if (enPassantLocal) {
         	moveRule = 0;
         	
         	// erase the pawn
@@ -477,7 +477,7 @@ public class BitBoardMoveGeneration {
         
         enPassant = no_sq;
         
-        if (doublePush != 0) {
+        if (doublePush) {
         	if (side == white) {
         		enPassant = targetSquare + 8;
         		
@@ -488,7 +488,7 @@ public class BitBoardMoveGeneration {
         	hashKey ^= enPassantKeys[enPassant];
         }
         
-        if (castling != 0) {
+        if (castling) {
         	switch (targetSquare) {
         	case g1: // white castles king side
         		bitboards[R] |= (1L << f1);
@@ -565,7 +565,7 @@ public class BitBoardMoveGeneration {
 //        }
         
         // if it's not check related and there's no captures or promotions, it's a quiet move
-        if (flag == nonQuietOnly && capture == 0 && promoted == 0 && enPassantLocal == 0) {
+        if (flag == nonQuietOnly && !capture && promoted == 0 && !enPassantLocal) {
         	takeBack();
         	return false;
         }

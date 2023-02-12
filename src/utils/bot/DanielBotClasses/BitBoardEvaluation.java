@@ -528,6 +528,8 @@ public class BitBoardEvaluation {
 		
 		double multiplier = (double) (whiteMaterialScore - blackMaterialScore) / ((whiteMaterialScore + blackMaterialScore) * (whiteMaterialScore + blackMaterialScore)) * 3000;
 		
+		if (multiplier > 5) multiplier = 5;
+		
 		int friendlyKingRank = -1, friendlyKingFile = -1;
 		int enemyKingRank = -1, enemyKingFile = -1;
 		
