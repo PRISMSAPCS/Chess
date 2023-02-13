@@ -14,7 +14,7 @@ import java.util.Arrays;
 // stuff to do with move generation
 public class BitBoardMoveGeneration {
 	// adds a move to a move list
-	public static void addMove(moves moveList, int move) {
+	public static void addMove(moves moveList, short move) {
 		moveList.moves[moveList.count] = move;
 		moveList.count++;
 	}

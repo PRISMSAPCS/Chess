@@ -4,41 +4,42 @@ import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardSearch.*;
+import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 
 // stores eval and move of an already searched position
 public class BitBoardTranspositionTable {
 	// hash table
-	public static Entry hashTable[] = new Entry[hashTableSize];
+	public static long hashTable[] = new long[hashTableSize];
 	
 	// clear the hash table
 	public static void clearHashTable() {
 		for (int index = 0; index < hashTableSize; index++) {
-			hashTable[index] = null;
+			hashTable[index] = 0;
 		}
 	}
 	
 	// read an entry (if there is one)
-	public static int readHashEntry(int alpha, int beta, int depth) {
-		Entry hashEntry = hashTable[getHashIndex()];
-		if (hashEntry == null) return noHashEntry;
-		if (hashEntry.getHashKey() == (hashKey >>> 40)) {
-			if (hashEntry.getDepth() >= depth) {
+	public static short readHashEntry(int alpha, int beta, int depth) {
+		long hashEntry = hashTable[getHashIndex()];
+		if (hashEntry == 0) return noHashEntry;
+		if (getEntryHashKey(hashEntry) == (hashKey >>> 40)) {
+			if (getEntryDepth(hashEntry) >= depth) {
 				// correct the mate score based off of ply from root
-				int correctedScore = correctScoreForRetrieval(hashEntry.score, depth);
-				int flag = hashEntry.getFlag();
-				
+				short correctedScore = correctScoreForRetrieval(getEntryScore(hashEntry), depth);
+				int flag = getEntryFlag(hashEntry);
+
 				// exact entry, return
 				if (flag == hashFlagExact) {
 					return correctedScore;
 				}
 				
 				// alpha entry, return if it's less than alpha
-				if (flag == hashFlagAlpha && hashEntry.score <= alpha) {
+				if (flag == hashFlagAlpha && correctedScore <= alpha) {
 					return correctedScore;
 				}
 				
 				// beta entry, return if it's greater than beta
-				if (flag == hashFlagBeta && hashEntry.score >= beta) {
+				if (flag == hashFlagBeta && correctedScore >= beta) {
 					return correctedScore;
 				}
 			}
@@ -48,20 +49,20 @@ public class BitBoardTranspositionTable {
 	}
 	
 	// write a hash entry
-	public static void writeHashEntry(int score, int depth, int hashFlag, int best) {
-		Entry toAdd = new Entry(hashKey, depth, hashFlag, correctScoreForStorage(score), best);
+	public static void writeHashEntry(short score, int depth, int hashFlag, short best) {
+		long toAdd = encodeEntry(hashKey, depth, hashFlag, correctScoreForStorage(score), best);
 		
 		hashTable[getHashIndex()] = toAdd;
 	}
 	
 	// get the best move from the TT for the current position, if it's in the TT
 	public static int getStoredMove() {
-		Entry toCheck = hashTable[getHashIndex()];
+		long toCheck = hashTable[getHashIndex()];
 		
-		if (toCheck != null) {
+		if (toCheck != 0) {
 			// make sure that the hash keys are the same, since collisions do occur
-			if (toCheck.getHashKey() == (hashKey >>> 40)) {
-				return toCheck.best;
+			if (getEntryHashKey(toCheck) == (hashKey >>> 40)) {
+				return getEntryMove(toCheck);
 			}
 		}
 		
@@ -69,26 +70,26 @@ public class BitBoardTranspositionTable {
 	}
 	
 	// mate score for storage is just mate score
-	public static int correctScoreForStorage(int score) {
+	public static short correctScoreForStorage(short score) {
 		score *= sideMultiplier;
 		
 		if (score >= mateScoreThreshold) {
-			return mateScore + ply;
+			return (short) (mateScore + ply);
 		} else if (score <= -mateScoreThreshold) {
-			return -(mateScore + ply);
+			return (short) -(mateScore + ply);
 		}
 		
 		return score;
 	}
 	
 	// adjust mate score to be ply from root
-	public static int correctScoreForRetrieval(int score, int depth) {
+	public static short correctScoreForRetrieval(short score, int depth) {
 		score *= sideMultiplier;
 		
-		if (score == mateScore) {
-			return mateScore - ply;
-		} else if (score == -mateScore) {
-			return -(mateScore - ply);
+		if (score >= mateScoreThreshold) {
+			return (short) (mateScore - ply);
+		} else if (score <= -mateScoreThreshold) {
+			return (short) -(mateScore - ply);
 		}
 		
 		return score;

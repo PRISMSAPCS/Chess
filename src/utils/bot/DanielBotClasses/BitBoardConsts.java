@@ -138,11 +138,11 @@ public class BitBoardConsts {
 	public static final int hashFlagBeta = 2;
 	
 	// random number indicating no hash found
-	public static final int noHashEntry = -823471;
+	public static final int noHashEntry = -32764;
 	
 	// mate score
-	public static final int mateScore = 30100;
-	public static final int mateScoreThreshold = 30000;
+	public static final short mateScore = 30100;
+	public static final short mateScoreThreshold = 30000;
 	
 	// when something moves, we bitwise & the castling variable with the corresponding thing in here. that automatically
 	// updates the castling rights for us

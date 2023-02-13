@@ -49,4 +49,24 @@ public class BitBoardBitManipulation {
 	public static boolean getMoveDouble(int move) 	 { return (move >> 12 == 0b0001); }
 	public static boolean getMoveEnPassant(int move) { return (move >> 12 == 0b0101); }
 	public static boolean getMoveCastling(int move)  { return (move >> 12 == 0b0010); }
+	
+	// bit macros related to getting and setting information from/for a trnasposition table entry
+	// an entry is formatted as such:
+	/**
+	 * 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111	best move
+	 * 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 0000 0000 0000 0000	score
+	 * 0000 0000 1111 1111 1111 1111 1111 1111 0000 0000 0000 0000 0000 0000 0000 0000	zobrist key, shortened to 24 bits
+	 * 0011 1111 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000	depth
+	 * 1100 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000	flag type
+	 */
+	
+	public static long encodeEntry(long HashKey, int Depth, int Flag, short Score, short Move) {
+		return ((HashKey >>> 40 | (Depth << 24) | (Flag << 30)) << 32) | (Short.toUnsignedLong(Score) << 16) | Short.toUnsignedInt(Move);
+	}
+	
+	public static short getEntryMove(long entry) { return (short) (entry & 0xFFFF); }
+	public static short getEntryScore(long entry) { return (short) ((entry >>> 16) & 0xFFFF); }
+	public static int getEntryHashKey(long entry) { return (int) ((entry >>> 32) & 0xFFFFFF); }
+	public static int getEntryDepth(long entry) { return (int) ((entry >>> 56) & 0x3F); }
+	public static int getEntryFlag(long entry) { return (int) ((entry >>> 62) & 0x3); }
 }

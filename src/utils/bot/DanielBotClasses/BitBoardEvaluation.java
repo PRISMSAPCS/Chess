@@ -165,7 +165,7 @@ public class BitBoardEvaluation {
 	}
 	
 	// basic eval function
-	public static int evaluate() {
+	public static short evaluate() {
 		int gamePhaseScore = getGamePhaseScore();
 		
 		int gamePhase = -1;
@@ -488,7 +488,7 @@ public class BitBoardEvaluation {
 		score += (side == white) ? tempo : -tempo;
 		
 		// since we use negamax, return in the perspective of the side to play
-		return (side == white) ? score : -score;
+		return (short) ((side == white) ? score : -score);
 	}
 	
 	// scales attack bonus based on # of attackers
