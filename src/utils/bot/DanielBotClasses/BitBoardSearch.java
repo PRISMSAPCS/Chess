@@ -275,7 +275,7 @@ public class BitBoardSearch {
 				
 				score += 175;
 				
-				if (score < beta && depth <= 2) {
+				if (score < beta && depth <= 3) {
 					newScore = quiescence(alpha, beta);
 					
 					if (newScore < beta) {
