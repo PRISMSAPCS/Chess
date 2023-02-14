@@ -36,14 +36,9 @@ public class BitBoardBitManipulation {
 	
 	public static int getMoveSource(int move) 		 { return (move & 0x3f); }
 	public static int getMoveTarget(int move) 		 { return (move & 0xfc0) >> 6; }
-	public static int getMovePiece(int move) 		 { 
-		int source = getMoveSource(move);
-		for (int bbPiece = side * 6; bbPiece < 6 + side * 6; bbPiece++) { if (getBit(bitboards[bbPiece], source) != 0) return bbPiece; }
-		return 0;
-	}
 	public static int getMovePromoted(int move) 	 {
 		if ((move & 0b1000_000000000000) == 0) return 0;
-		return ((move & 0b0011_000000000000) >>> 12) + 1 + side * 6;
+		return ((move & 0b0011_000000000000) >>> 12) + 1;
 	}
 	public static boolean getMoveCapture(int move) 	 { return ((move >> 12 & 0b0100) != 0); }
 	public static boolean getMoveDouble(int move) 	 { return (move >> 12 == 0b0001); }
@@ -61,12 +56,24 @@ public class BitBoardBitManipulation {
 	 */
 	
 	public static long encodeEntry(long HashKey, int Depth, int Flag, short Score, short Move) {
-		return ((HashKey >>> 40 | (Depth << 24) | (Flag << 30)) << 32) | (Short.toUnsignedLong(Score) << 16) | Short.toUnsignedInt(Move);
+		return ((((HashKey >>> 40) 
+					^ (Short.toUnsignedInt(Score) << 8)
+					^ (Short.toUnsignedInt(Move)))
+					& (0xFFFFFF)
+				| (Depth << 24) 
+				| (Flag << 30)) << 32) 
+				| (Short.toUnsignedLong(Score) << 16) 
+				| Short.toUnsignedInt(Move);
 	}
 	
 	public static short getEntryMove(long entry) { return (short) (entry & 0xFFFF); }
 	public static short getEntryScore(long entry) { return (short) ((entry >>> 16) & 0xFFFF); }
-	public static int getEntryHashKey(long entry) { return (int) ((entry >>> 32) & 0xFFFFFF); }
+	public static int getEntryHashKey(long entry) {
+		return (int) (((entry >>> 32) 
+							^ (Short.toUnsignedInt(getEntryScore(entry)) << 8)
+							^ (Short.toUnsignedInt(getEntryMove(entry))))
+						& 0xFFFFFF);
+	}
 	public static int getEntryDepth(long entry) { return (int) ((entry >>> 56) & 0x3F); }
 	public static int getEntryFlag(long entry) { return (int) ((entry >>> 62) & 0x3); }
 }

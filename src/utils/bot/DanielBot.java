@@ -741,11 +741,15 @@ public class DanielBot extends ChessBot {
 	}
 	
 	private Move convertIntToMove(int move) {
+		if (move == 0) return super.getBoard().chooseRandomMove();
+		
 		int sourceSquare = getMoveSource(move);
         int targetSquare = getMoveTarget(move);
         int promoted = getMovePromoted(move);
         boolean enPassant = getMoveEnPassant(move);
         boolean castling = getMoveCastling(move);
+        
+        if (promoted != 0) promoted+= 6 * (super.getBoard().getSide() ? 0 : 1);
         
         if (castling) {
     	if (targetSquare == 62) return new Move(super.getBoard().getBoard()[0][4], 0, 4, 0, 6, super.getBoard().getBoard()[0][7], 0, 7, 0, 5);

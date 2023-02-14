@@ -6,14 +6,12 @@ import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 import static utils.bot.DanielBotClasses.BitBoardMagic.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 import static utils.bot.DanielBotClasses.BitBoardUCI.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
-import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 import static utils.bot.DanielBotClasses.NNUE.NNUE.*;
@@ -24,16 +22,16 @@ import utils.*;
 import utils.bot.DanielBotClasses.NNUE.*;
 
 public class BitBoard {	
-	public static int getBitBoardMove(ChessBoard board) {
+	public static short getBitBoardMove(ChessBoard board) {
 		setUpBitBoard(board);
-		clearHistory();
+		bbBoard.clearHistory();
 		return searchPosition();
 	}
 	
 	public static void setUpBitBoard(ChessBoard board) {
-		clearRepetitionTable();
+		bbBoard.clearRepetitionTable();
 		ArrayList<Move> previousMoves = board.getPreviousMoves();
-		parseFen(startPosition);
+		bbBoard.parseFen(startPosition);
 		for (Move m : previousMoves) {
 			String note = "";
 			note += m.getStart().toChessNote();
@@ -48,7 +46,7 @@ public class BitBoard {
 				if (piece instanceof Queen) note += "q";
 			}
 			
-			makeMove(parseMove(note), allMoves);
+			bbBoard.makeMove(parseMove(note), allMoves);
 		}
 	}
 	
@@ -59,12 +57,13 @@ public class BitBoard {
 		initRandomKeys();
 		initEvaluationMasks();
 		openBook();
+		bbBoard = new BitBoardChessBoard();
 	}
 	
 	public static void main(String[] args) {
 		initAll();
-		parseFen(endgamePosition);
-		printBoard();
+		bbBoard.parseFen("8/1p6/1K6/p1B1qP1N/2k5/1p6/PPP2P2/8 w - - 0 0");
+		printBoard(bbBoard);
 		searchPosition();
 	}
 }

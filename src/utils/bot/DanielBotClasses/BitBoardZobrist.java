@@ -41,14 +41,14 @@ public class BitBoardZobrist {
 	
 	// generate a hash key from the current position. used once when initiating board, but not later
 	// because incremental updating is much faster (incrementing when making a move, popping from stack when undoing)
-	public static long generateHashKey() {
+	public static long generateHashKey(BitBoardChessBoard board) {
 		long finalKey = 0L;
 		
 		long bitboard = 0L;
 		
 		// piece keys
 		for (int piece = P; piece <= k; piece++) {
-			bitboard = bitboards[piece];
+			bitboard = board.bitboards[piece];
 			
 			while (bitboard != 0) {
 				int square = getLS1BIndex(bitboard);
@@ -60,15 +60,15 @@ public class BitBoardZobrist {
 		}
 		
 		// en passant key
-		if (enPassant != no_sq) {
-			finalKey ^= enPassantKeys[enPassant];
+		if (board.enPassant != no_sq) {
+			finalKey ^= enPassantKeys[board.enPassant];
 		}
 		
 		// castling rights key
-		finalKey ^= castleKeys[castle];
+		finalKey ^= castleKeys[board.castle];
 		
 		// side key
-		if (side == black) finalKey ^= sideKey;
+		if (board.side == black) finalKey ^= sideKey;
 		
 		return finalKey;
 	}

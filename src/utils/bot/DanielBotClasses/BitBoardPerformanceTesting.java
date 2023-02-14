@@ -1,10 +1,10 @@
 package utils.bot.DanielBotClasses;
 
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 
 // performance testing class to ensure that move generation and make move logic is functioning properly
 // also gives time, so you can compare speed
@@ -20,17 +20,17 @@ public class BitBoardPerformanceTesting {
 		
 		moves moveList = new moves();
 		
-		generateMoves(moveList);
+		bbBoard.generateMoves(moveList);
 		
 		// iterate through all moves, make move, make a recursive call, undo move
 		for (int i = 0; i < moveList.count; i++) {
-			if (!makeMove(moveList.moves[i], allMoves)) {
+			if (!bbBoard.makeMove(moveList.moves[i], allMoves)) {
 				continue;
 			}
 			
 			perftDriver(depth - 1);
 			
-			takeBack();
+			bbBoard.takeBack();
 		}
 	}
 	
@@ -42,12 +42,12 @@ public class BitBoardPerformanceTesting {
 		nodes = 0;
 		moves moveList = new moves();
 		
-		generateMoves(moveList);
+		bbBoard.generateMoves(moveList);
 		
 		long start = System.currentTimeMillis();
 		
 		for (int i = 0; i < moveList.count; i++) {
-			if (!makeMove(moveList.moves[i], allMoves)) {
+			if (!bbBoard.makeMove(moveList.moves[i], allMoves)) {
 				continue;
 			}
 			
@@ -58,7 +58,7 @@ public class BitBoardPerformanceTesting {
 			
 			long oldNodes = nodes - cumulativeNodes;
 			
-			takeBack();
+			bbBoard.takeBack();
 
 			// print move
 	        System.out.printf("     move: %s%s%c  nodes: %d\n", squareToCoordinates[getMoveSource(moveList.moves[i])],

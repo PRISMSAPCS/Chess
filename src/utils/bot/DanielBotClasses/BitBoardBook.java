@@ -4,7 +4,7 @@ import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardAttacks.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 
 import java.io.File;
@@ -42,30 +42,30 @@ public class BitBoardBook {
 		long finalHash = 0L;
 		
 		for (int bbPiece = P; bbPiece <= k; bbPiece++) {
-			long bitboard = bitboards[bbPiece];
+			long bitboard = bbBoard.bitboards[bbPiece];
 			
 			while (bitboard != 0) {
 				int square = getLS1BIndex(bitboard);
 				
 				// polyglot's zobrist hashes only hash en passant if there's a pawn that can capture en passant, hence this complication
-				if (side == white && bbPiece == P) {
-					// generate enPassant captures
-					if (enPassant != no_sq) {
-						long enPassantAttacks = pawnAttacks[side][square] & (1L << enPassant);
+				if (bbBoard.side == white && bbPiece == P) {
+					// generate bbBoard.enPassant captures
+					if (bbBoard.enPassant != no_sq) {
+						long enPassantAttacks = pawnAttacks[bbBoard.side][square] & (1L << bbBoard.enPassant);
 						
 						// if en passant is available
 						if (enPassantAttacks != 0) {
-							finalHash ^= Random64[772 + enPassant % 8];
+							finalHash ^= Random64[772 + bbBoard.enPassant % 8];
 						}
 					}
-				} else if (side == black && bbPiece == p) {
-					// generate enPassant captures
-					if (enPassant != no_sq) {
-						long enPassantAttacks = pawnAttacks[side][square] & (1L << enPassant);
+				} else if (bbBoard.side == black && bbPiece == p) {
+					// generate bbBoard.enPassant captures
+					if (bbBoard.enPassant != no_sq) {
+						long enPassantAttacks = pawnAttacks[bbBoard.side][square] & (1L << bbBoard.enPassant);
 						
 						// if en passant is available
 						if (enPassantAttacks != 0) {
-							finalHash ^= Random64[772 + enPassant % 8];
+							finalHash ^= Random64[772 + bbBoard.enPassant % 8];
 						}
 					}
 				}
@@ -79,12 +79,12 @@ public class BitBoardBook {
 			}
 		}
 		
-		if ((castle & wk) != 0) finalHash ^= Random64[768];
-		if ((castle & wq) != 0) finalHash ^= Random64[769];
-		if ((castle & bk) != 0) finalHash ^= Random64[770];
-		if ((castle & bq) != 0) finalHash ^= Random64[771];
+		if ((bbBoard.castle & wk) != 0) finalHash ^= Random64[768];
+		if ((bbBoard.castle & wq) != 0) finalHash ^= Random64[769];
+		if ((bbBoard.castle & bk) != 0) finalHash ^= Random64[770];
+		if ((bbBoard.castle & bq) != 0) finalHash ^= Random64[771];
 		
-		if (side == white) {
+		if (bbBoard.side == white) {
 			finalHash ^= Random64[780];
 		}
 		
@@ -192,25 +192,25 @@ public class BitBoardBook {
 
 		// a bit of manual checking to see if the move is castling
 		if (startSquare == e1 && endSquare == h1) {
-			if (getBit(bitboards[K], e1) != 0 && getBit(occupancies[both], f1) == 0 && getBit(occupancies[both], g1) == 0) {
+			if (getBit(bbBoard.bitboards[K], e1) != 0 && getBit(bbBoard.occupancies[both], f1) == 0 && getBit(bbBoard.occupancies[both], g1) == 0) {
 				endSquare = g1;
 				flag = 0b0010;
 			}
 		}
 		if (startSquare == e1 && endSquare == a1) {
-			if (getBit(bitboards[K], e1) != 0 && getBit(occupancies[both], d1) == 0 && getBit(occupancies[both], c1) == 0 && getBit(occupancies[both], b1) == 0) {
+			if (getBit(bbBoard.bitboards[K], e1) != 0 && getBit(bbBoard.occupancies[both], d1) == 0 && getBit(bbBoard.occupancies[both], c1) == 0 && getBit(bbBoard.occupancies[both], b1) == 0) {
 				endSquare = c1;
 				flag = 0b0010;
 			}
 		}
 		if (startSquare == e8 && endSquare == h8) {
-			if (getBit(bitboards[k], e8) != 0 && getBit(occupancies[both], f8) == 0 && getBit(occupancies[both], g8) == 0) {
+			if (getBit(bbBoard.bitboards[k], e8) != 0 && getBit(bbBoard.occupancies[both], f8) == 0 && getBit(bbBoard.occupancies[both], g8) == 0) {
 				endSquare = g8;
 				flag = 0b0010;
 			}
 		}
 		if (startSquare == e8 && endSquare == a8) {
-			if (getBit(bitboards[k], e8) != 0  && getBit(occupancies[both], d8) == 0 && getBit(occupancies[both], c8) == 0 && getBit(occupancies[both], b8) == 0) {
+			if (getBit(bbBoard.bitboards[k], e8) != 0  && getBit(bbBoard.occupancies[both], d8) == 0 && getBit(bbBoard.occupancies[both], c8) == 0 && getBit(bbBoard.occupancies[both], b8) == 0) {
 				endSquare = c8;
 				flag = 0b0010;
 			}
@@ -218,11 +218,11 @@ public class BitBoardBook {
 		
 		// checking for capture flag
 		for (int bbPiece = P; bbPiece <= k; bbPiece++) {
-			if (getBit(bitboards[bbPiece], startSquare) != 0) {
+			if (getBit(bbBoard.bitboards[bbPiece], startSquare) != 0) {
 				piece = bbPiece;
 			}
 			
-			if (getBit(bitboards[bbPiece], endSquare) != 0) {
+			if (getBit(bbBoard.bitboards[bbPiece], endSquare) != 0) {
 				flag = 0b0100;
 			}
 		}
@@ -230,19 +230,19 @@ public class BitBoardBook {
 		if (piece == P || piece == p) {
 			// checking pawn diagonal attacks for special capture flag en passant case
 			if (startSquare == endSquare - 7) {
-				if (getBit(bitboards[P], startSquare - 1) != 0) {
+				if (getBit(bbBoard.bitboards[P], startSquare - 1) != 0) {
 					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare - 9) {
-				if (getBit(bitboards[P], startSquare + 1) != 0) {
+				if (getBit(bbBoard.bitboards[P], startSquare + 1) != 0) {
 					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare + 7) {
-				if (getBit(bitboards[p], startSquare + 1) != 0) {
+				if (getBit(bbBoard.bitboards[p], startSquare + 1) != 0) {
 					flag = 0b0101;
 				}
 			} else if (startSquare == endSquare + 9) {
-				if (getBit(bitboards[p], startSquare - 1) != 0) {
+				if (getBit(bbBoard.bitboards[p], startSquare - 1) != 0) {
 					flag = 0b0101;
 				}
 			}

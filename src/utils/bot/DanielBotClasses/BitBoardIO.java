@@ -3,7 +3,7 @@ package utils.bot.DanielBotClasses;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
+import static utils.bot.DanielBotClasses.BitBoardSearch.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
 
 // basic IO functions that make debugging a lot easier
@@ -29,7 +29,7 @@ public class BitBoardIO {
 	}
 	
 	// print the whole chess board
-	public static void printBoard() {
+	public static void printBoard(BitBoardChessBoard board) {
 	    // print offset
 	    System.out.println();
 
@@ -50,7 +50,7 @@ public class BitBoardIO {
 	            
 	            // loop over all piece bitboards
 	            for (int bb_piece = P; bb_piece <= k; bb_piece++) {
-	                if (getBit(bitboards[bb_piece], square) != 0)
+	                if (getBit(board.bitboards[bb_piece], square) != 0)
 	                    piece = bb_piece;
 	            }
 	            
@@ -66,17 +66,17 @@ public class BitBoardIO {
 	    System.out.println("\n     a b c d e f g h\n");
 	    
 	    // print side to move
-	    System.out.printf("     Side:     %s\n", (side == white) ? "white" : "black");
+	    System.out.printf("     Side:     %s\n", (board.side == white) ? "white" : "black");
 	    
 	    // print enpassant square
-	    System.out.printf("     Enpassant:   %s\n", (enPassant != no_sq) ? squareToCoordinates[enPassant] : "no");
+	    System.out.printf("     Enpassant:   %s\n", (board.enPassant != no_sq) ? squareToCoordinates[board.enPassant] : "no");
 	    
 	    // print castling rights
-	    System.out.printf("     Castling:  %c%c%c%c\n\n", ((castle & wk) != 0) ? 'K' : '-',
-	                                           ((castle & wq) != 0) ? 'Q' : '-',
-	                                           ((castle & bk) != 0) ? 'k' : '-',
-	                                           ((castle & bq) != 0) ? 'q' : '-');
-	    System.out.printf("     Hash Key: %x\n\n", generateHashKey());
+	    System.out.printf("     Castling:  %c%c%c%c\n\n", ((board.castle & wk) != 0) ? 'K' : '-',
+	                                           ((board.castle & wq) != 0) ? 'Q' : '-',
+	                                           ((board.castle & bk) != 0) ? 'k' : '-',
+	                                           ((board.castle & bq) != 0) ? 'q' : '-');
+	    System.out.printf("     Hash Key: %x\n\n", generateHashKey(board));
 	}
 	
 	// print a move (for UCI purposes)
@@ -96,7 +96,7 @@ public class BitBoardIO {
 	        System.out.printf("    %s%s%c   %c       %d         %d         %d         %d\n", squareToCoordinates[getMoveSource(move)],
                                                                                   squareToCoordinates[getMoveTarget(move)],
                                                                                   (getMovePromoted(move) != 0) ? asciiPieces[getMovePromoted(move)] : ' ',
-                                                                                  asciiPieces[getMovePiece(move)],
+                                                                                  asciiPieces[bbBoard.getPieceAtSquare(getMoveSource(move))],
                                                                                   getMoveCapture(move) ? 1 : 0,
                                                                                   getMoveDouble(move) ? 1 : 0,
                                                                                   getMoveEnPassant(move) ? 1 : 0,

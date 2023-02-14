@@ -4,17 +4,25 @@ import static utils.bot.DanielBotClasses.BitBoardEvaluation.*;
 import static utils.bot.DanielBotClasses.BitBoardPerformanceTesting.*;
 import static utils.bot.DanielBotClasses.BitBoardSettings.*;
 import static utils.bot.DanielBotClasses.BitBoardTranspositionTable.*;
-import static utils.bot.DanielBotClasses.BitBoardMoveGeneration.*;
 import static utils.bot.DanielBotClasses.BitBoardConsts.*;
 import static utils.bot.DanielBotClasses.BitBoardChessBoard.*;
 import static utils.bot.DanielBotClasses.BitBoardIO.*;
 import static utils.bot.DanielBotClasses.BitBoardBitManipulation.*;
 import static utils.bot.DanielBotClasses.BitBoardZobrist.*;
-import static utils.bot.DanielBotClasses.BitBoardRepetition.*;
+
+import java.util.ArrayList;
+import java.util.concurrent.*;
+
+import utils.ChessBoard;
+import utils.bot.TonyNegaMaxPVSTT.MoveScore;
+
 import static utils.bot.DanielBotClasses.BitBoardBook.*;
 
 // searches moves
-public class BitBoardSearch {	
+public class BitBoardSearch {
+	// global chess board instance to represent the base state of the board
+	public static BitBoardChessBoard bbBoard = null;
+	
 	static final int maxPly = maxDepth;
 	
 	// for Late Move Reduction
@@ -25,131 +33,237 @@ public class BitBoardSearch {
 	static long startTime;
 	static boolean keepSearching;
 	
-	public static int ply = 0;
-	
-	// killer and history moves heuristic
-	public static int killerMoves[][] = new int[2][maxPly];
-	public static int historyMoves[][] = new int[12][maxPly];
-	
-	// triangular principle variation table
-	public static int pvLength[] = new int[maxPly];
-	public static short pvTable[][] = new short[100][maxPly];
-	
-	// scoring and following PV nodes for move ordering
-	static boolean scorePV = false;
-	static boolean followPV = false;
-	
-	// diagnostic
-	static int transpositions;
+//	public static int ply = 0;
+//	
+//	// killer and history moves heuristic
+//	public static int killerMoves[][] = new int[2][maxPly];
+//	public static int historyMoves[][] = new int[12][maxPly];
+//	
+//	// triangular principle variation table
+//	public static int pvLength[] = new int[maxPly];
+//	public static short pvTable[][] = new short[100][maxPly];
+//	
+//	// scoring and following PV nodes for move ordering
+//	static boolean scorePV = false;
+//	static boolean followPV = false;
+//	
+//	// diagnostic
+//	static int transpositions;
 	
 	// for transposition table, adjusting score
-	public static int sideMultiplier = (side == white) ? 1 : -1;
+	public static int sideMultiplier;
+	
+	// for multithreading
+	private final static int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors() - 1, 100);
+    private static ExecutorService thPool = Executors.newFixedThreadPool(MAX_THREADS);
 	
 	// search driver which does book moves and iterative deepening
-	public static int searchPosition() {
+//	public static int searchPosition() {
+//		startTime = System.currentTimeMillis();
+//		
+//		// book move stuff
+//		if (useBook) {
+//			int bookMove = getBookMove();
+//			
+//			if (bookMove != -1) {
+//				bbBoard.makeMove(bookMove, allMoves);
+//				if (useUCIIO) {
+//					System.out.print("bestmove ");
+//					printMove(bookMove);
+//					System.out.println();
+//				}
+//				return bookMove;
+//			}
+//		}
+//		
+////		// initiate stuff
+//		int score = 0;
+////		nodes = 0;
+////		transpositions = 0;
+////		
+//		keepSearching = true;
+////		
+//		sideMultiplier = (bbBoard.side == white) ? 1 : -1;
+////		
+////		// reset stuff
+////		killerMoves = new int[2][maxPly];
+////		historyMoves = new int[12][maxPly];
+////		pvLength = new int[maxPly];
+////		pvTable = new short[maxPly][maxPly];
+////		scorePV = false;
+////		followPV = false;
+//		
+//		// for printing
+//		int bestMove = 0;
+//		int finalScore = 0;
+//		int maxDepthSearched = 0;
+//		
+//		// iterative deepening
+//		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
+//			long oldNodes = nodes;
+//			
+//			// aspiration search
+//			if (currentDepth == 1) {
+//				score = negamax(-32000, 32000, currentDepth);
+//			} else {
+//				int alpha = score - 50, beta = score + 50;
+//				
+//				score = negamax(alpha, beta, currentDepth);
+//				
+//				if (score <= alpha || score >= beta) {
+//					score = negamax(-32000, 32000, currentDepth);
+//				}
+//			}
+//			
+//			// we finished the search all the way to the end
+//			if (keepSearching) {
+//				// for diagnostics
+//				finalScore = score;
+//				maxDepthSearched = currentDepth;
+//				bestMove = pvTable[0][0];
+//				
+//				// enable following PV
+//				followPV = true;
+//				
+//				// special IO for uci, more pretty when not using UCI
+//				if (useUCIIO) {
+//					System.out.printf("info score cp %d depth %d nodes %d pv ", score, currentDepth, nodes);
+//				} else {
+//					System.out.printf("Depth: %d\tEval: %d \tNodes: %d\tPV: ", currentDepth, score, nodes- oldNodes);
+//				}
+//				
+//				// print principal variation
+//				for (int i = 0; i < pvLength[0]; i++) {
+//					printMove(pvTable[0][i]);
+//					System.out.print(" ");
+//				}
+//				
+//				System.out.println();
+//				
+//				// we found a mate, no need to continue searching
+//				if (score >= mateScoreThreshold || score <= -mateScoreThreshold) break;
+//			} else { // we did not finish searching due to the time limit
+//				break;
+//			}
+//		}
+//		
+//		ply = 0;
+//		
+//		// if we're using UCI, print standard. if we're not, print pretty
+//		if (!useUCIIO) {
+//			System.out.printf("\nDepth: %d\nEvaluation: %d\nNodes: %d\nTranspositions: %d\n\n", maxDepthSearched, finalScore, nodes, transpositions);
+//		}
+//
+//		if (useUCIIO) {
+//			System.out.print("bestmove ");
+//			printMove(bestMove);
+//			System.out.println();
+//		}
+//		return bestMove;
+//	}
+	
+	public static short searchPosition() {
 		startTime = System.currentTimeMillis();
+		keepSearching = true;
+		
+		short bestMove = 0;
+		short finalScore = -32750;
+		int nodes = 0;
+		boolean inAspiration = false;
+		int maxDepthSearched = 0;
+		int alpha;
+		int beta;
+		int transpositions = 0;
 		
 		// book move stuff
 		if (useBook) {
 			int bookMove = getBookMove();
 			
 			if (bookMove != -1) {
-				makeMove(bookMove, allMoves);
+				bbBoard.makeMove(bookMove, allMoves);
 				if (useUCIIO) {
 					System.out.print("bestmove ");
 					printMove(bookMove);
 					System.out.println();
 				}
-				return bookMove;
+				return (short) bookMove;
 			}
 		}
 		
-		// initiate stuff
-		int score = 0;
-		nodes = 0;
-		transpositions = 0;
+		clearHashTable();
 		
-		keepSearching = true;
-		
-		// reset stuff
-		killerMoves = new int[2][maxPly];
-		historyMoves = new int[12][maxPly];
-		pvLength = new int[maxPly];
-		pvTable = new short[maxPly][maxPly];
-		scorePV = false;
-		followPV = false;
-		
-		// for printing
-		int bestMove = 0;
-		int finalScore = 0;
-		int maxDepthSearched = 0;
-		
-		// iterative deepening
-		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
-			long oldNodes = nodes;
+		for (int depth = 1; depth < maxDepth; depth++) {
+			ArrayList<Future<ThreadInformation>> futureMoveRets = new ArrayList<>();
 			
-			// aspiration search
-			if (currentDepth == 1) {
-				score = negamax(-32000, 32000, currentDepth);
+			if (inAspiration) {
+				alpha = finalScore - 50;
+				beta = finalScore + 50;
 			} else {
-				int alpha = score - 50, beta = score + 50;
-				
-				score = negamax(alpha, beta, currentDepth);
-				
-				if (score <= alpha || score >= beta) {
-					score = negamax(-32000, 32000, currentDepth);
-				}
+				alpha = -32000;
+				beta = 32000;
 			}
 			
-			// we finished the search all the way to the end
-			if (keepSearching) {
-				// for diagnostics
-				finalScore = score;
-				maxDepthSearched = currentDepth;
-				bestMove = pvTable[0][0];
-				
-				// enable following PV
-				followPV = true;
-				
-				// special IO for uci, more pretty when not using UCI
-				if (useUCIIO) {
-					System.out.printf("info score cp %d depth %d nodes %d pv ", score, currentDepth, nodes);
-				} else {
-					System.out.printf("Depth: %d\tEval: %d \tNodes: %d\tPV: ", currentDepth, score, nodes- oldNodes);
+			for (int i = 0; i < MAX_THREADS; i++) {
+				final int fdep = depth;
+				final int adjust = i % 2;
+				final int a = alpha;
+				final int b = beta;
+				futureMoveRets.add(
+						thPool.submit(() -> {
+							ThreadInformation ti = new ThreadInformation();
+	                        ti.score = negamax(a, b, fdep, ti);
+	                        return ti;
+	                    }));
+			}
+			
+			ArrayList<ThreadInformation> moveRets = new ArrayList<>();
+			
+			int oldNodes = nodes;
+			
+			try {
+				for (Future<ThreadInformation> f : futureMoveRets) {
+					ThreadInformation ms = f.get();
+					moveRets.add(ms);
+					nodes += ms.nodes;
+					transpositions += ms.transpositions;
 				}
+			} catch (Exception e) { e.printStackTrace(); }
+			
+			if (moveRets.get(0).score <= alpha || moveRets.get(0).score >= beta) {
+				inAspiration = false;
+				depth--;
+				continue;
+			}
+			
+			if (keepSearching) {
+				bestMove = moveRets.get(0).pvTable[0][0];
+				finalScore = moveRets.get(0).score;
+				inAspiration = true;
+				maxDepthSearched = depth;
 				
-				// print principal variation
-				for (int i = 0; i < pvLength[0]; i++) {
-					printMove(pvTable[0][i]);
+				System.out.printf("Depth: %d\tEval: %d \tNodes: %d\tPV: ", depth, finalScore, nodes - oldNodes);
+				
+				for (int i = 0; i < moveRets.get(0).pvLength[0]; i++) {
+					printMove(moveRets.get(0).pvTable[0][i]);
 					System.out.print(" ");
 				}
 				
 				System.out.println();
 				
-				// we found a mate, no need to continue searching
-				if (score >= mateScoreThreshold || score <= -mateScoreThreshold) break;
-			} else { // we did not finish searching due to the time limit
+				if (finalScore >= mateScoreThreshold || finalScore <= -mateScoreThreshold) break;
+			} else {
+				//thPool.shutdown();
 				break;
 			}
 		}
 		
-		ply = 0;
+		System.out.printf("\nDepth: %d\nEvaluation: %d\nNodes: %d\nTranspositions: %d\n\n", maxDepthSearched, finalScore, nodes, transpositions);
 		
-		// if we're using UCI, print standard. if we're not, print pretty
-		if (!useUCIIO) {
-			System.out.printf("\nDepth: %d\nEvaluation: %d\nNodes: %d\nTranspositions: %d\n\n", maxDepthSearched, finalScore, nodes, transpositions);
-		}
-
-		if (useUCIIO) {
-			System.out.print("bestmove ");
-			printMove(bestMove);
-			System.out.println();
-		}
 		return bestMove;
 	}
 	
 	// standard negamax with alpha beta pruning. and like, a bunch of other crap
-	public static short negamax(int alpha, int beta, int depth) {
+	public static short negamax(int alpha, int beta, int depth, ThreadInformation t) {
 		// if time limit is reached, leave
 		if (!keepSearching || (((nodes & 4096) == 0) && System.currentTimeMillis() - startTime >= (timeLimit - timeLimitMargin))) {
 			keepSearching = false;
@@ -157,20 +271,23 @@ public class BitBoardSearch {
 			return 0;
 		}
 		
+		//ThreadInformation t = ti.get();
+		BitBoardChessBoard board = t.board;
+
 		// set ply for pv table
-		pvLength[ply] = ply;
+		t.pvLength[t.ply] = t.ply;
 		
-		if (depth > 0 && (positionRepeated() || moveRule >= 50)) {
+		if (depth > 0 && (board.positionRepeated() || board.moveRule >= 50)) {
 			return 0;
 		}
 		
 		// we have reached max ply so some of our arrays are overflowing, break out
-		if (ply >= maxPly) {
-			return evaluate();
+		if (t.ply >= maxPly) {
+			return board.evaluate();
 		}
 		
 		// is king in check
-		boolean inCheck = isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1);
+		boolean inCheck = board.isSquareAttacked((board.side == white) ? getLS1BIndex(board.bitboards[K]) : getLS1BIndex(board.bitboards[k]), board.side ^ 1);
 		
 		// check extension
 		if (inCheck) {
@@ -184,10 +301,10 @@ public class BitBoardSearch {
 		boolean isPVNode = beta - alpha > 1;
 		
 		// read from transposition table, and only use TT if it's not a pv node
-		if (ply != 0 && !isPVNode) {
-			short ttVal = readHashEntry(alpha, beta, depth);
+		if (t.ply != 0 && !isPVNode) {
+			short ttVal = readHashEntry(alpha, beta, depth, board.hashKey, t.ply);
 			if (ttVal != noHashEntry) {
-				transpositions++;
+				t.transpositions++;
 				return (short) ttVal;
 			}
 		}
@@ -198,16 +315,16 @@ public class BitBoardSearch {
 		// if depth is 0, we run quiescence
 		if (depth == 0) {
 			// run quiescence search
-			return quiescence(alpha, beta);
+			return quiescence(alpha, beta, t);
 		}
 		
-		nodes++;
+		t.nodes++;
 		
 		// legal moves counter
 		int legalMoves = 0;
 		
 		// get static evaluation score
-		short staticEval = evaluate();
+		short staticEval = board.evaluate();
 		
 		// static null move pruning
 		if (depth < 3 && !isPVNode && !inCheck && beta > -mateScoreThreshold) {
@@ -228,30 +345,30 @@ public class BitBoardSearch {
 		 * An analogy in the real world - an experienced fighter gives his opponent a free shot. If the opponent doesn't deal some damage
 		 * to the fighter with a free shot, then he is just dead lost. Similarly, we can prune dead lost positions out of the tree.
 		 */
-		if (depth >= 3 && !inCheck && ply != 0) {
-			if ((bitboards[N] | bitboards[B] | bitboards[R] | bitboards[Q]
-				| bitboards[n] | bitboards[b] | bitboards[r] | bitboards[q]) != 0) {
-				copyBoard();
+		if (depth >= 3 && !inCheck && t.ply != 0) {
+			if ((board.bitboards[N] | board.bitboards[B] | board.bitboards[R] | board.bitboards[Q]
+				| board.bitboards[n] | board.bitboards[b] | board.bitboards[r] | board.bitboards[q]) != 0) {
+				board.copyBoard();
 				
-				ply++;
+				t.ply++;
 				
 				// switch the side, giving them a free move
-				side ^= 1;
-				hashKey ^= sideKey;
+				board.side ^= 1;
+				board.hashKey ^= sideKey;
 				
-				if (enPassant != no_sq) {
-					hashKey ^= enPassantKeys[enPassant];
+				if (board.enPassant != no_sq) {
+					board.hashKey ^= enPassantKeys[board.enPassant];
 				}
-				enPassant = no_sq;
+				board.enPassant = no_sq;
 				
 				
 				// check for beta cutoffs
-				int score = -negamax(-beta, -beta + 1, depth - 3);
+				int score = -negamax(-beta, -beta + 1, depth - 3, t);
 				
-				ply--;
+				t.ply--;
 				
-				addPosition(); // adjust for repetition table
-				takeBack();
+				board.addPosition(); // adjust for repetition table
+				board.takeBack();
 				
 				if (score >= beta) {
 					return (short) beta;
@@ -268,7 +385,7 @@ public class BitBoardSearch {
 			
 			if (score < beta) {
 				if (depth == 1) {
-					newScore = quiescence(alpha, beta);
+					newScore = quiescence(alpha, beta, t);
 					
 					return (newScore > score) ? newScore : score;
 				}
@@ -276,7 +393,7 @@ public class BitBoardSearch {
 				score += 175;
 				
 				if (score < beta && depth <= 3) {
-					newScore = quiescence(alpha, beta);
+					newScore = quiescence(alpha, beta, t);
 					
 					if (newScore < beta) {
 						return (newScore > score) ? newScore : score;
@@ -288,9 +405,9 @@ public class BitBoardSearch {
 		// generate moves
 		moves moveList = new moves();
 		
-		generateMoves(moveList);
-		if (followPV) enablePVScoring(moveList);
-		sortMoves(moveList);
+		board.generateMoves(moveList);
+		if (t.followPV) enablePVScoring(moveList, t);
+		sortMoves(moveList, alpha, beta, depth, t);
 		
 		short bestMoveInThisPosition = noHashEntry;
 		
@@ -299,46 +416,23 @@ public class BitBoardSearch {
 		
 		// loop over all moves
 		for (int count = 0; count < moveList.count; count++) {
-			ply++;
+			t.ply++;
 						
 			// only make a legal move (because we're using pseudolegal move generation)
-			if (!makeMove(moveList.moves[count], allMoves)) {
-				ply--;
+			if (!board.makeMove(moveList.moves[count], allMoves)) {
+				t.ply--;
 				continue;
 			}
 			
 			// increment legal moves
 			legalMoves++;
 			
-			// futility pruning
-			/**
-			 * Conditions:
-			 * 1. not a PV node
-			 * 2. not in check
-			 * 3. move does not give check
-			 * 4. depth <= 2
-			 * 5. neither alpha nor beta is a mating value
-			 */
-			if (!isPVNode
-				&& !inCheck
-				&& !isSquareAttacked((side == white) ? getLS1BIndex(bitboards[K]) : getLS1BIndex(bitboards[k]), side ^ 1)
-				&& !getMoveCapture(moveList.moves[count])
-				&& depth <= 2
-				&& !(Math.max(Math.abs(alpha), Math.abs(beta)) > mateScoreThreshold)) {
-				staticEval = (short) -evaluate();
-				if (staticEval + depth * 120 <= alpha) {
-					takeBack();
-					ply--;
-					continue;
-				}
-			}
-			
 			// get score
 			int score = 0;
 			
 			// principal variation search
 			/**
-			 * If we find a possible good move, we use the Principle Variation Search to check if there are any moves that are better.
+			 * If we find a possible good move, we use the Principal Variation Search to check if there are any moves that are better.
 			 * We set alpha and beta to be right next to each other, making the PVS very very fast. PVS will return if we fail low
 			 * or fail high. Since we believe that our move is good, we believe that each PVS will fail low. However, if it fails
 			 * high, we have to conduct a re-search.
@@ -347,15 +441,15 @@ public class BitBoardSearch {
 			 * our performance.
 			 */
 			if (foundPV) {
-				score = -negamax(-alpha - 1, -alpha, depth -1);
+				score = -negamax(-alpha - 1, -alpha, depth -1, t);
 				
 				if ((score > alpha) && (score < beta)) {
-					score = -negamax(-beta, -alpha, depth -1);
+					score = -negamax(-beta, -alpha, depth -1, t);
 				}
 			} else {
 				// no late move reduction, normal search
 				if (movesSearched == 0) {
-					score = -negamax(-beta, -alpha, depth -1);
+					score = -negamax(-beta, -alpha, depth -1, t);
 				} else {
 					// Late Move Reduction
 					/**
@@ -369,26 +463,26 @@ public class BitBoardSearch {
 						&& !inCheck
 						&& !getMoveCapture(moveList.moves[count])
 						&& getMovePromoted(moveList.moves[count]) == 0) {
-						score = -negamax(-alpha - 1, -alpha, depth - 2);
+						score = -negamax(-alpha - 1, -alpha, depth - 2, t);
 					} else {
 						score = alpha + 1;
 					}
 					
 					if (score > alpha) {
-						score = -negamax(-alpha - 1, -alpha, depth - 1);
+						score = -negamax(-alpha - 1, -alpha, depth - 1, t);
 						
 						if ((score > alpha) && (score < beta)) {
-							score = -negamax(-beta, -alpha, depth - 1);
+							score = -negamax(-beta, -alpha, depth - 1, t);
 						}
 					}
 				}
 				
 			}
 			
-			ply--;
-			
+			t.ply--;
+						
 			// return to previous board state
-			takeBack();
+			board.takeBack();
 						
 			movesSearched++;
 			
@@ -398,7 +492,7 @@ public class BitBoardSearch {
 				
 				// history moves heuristic
 				if (!getMoveCapture(moveList.moves[count])) {
-					historyMoves[getMovePiece(moveList.moves[count])][getMoveTarget(moveList.moves[count])] += depth;
+					t.historyMoves[board.getPieceAtSquare(getMoveSource(moveList.moves[count]))][getMoveTarget(moveList.moves[count])] += depth;
 				}
 				
 				alpha = score;
@@ -407,22 +501,22 @@ public class BitBoardSearch {
 				foundPV = true;
 				
 				// write PV move
-				pvTable[ply][ply] = moveList.moves[count];
+				t.pvTable[t.ply][t.ply] = moveList.moves[count];
 				
 				// copy move from deeper ply into current ply's line
-				for (int nextPly = ply + 1; nextPly < pvLength[ply + 1]; nextPly++) {
-					pvTable[ply][nextPly] = pvTable[ply + 1][nextPly];
+				for (int nextPly = t.ply + 1; nextPly < t.pvLength[t.ply + 1]; nextPly++) {
+					t.pvTable[t.ply][nextPly] = t.pvTable[t.ply + 1][nextPly];
 				}
 				
-				pvLength[ply] = pvLength[ply + 1];
+				t.pvLength[t.ply] = t.pvLength[t.ply + 1];
 				
 				// beta cutoff
 				if (score >= beta) {
-					writeHashEntry((short) beta, depth, hashFlagBeta, moveList.moves[count]);
+					writeHashEntry((short) beta, depth, hashFlagBeta, moveList.moves[count], board.hashKey, t.ply);
 					
 					if (!getMoveCapture(moveList.moves[count])) {
-						killerMoves[1][ply] = killerMoves[0][ply];
-						killerMoves[0][ply] = moveList.moves[count];
+						t.killerMoves[1][t.ply] = t.killerMoves[0][t.ply];
+						t.killerMoves[0][t.ply] = moveList.moves[count];
 					}
 					
 					return (short) beta;
@@ -435,19 +529,19 @@ public class BitBoardSearch {
 			// mate
 			if (inCheck) {
 				// mating score is larger the smaller the ply is
-				return (short) -(mateScore - ply);
+				return (short) -(mateScore - t.ply);
 			} else {
 				return 0;
 			}
 		}
 		
-		writeHashEntry((short) alpha, depth, hashFlag, bestMoveInThisPosition);
+		writeHashEntry((short) alpha, depth, hashFlag, bestMoveInThisPosition, board.hashKey, t.ply);
 		
 		return (short) alpha;
 	}
 	
 	// only search captures, to limit horizon effect
-	public static short quiescence(int alpha, int beta) {
+	public static short quiescence(int alpha, int beta, ThreadInformation t) {
 		// time limit reached
 		if (!keepSearching || (((nodes & 4096) == 0) && System.currentTimeMillis() - startTime >= (timeLimit - timeLimitMargin))) {
 			keepSearching = false;
@@ -455,12 +549,14 @@ public class BitBoardSearch {
 			return 0;
 		}
 		
-		nodes++;
+		BitBoardChessBoard board = t.board;
+		
+		t.nodes++;
 
-		short evaluation = evaluate();
+		short evaluation = board.evaluate();
 		
 		// we have reached our max ply, so we just leave
-		if (ply >= maxPly) {
+		if (t.ply >= maxPly) {
 			return evaluation;
 		}
 		
@@ -473,7 +569,7 @@ public class BitBoardSearch {
 		int bigDelta = 1125;
 		
 		// increase bigDelta if pawn might be able to promote
-		if ((bitboards[P + side * 6] & rankMasks[(side == white) ? a7 : a2]) != 0) bigDelta += 775;
+		if ((board.bitboards[P + board.side * 6] & rankMasks[(board.side == white) ? a7 : a2]) != 0) bigDelta += 775;
 		
 		if (evaluation < alpha - bigDelta) {
 			return (short) alpha;
@@ -487,26 +583,26 @@ public class BitBoardSearch {
 		// generate moves
 		moves moveList = new moves();
 		
-		generateMoves(moveList);
-		sortMoves(moveList);
+		board.generateMoves(moveList);
+		sortMoves(moveList, alpha, beta, 0, t);
 		
 		// loop over moves
 		for (int count = 0; count < moveList.count; count++) {
-			ply++;
+			t.ply++;
 			
 			// only make a legal move
-			if (!makeMove(moveList.moves[count], nonQuietOnly)) {
-				ply--;
+			if (!board.makeMove(moveList.moves[count], nonQuietOnly)) {
+				t.ply--;
 				continue;
 			}
 			
 			// get score
-			int score = -quiescence(-beta, -alpha);
+			int score = -quiescence(-beta, -alpha, t);
 
-			ply--;
+			t.ply--;
 			
 			// return to previous board state
-			takeBack();
+			board.takeBack();
 			
 			// new best move
 			if (score > alpha) {
@@ -522,31 +618,33 @@ public class BitBoardSearch {
 		return (short) alpha;
 	}
 	
-	public static void enablePVScoring(moves moveList) {
+	public static void enablePVScoring(moves moveList, ThreadInformation t) {
 		// disable by default, in case we do not find a pv node
-		followPV = false;
+		t.followPV = false;
 		
 		for (int count = 0; count < moveList.count; count++) {
-			if (pvTable[0][ply] == moveList.moves[count]) {
+			if (t.pvTable[0][t.ply] == moveList.moves[count]) {
 				// enable pv stuff
-				scorePV = true;
-				followPV = true;
+				t.scorePV = true;
+				t.followPV = true;
 			}
 		}
 	}
 	
 	// score a move for move ordering
-	public static int scoreMove(short move) {
+	public static int scoreMove(short move, ThreadInformation t) {
+		BitBoardChessBoard board = t.board;
+		
 		// if it's the best move in the PV table, score it ultra super mega high
-		if (scorePV) {
-			if (pvTable[0][ply] == move) {
-				scorePV = false;
+		if (t.scorePV) {
+			if (t.pvTable[0][t.ply] == move) {
+				t.scorePV = false;
 				return 30000;
 			}
 		}
 		
 		// if it's the best recommended move in the transposition table, score it super high
-		if (move == getStoredMove()) {
+		if (move == getStoredMove(board.hashKey)) {
 			return 20000;
 		}
 		
@@ -556,35 +654,48 @@ public class BitBoardSearch {
 			
 			int startPiece, endPiece;
 			
-			if (side == white) { startPiece = p; endPiece = k; }
+			if (board.side == white) { startPiece = p; endPiece = k; }
 			else { startPiece = P; endPiece = K; }
 			
 			for (int bbPiece = startPiece; bbPiece <= endPiece; bbPiece++) {
-				if (getBit(bitboards[bbPiece], getMoveTarget(move)) != 0) {
+				if (getBit(board.bitboards[bbPiece], getMoveTarget(move)) != 0) {
 					targetPiece = bbPiece;
 				}
 			}
 			
 			// score it higher or less higher based on how valuable the victim is, and how valuable the attacker is
-			return mvv_lva[getMovePiece(move)][targetPiece] + 10000;
+			return mvv_lva[board.getPieceAtSquare(getMoveSource(move))][targetPiece] + 10000;
 		} else {
 			// if it's a killer move, score it kinda high
-			if (killerMoves[0][ply] == move) {
+			if (t.killerMoves[0][t.ply] == move) {
 				return 9000;
-			} else if (killerMoves[1][ply] == move) {
+			} else if (t.killerMoves[1][t.ply] == move) {
 				return 8000;
 			} else { // if not, default to history moves
-				return historyMoves[getMovePiece(move)][getMoveTarget(move)];
+				return t.historyMoves[board.getPieceAtSquare(getMoveSource(move))][getMoveTarget(move)];
 			}
 		}
 	}
 	
 	// sort moves for move ordering
-	public static void sortMoves(moves moveList) {
+	public static void sortMoves(moves moveList, int alpha, int beta, int depth, ThreadInformation t) {
 		int moveScores[] = new int[moveList.count];
 		
+		boolean useIID = true;
+		
 		for (int count = 0; count < moveList.count; count++) {
-			moveScores[count] = scoreMove(moveList.moves[count]);
+			moveScores[count] = scoreMove(moveList.moves[count], t);
+			if (moveScores[count] >= 20000) useIID = false;
+		}
+		
+		if (useIID && depth > 5 && beta - alpha > 1) {
+			negamax(alpha, beta, depth - 2, t);
+			short move = t.pvTable[t.ply][t.ply];
+			for (int i = 0; i < moveList.count; i++) {
+				if (moveList.moves[i] == move) {
+					moveScores[i] = 20000;
+				}
+			}
 		}
 		
 		// lazy O(n^2) sort
