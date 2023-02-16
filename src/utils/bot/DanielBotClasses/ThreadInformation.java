@@ -34,7 +34,7 @@ public class ThreadInformation {
 		
 		for (int i = 0; i < historyMoves.length; i++) {
 			for (int j = 0; j < historyMoves[i].length; j++) {
-				historyMoves[i][j] = (int) (Math.random() * (41) - 20);
+				//historyMoves[i][j] = (int) (Math.random() * (41) - 20);
 			}
 		}
 	}

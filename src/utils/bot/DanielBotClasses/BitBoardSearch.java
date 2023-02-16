@@ -54,8 +54,8 @@ public class BitBoardSearch {
 	public static int sideMultiplier;
 	
 	// for multithreading
-	private final static int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors() - 1, 100);
-    private static ExecutorService thPool = Executors.newFixedThreadPool(MAX_THREADS);
+	private final static int MAX_THREADS = Math.min(Runtime.getRuntime().availableProcessors() - 1, 1);
+    public static ExecutorService thPool = Executors.newFixedThreadPool(MAX_THREADS);
 	
 	// search driver which does book moves and iterative deepening
 //	public static int searchPosition() {
@@ -163,17 +163,9 @@ public class BitBoardSearch {
 //	}
 	
 	public static short searchPosition() {
-		startTime = System.currentTimeMillis();
 		keepSearching = true;
 		
-		short bestMove = 0;
-		short finalScore = -32750;
-		int nodes = 0;
-		boolean inAspiration = false;
-		int maxDepthSearched = 0;
-		int alpha;
-		int beta;
-		int transpositions = 0;
+		
 		
 		// book move stuff
 		if (useBook) {
@@ -190,7 +182,17 @@ public class BitBoardSearch {
 			}
 		}
 		
-		clearHashTable();
+		startTime = System.currentTimeMillis();
+
+	    short bestMove = 0;
+		short finalScore = -32750;
+		int nodes = 0;
+		boolean inAspiration = false;
+		int maxDepthSearched = 0;
+		int alpha;
+		int beta;
+		int transpositions = 0;
+		sideMultiplier = (bbBoard.side == white) ? 1 : -1;
 		
 		for (int depth = 1; depth < maxDepth; depth++) {
 			ArrayList<Future<ThreadInformation>> futureMoveRets = new ArrayList<>();
@@ -223,6 +225,7 @@ public class BitBoardSearch {
 			try {
 				for (Future<ThreadInformation> f : futureMoveRets) {
 					ThreadInformation ms = f.get();
+					
 					moveRets.add(ms);
 					nodes += ms.nodes;
 					transpositions += ms.transpositions;
@@ -252,7 +255,6 @@ public class BitBoardSearch {
 				
 				if (finalScore >= mateScoreThreshold || finalScore <= -mateScoreThreshold) break;
 			} else {
-				//thPool.shutdown();
 				break;
 			}
 		}
@@ -304,8 +306,8 @@ public class BitBoardSearch {
 		if (t.ply != 0 && !isPVNode) {
 			short ttVal = readHashEntry(alpha, beta, depth, board.hashKey, t.ply);
 			if (ttVal != noHashEntry) {
-				t.transpositions++;
-				return (short) ttVal;
+					t.transpositions++;
+					return (short) ttVal;
 			}
 		}
 		

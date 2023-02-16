@@ -52,7 +52,7 @@ public class BitBoardTranspositionTable {
 	// write a hash entry
 	public static void writeHashEntry(short score, int depth, int hashFlag, short best, long hashKey, int ply) {
 		long toAdd = encodeEntry(hashKey, depth, hashFlag, correctScoreForStorage(score, ply), best);
-
+		
 		hashTable[getHashIndex(hashKey)] = toAdd;
 	}
 	
@@ -72,7 +72,7 @@ public class BitBoardTranspositionTable {
 	
 	// mate score for storage is just mate score
 	public static short correctScoreForStorage(short score, int ply) {
-		//score *= sideMultiplier;
+		score *= sideMultiplier;
 		
 		if (score >= mateScoreThreshold) {
 			return (short) (mateScore + ply);
@@ -85,7 +85,7 @@ public class BitBoardTranspositionTable {
 	
 	// adjust mate score to be ply from root
 	public static short correctScoreForRetrieval(short score, int depth, int ply) {
-		//score *= sideMultiplier;
+		score *= sideMultiplier;
 		
 		if (score >= mateScoreThreshold) {
 			return (short) (mateScore - ply);

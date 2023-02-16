@@ -62,8 +62,9 @@ public class BitBoard {
 	
 	public static void main(String[] args) {
 		initAll();
-		bbBoard.parseFen("8/1p6/1K6/p1B1qP1N/2k5/1p6/PPP2P2/8 w - - 0 0");
+		bbBoard.parseFen(endgamePosition);
 		printBoard(bbBoard);
 		searchPosition();
+		thPool.shutdown();
 	}
 }
