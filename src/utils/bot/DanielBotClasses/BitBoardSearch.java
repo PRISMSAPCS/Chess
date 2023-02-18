@@ -253,7 +253,8 @@ public class BitBoardSearch {
 				
 				System.out.println();
 				
-				if (finalScore >= mateScoreThreshold || finalScore <= -mateScoreThreshold) break;
+				// search for at least 500 milliseconds, and if we find a mate, break out
+				if ((System.currentTimeMillis() - startTime >= 500) && (finalScore >= mateScoreThreshold || finalScore <= -mateScoreThreshold)) break;
 			} else {
 				break;
 			}
@@ -315,7 +316,7 @@ public class BitBoardSearch {
 		boolean foundPV = false;
 		
 		// if depth is 0, we run quiescence
-		if (depth == 0) {
+		if (depth <= 0) {
 			// run quiescence search
 			return quiescence(alpha, beta, t);
 		}
@@ -334,49 +335,6 @@ public class BitBoardSearch {
 			
 			if (staticEval - evalMargin >= beta) {
 				return (short) (staticEval - evalMargin);
-			}
-		}
-		
-		// Null Move Pruning
-		/**
-		 * Operates under the observation that, if the opponent getting a free move doesn't improve their position enough, we can prune
-		 * the tree. For example: if we start with an equal position, and then evaluate down to a node where we are up a rook, we can try
-		 * giving the opponent a free move. If we are just simply up a rook, and giving them a free move doesn't allow them to catch up,
-		 * then our score is much above beta and we can prune the rest of the tree.
-		 * 
-		 * An analogy in the real world - an experienced fighter gives his opponent a free shot. If the opponent doesn't deal some damage
-		 * to the fighter with a free shot, then he is just dead lost. Similarly, we can prune dead lost positions out of the tree.
-		 */
-		if (depth >= 3 && !inCheck && t.ply != 0) {
-			if ((board.bitboards[N] | board.bitboards[B] | board.bitboards[R] | board.bitboards[Q]
-				| board.bitboards[n] | board.bitboards[b] | board.bitboards[r] | board.bitboards[q]) != 0) {
-				board.copyBoard();
-				
-				t.ply++;
-				
-				// switch the side, giving them a free move
-				board.side ^= 1;
-				board.hashKey ^= sideKey;
-				
-				if (board.enPassant != no_sq) {
-					board.hashKey ^= enPassantKeys[board.enPassant];
-				}
-				board.enPassant = no_sq;
-				
-				
-				// check for beta cutoffs
-				int score = -negamax(-beta, -beta + 1, depth - 3, t);
-				
-				t.ply--;
-				
-				board.addPosition(); // adjust for repetition table
-				board.takeBack();
-				
-				if (score >= beta) {
-					return (short) beta;
-				}
-				
-				if (!keepSearching) return 0;
 			}
 		}
 		
@@ -404,12 +362,90 @@ public class BitBoardSearch {
 			}
 		}
 		
+		// Null Move Pruning
+		/**
+		 * Operates under the observation that, if the opponent getting a free move doesn't improve their position enough, we can prune
+		 * the tree. For example: if we start with an equal position, and then evaluate down to a node where we are up a rook, we can try
+		 * giving the opponent a free move. If we are just simply up a rook, and giving them a free move doesn't allow them to catch up,
+		 * then our score is much above beta and we can prune the rest of the tree.
+		 * 
+		 * An analogy in the real world - an experienced fighter gives his opponent a free shot. If the opponent doesn't deal some damage
+		 * to the fighter with a free shot, then he is just dead lost. Similarly, we can prune dead lost positions out of the tree.
+		 */
+		if (depth >= 3 && !inCheck && t.ply != 0) {
+			if ((board.bitboards[N] | board.bitboards[B] | board.bitboards[R] | board.bitboards[Q]
+				| board.bitboards[n] | board.bitboards[b] | board.bitboards[r] | board.bitboards[q]) != 0) {
+				board.copyBoard();
+				
+				// depth reduction
+				short R = 3;
+				int numPieces = 0;
+				if (depth > 7) {
+					for (int bbPiece = N + board.side * 6; bbPiece <= Q + board.side * 6; bbPiece++) {
+						numPieces += countBits(board.bitboards[bbPiece]);
+					}
+					if (numPieces >= 2) R++;
+				}
+								
+				t.ply++;
+				
+				// switch the side, giving them a free move
+				board.side ^= 1;
+				board.hashKey ^= sideKey;
+				
+				if (board.enPassant != no_sq) {
+					board.hashKey ^= enPassantKeys[board.enPassant];
+				}
+				board.enPassant = no_sq;
+				
+				// check for beta cutoffs
+				int bound = beta - 10;
+				int score = -negamax(-bound, -bound + 1, depth - R - 1, t);
+				
+				t.ply--;
+				
+				board.addPosition(); // adjust for repetition table
+				board.takeBack();
+				
+				if (score >= bound) {
+					return (short) beta;
+				}
+				
+				if (!keepSearching) return 0;
+			}
+		}
+		
 		// generate moves
 		moves moveList = new moves();
 		
+		int probCutBeta = beta + 100;
 		board.generateMoves(moveList);
 		if (t.followPV) enablePVScoring(moveList, t);
 		sortMoves(moveList, alpha, beta, depth, t);
+		
+		if (!isPVNode
+			&& depth > 4) {
+			for (int count = 0; count < moveList.count; count++) {
+				if (!board.makeMove(moveList.moves[count], allMoves)) {
+					continue;
+				}
+				
+				t.ply++;
+				
+				int score = -quiescence(-probCutBeta, -probCutBeta + 1, t);
+				
+				if (score >= probCutBeta) {
+					score = -negamax(-probCutBeta, -probCutBeta + 1, depth - 3, t);
+				}
+				
+				t.ply--;
+				board.takeBack();
+				
+				if (score >= probCutBeta) {
+					return (short) score; 
+				}
+			}
+		}
 		
 		short bestMoveInThisPosition = noHashEntry;
 		
@@ -568,10 +604,10 @@ public class BitBoardSearch {
 		}
 		
 		// delta pruning
-		int bigDelta = 1125;
+		int bigDelta = 1075;
 		
 		// increase bigDelta if pawn might be able to promote
-		if ((board.bitboards[P + board.side * 6] & rankMasks[(board.side == white) ? a7 : a2]) != 0) bigDelta += 775;
+		if ((board.bitboards[P + board.side * 6] & rankMasks[(board.side == white) ? a7 : a2]) != 0) bigDelta += 875;
 		
 		if (evaluation < alpha - bigDelta) {
 			return (short) alpha;

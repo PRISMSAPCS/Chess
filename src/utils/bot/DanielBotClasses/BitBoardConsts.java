@@ -144,6 +144,11 @@ public class BitBoardConsts {
 	public static final short mateScore = 30100;
 	public static final short mateScoreThreshold = 30000;
 	
+	// depth reductions for null move reductions
+	public static final short maxR = 4;
+	public static final short minR = 3;
+	public static final short dr = 4;
+	
 	// when something moves, we bitwise & the castling variable with the corresponding thing in here. that automatically
 	// updates the castling rights for us
 	public static final int castlingRights[] = {
@@ -172,7 +177,7 @@ public class BitBoardConsts {
 	public static final int doubledPawnPenaltyEndgame = -10;
 	public static final int isolatedPawnPenaltyOpening = -5;
 	public static final int isolatedPawnPenaltyEndgame = -10;
-	public static final int passedPawnBonus[] = { 0, 10, 30, 50, 75, 100, 150, 200 };
+	public static final int passedPawnBonus[] = { 0, 5, 10, 20, 35, 50, 70, 100 };
 	public static final int semiOpenFileScore = 10;
 	public static final int openFileScore = 15;
 	
