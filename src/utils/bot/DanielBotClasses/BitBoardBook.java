@@ -176,7 +176,7 @@ public class BitBoardBook {
 		
 		// no move found, just break
 		if (move == -1) return -1;
-		
+				
 		// polyglot represents its moves differently than we do, so we have to do a bit of translation
 		int endFile = 			(move & 0b000000000000111) >> 0;
 		int endRank = 			(move & 0b000000000111000) >> 3;

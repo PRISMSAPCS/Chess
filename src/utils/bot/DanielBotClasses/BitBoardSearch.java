@@ -165,8 +165,6 @@ public class BitBoardSearch {
 	public static short searchPosition() {
 		keepSearching = true;
 		
-		
-		
 		// book move stuff
 		if (useBook) {
 			int bookMove = getBookMove();
@@ -175,6 +173,10 @@ public class BitBoardSearch {
 				bbBoard.makeMove(bookMove, allMoves);
 				if (useUCIIO) {
 					System.out.print("bestmove ");
+					printMove(bookMove);
+					System.out.println();
+				} else {
+					System.out.print("Book move: ");
 					printMove(bookMove);
 					System.out.println();
 				}
@@ -423,29 +425,29 @@ public class BitBoardSearch {
 		if (t.followPV) enablePVScoring(moveList, t);
 		sortMoves(moveList, alpha, beta, depth, t);
 		
-		if (!isPVNode
-			&& depth > 4) {
-			for (int count = 0; count < moveList.count; count++) {
-				if (!board.makeMove(moveList.moves[count], allMoves)) {
-					continue;
-				}
-				
-				t.ply++;
-				
-				int score = -quiescence(-probCutBeta, -probCutBeta + 1, t);
-				
-				if (score >= probCutBeta) {
-					score = -negamax(-probCutBeta, -probCutBeta + 1, depth - 3, t);
-				}
-				
-				t.ply--;
-				board.takeBack();
-				
-				if (score >= probCutBeta) {
-					return (short) score; 
-				}
-			}
-		}
+//		if (!isPVNode
+//			&& depth > 4) {
+//			for (int count = 0; count < moveList.count; count++) {
+//				if (!board.makeMove(moveList.moves[count], allMoves)) {
+//					continue;
+//				}
+//				
+//				t.ply++;
+//				
+//				int score = -quiescence(-probCutBeta, -probCutBeta + 1, t);
+//				
+//				if (score >= probCutBeta) {
+//					score = -negamax(-probCutBeta, -probCutBeta + 1, depth - 3, t);
+//				}
+//				
+//				t.ply--;
+//				board.takeBack();
+//				
+//				if (score >= probCutBeta) {
+//					return (short) score; 
+//				}
+//			}
+//		}
 		
 		short bestMoveInThisPosition = noHashEntry;
 		
