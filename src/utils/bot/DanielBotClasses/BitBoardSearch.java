@@ -195,6 +195,7 @@ public class BitBoardSearch {
 		int beta;
 		int transpositions = 0;
 		sideMultiplier = (bbBoard.side == white) ? 1 : -1;
+		newSearch();
 		
 		for (int depth = 1; depth < maxDepth; depth++) {
 			ArrayList<Future<ThreadInformation>> futureMoveRets = new ArrayList<>();
@@ -470,6 +471,9 @@ public class BitBoardSearch {
 			// get score
 			int score = 0;
 			
+			// get check status after move
+			boolean inCheckAfterMove = board.isSquareAttacked((board.side == white) ? getLS1BIndex(board.bitboards[K]) : getLS1BIndex(board.bitboards[k]), board.side ^ 1);
+			
 			// principal variation search
 			/**
 			 * If we find a possible good move, we use the Principal Variation Search to check if there are any moves that are better.
@@ -481,15 +485,15 @@ public class BitBoardSearch {
 			 * our performance.
 			 */
 			if (foundPV) {
-				score = -negamax(-alpha - 1, -alpha, depth -1, t);
+				score = -negamax(-alpha - 1, -alpha, depth - 1, t);
 				
 				if ((score > alpha) && (score < beta)) {
-					score = -negamax(-beta, -alpha, depth -1, t);
+					score = -negamax(-beta, -alpha, depth - 1, t);
 				}
 			} else {
 				// no late move reduction, normal search
 				if (movesSearched == 0) {
-					score = -negamax(-beta, -alpha, depth -1, t);
+					score = -negamax(-beta, -alpha, depth - 1, t);
 				} else {
 					// Late Move Reduction
 					/**
@@ -501,10 +505,14 @@ public class BitBoardSearch {
 					if (movesSearched >= fullDepthMoves
 						&& depth >= reductionLimit
 						&& !inCheck
+						&& !inCheckAfterMove
 						&& !getMoveCapture(moveList.moves[count])
 						&& getMovePromoted(moveList.moves[count]) == 0) {
-						score = -negamax(-alpha - 1, -alpha, depth - 2, t);
+						short R = 1;
+						if (movesSearched >= fullDepthMoves + 6 && !isPVNode && depth >= reductionLimit * 2) R++;
+						score = -negamax(-alpha - 1, -alpha, depth - R - 1, t);
 					} else {
+						// hack to force a re-search
 						score = alpha + 1;
 					}
 					
@@ -530,11 +538,6 @@ public class BitBoardSearch {
 			if (score > alpha) {
 				bestMoveInThisPosition = moveList.moves[count];
 				
-				// history moves heuristic
-				if (!getMoveCapture(moveList.moves[count])) {
-					t.historyMoves[board.getPieceAtSquare(getMoveSource(moveList.moves[count]))][getMoveTarget(moveList.moves[count])] += depth;
-				}
-				
 				alpha = score;
 				hashFlag = hashFlagExact;
 				
@@ -554,9 +557,16 @@ public class BitBoardSearch {
 				if (score >= beta) {
 					writeHashEntry((short) beta, depth, hashFlagBeta, moveList.moves[count], board.hashKey, t.ply);
 					
+					// history moves heuristic
 					if (!getMoveCapture(moveList.moves[count])) {
-						t.killerMoves[1][t.ply] = t.killerMoves[0][t.ply];
-						t.killerMoves[0][t.ply] = moveList.moves[count];
+						t.historyMoves[board.getPieceAtSquare(getMoveSource(moveList.moves[count]))][getMoveTarget(moveList.moves[count])] += depth * depth;
+					}
+					
+					if (!getMoveCapture(moveList.moves[count])) {
+						if (moveList.moves[count] != t.killerMoves[0][t.ply]) {
+							t.killerMoves[1][t.ply] = t.killerMoves[0][t.ply];
+							t.killerMoves[0][t.ply] = moveList.moves[count];
+						}
 					}
 					
 					return (short) beta;
@@ -590,6 +600,11 @@ public class BitBoardSearch {
 		}
 		
 		BitBoardChessBoard board = t.board;
+		
+		short ttValue = readHashEntry(alpha, beta, 0, board.hashKey, t.ply);
+		if (ttValue != noHashEntry) {
+			return ttValue;
+		}
 		
 		t.nodes++;
 
@@ -625,10 +640,24 @@ public class BitBoardSearch {
 		
 		board.generateMoves(moveList);
 		sortMoves(moveList, alpha, beta, 0, t);
+		short bestMoveInThisPosition = noHashEntry;
+		
+		int SEE = 0;
+		
+		int hashFlag = hashFlagAlpha;
 		
 		// loop over moves
 		for (int count = 0; count < moveList.count; count++) {
 			t.ply++;
+			
+			// skip captures with bad SEE
+			if (getMoveCapture(moveList.moves[count])) {
+				SEE = board.SEE(getMoveSource(moveList.moves[count]), getMoveTarget(moveList.moves[count]));
+				if (SEE < -100 || (SEE + evaluation + 200) < alpha) {
+					t.ply--;
+					continue;
+				}
+			}
 			
 			// only make a legal move
 			if (!board.makeMove(moveList.moves[count], nonQuietOnly)) {
@@ -647,13 +676,19 @@ public class BitBoardSearch {
 			// new best move
 			if (score > alpha) {
 				alpha = score;
+				bestMoveInThisPosition = moveList.moves[count];
+				hashFlag = hashFlagExact;
 				
 				// beta cutoff
 				if (score >= beta) {
+					writeHashEntry((short) beta, 0, hashFlagBeta, moveList.moves[count], board.hashKey, t.ply);
+					
 					return (short) beta;
 				}
 			}
 		}
+		
+		writeHashEntry((short) alpha, 0, hashFlag, bestMoveInThisPosition, board.hashKey, t.ply);
 		
 		return (short) alpha;
 	}
@@ -685,7 +720,7 @@ public class BitBoardSearch {
 		
 		// if it's the best recommended move in the transposition table, score it super high
 		if (move == getStoredMove(board.hashKey)) {
-			return 20000;
+			return 25000;
 		}
 		
 		// if it's a capture, score it high
@@ -701,7 +736,7 @@ public class BitBoardSearch {
 				if (getBit(board.bitboards[bbPiece], getMoveTarget(move)) != 0) {
 					targetPiece = bbPiece;
 				}
-			}
+			}			
 			
 			// score it higher or less higher based on how valuable the victim is, and how valuable the attacker is
 			return mvv_lva[board.getPieceAtSquare(getMoveSource(move))][targetPiece] + 10000;
@@ -712,7 +747,7 @@ public class BitBoardSearch {
 			} else if (t.killerMoves[1][t.ply] == move) {
 				return 8000;
 			} else { // if not, default to history moves
-				return t.historyMoves[board.getPieceAtSquare(getMoveSource(move))][getMoveTarget(move)];
+				return t.historyMoves[board.getPieceAtSquare(getMoveSource(move))][getMoveTarget(move)] / 50;
 			}
 		}
 	}

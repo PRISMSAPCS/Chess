@@ -202,9 +202,9 @@ public class BitBoardConsts {
 	public static final int kingShieldBonus = 5;
 	
 	// material worth in opening and endgame
-	public static final int materialScore[][] = {{82, 337, 365, 477, 1025, 12000, -82, -337, -365, -477, -1025, -12000},
+	public static final short materialScore[][] = {{82, 337, 365, 477, 1025, 12000, -82, -337, -365, -477, -1025, -12000},
 												 {94, 281, 297, 512,  936, 12000, -94, -281, -297, -512,  -936, -12000}};
-	
+
 	// opening and endgame phase boundaries
 	public static final int openingPhaseScore = 6192;
 	public static final int endgamePhaseScore = 518;

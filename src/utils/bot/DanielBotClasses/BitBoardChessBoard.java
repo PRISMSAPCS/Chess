@@ -202,6 +202,54 @@ public class BitBoardChessBoard {
 		moveList.count++;
 	}
 	
+	// gets all attacks
+	public long allAttacks(int side) {
+		long toReturn = 0L;
+		long bitboard = 0L;
+		int square = 0;
+		
+		for (int bbPiece = P + side * 6; bbPiece <= K + side * 6; bbPiece++) {
+			bitboard = bitboards[bbPiece];
+			
+			while (bitboard != 0) {
+				square = getLS1BIndex(bitboard);
+				
+				switch (bbPiece) {
+				case P:
+					toReturn |= pawnAttacks[white][square];
+					break;
+				case p:
+					toReturn |= pawnAttacks[black][square];
+					break;
+				case N:
+				case n:
+					toReturn |= knightAttacks[square];
+					break;
+				case B:
+				case b:
+					toReturn |= getBishopAttacks(square, occupancies[both]);
+					break;
+				case R:
+				case r:
+					toReturn |= getRookAttacks(square, occupancies[both]);
+					break;
+				case Q:
+				case q:
+					toReturn |= getQueenAttacks(square, occupancies[both]);
+					break;
+				case K:
+				case k:
+					toReturn |= kingAttacks[square];
+					break;
+				}
+				
+				bitboard &= ~(1L << square);
+			}
+		}
+		
+		return toReturn;
+	}
+	
 	// checks if a square is attacked. mostly used for checking checks
 	public boolean isSquareAttacked(int square, int side) {
 		// white pawn attack
@@ -223,6 +271,90 @@ public class BitBoardChessBoard {
 		
 		// no attack (default)
 		return false;
+	}
+	
+	// returns a bitboard containing all the pieces that attack a square
+	public long attacksTo(int square) {
+		long toReturn = 0L;
+		
+		toReturn |= (pawnAttacks[white][square] & bitboards[p]);
+		toReturn |= (pawnAttacks[black][square] & bitboards[P]);
+		toReturn |= knightAttacks[square] & (bitboards[N] | bitboards[n]);
+		toReturn |= kingAttacks[square] & (bitboards[K] | bitboards[k]);
+		
+		toReturn |= getBishopAttacks(square, occupancies[both]) & (bitboards[B] | bitboards[b]);
+		toReturn |= getRookAttacks(square, occupancies[both]) & (bitboards[R] | bitboards[r]);
+		toReturn |= getQueenAttacks(square, occupancies[both]) & (bitboards[Q] | bitboards[q]);
+		
+		return toReturn;
+	}
+	
+	public long attacksToSliders(int square, long occ) {
+		long toReturn = 0L;
+		
+		toReturn |= getBishopAttacks(square, occ) & (occ & (bitboards[B] | bitboards[b]));
+		toReturn |= getRookAttacks(square, occ) & (occ & (bitboards[R] | bitboards[r]));
+		toReturn |= getQueenAttacks(square, occ) & (occ & (bitboards[Q] | bitboards[q]));
+		
+		return toReturn;
+	}
+	
+	public long getLeastValuablePiece(long attadef, int side, int[] piece) {
+		for (piece[0] = P + side * 6; piece[0] <= K + side * 6; piece[0]++) {
+			long subset = attadef & bitboards[piece[0]];
+			if (subset != 0) {
+				return subset;
+			}
+		}
+		
+		return 0;
+	}
+	
+	// static exchange evaluation
+	public short SEE(int sourceSquare, int targetSquare) {
+		int targetPiece = P;
+		
+		int startPiece, endPiece;
+		
+		if (side == white) { startPiece = p; endPiece = k; }
+		else { startPiece = P; endPiece = K; }
+		
+		for (int bbPiece = startPiece; bbPiece <= endPiece; bbPiece++) {
+			if (getBit(bitboards[bbPiece], targetSquare) != 0) {
+				targetPiece = bbPiece;
+			}
+		}
+		
+		short gain[] = new short[32];
+		short d = 0;
+		long mayXRay = bitboards[B] | bitboards[b] | bitboards[R] | bitboards[r] | bitboards[Q] | bitboards[q];
+		long fromSet = 1L << sourceSquare;
+		long occ = occupancies[both];
+		long attadef = attacksTo(targetSquare);
+		gain[d] = (short) Math.abs(materialScore[0][targetPiece]);
+		
+		int[] aPiece = new int[1];
+		getLeastValuablePiece(attadef, d & 1, aPiece);
+		
+		do {
+			d++;
+			gain[d] = (short) (Math.abs(materialScore[0][aPiece[0]]) - gain[d - 1]);
+			if (Math.max(-gain[d - 1], gain[d]) < 0) break;
+			attadef ^= fromSet;
+			occ ^= fromSet;
+			if ((fromSet & mayXRay) != 0) {
+				attadef |= attacksToSliders(targetSquare, occ);
+			}
+			fromSet = getLeastValuablePiece(attadef, d & 1, aPiece);
+		} while (fromSet != 0);
+		
+		while (--d != 0) {
+			gain[d - 1] = (short) -Math.max(-gain[d - 1], gain[d]);
+		}
+		
+		
+		
+		return gain[0];
 	}
 	
 	// generates pseudo-legal moves (ignores pins)
@@ -770,6 +902,21 @@ public class BitBoardChessBoard {
 		return whitePieceScores + blackPieceScores;
 	}
 	
+	// weak squares
+	public long getWeakSquares() {		
+		long enemyDefense = allAttacks(side ^ 1);
+		long ourAttacks = allAttacks(side);
+		
+		long enemyKingDefense = kingAttacks[getLS1BIndex(bitboards[k - side * 6])];
+		long enemyQueenDefense = getQueenAttacks(getLS1BIndex(bitboards[q - side * 6]), occupancies[both]);
+		
+		enemyDefense &= ~enemyKingDefense;
+		enemyDefense &= ~enemyQueenDefense;
+		enemyDefense |= enemyKingDefense & enemyQueenDefense;
+		
+		return (~enemyDefense) & ourAttacks;
+	}
+	
 	// checks if a player is drawing due to lack of mating material
 	public boolean drawing(int side) {
 		// if pawns or queen exists, mate can occur
@@ -858,6 +1005,9 @@ public class BitBoardChessBoard {
 		
 		long attacks;
 		long kingRingAttacks;
+		
+		// weak squares that we attack that are only defended by enemy queen or king
+		
 		
 		// we do some stuff to find all the squares that white pawns attack, and all the squares that black pawns attack
 		// we do this for mobility - pieces that can only move to the squares defended by pawns really can't move at all

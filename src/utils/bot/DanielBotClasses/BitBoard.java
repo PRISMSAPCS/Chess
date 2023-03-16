@@ -73,17 +73,9 @@ public class BitBoard {
 						+"RNBQKBNR"
 						+" w - - 0 0"
 		 */
-		
-		bbBoard.parseFen("rnbqkbnr"
-						+"pppppppp"
-						+"11111111"
-						+"11111111"
-						+"11111111"
-						+"11111111"
-						+"PPPPPPPP"
-						+"RNBQKBNR"
-						+" w KQkq - 0 0");
+		bbBoard.parseFen("8//4k3/1p6/4r3/4R3/4K3/8/8 b - - 0 1");
 		printBoard(bbBoard);
+//		print(bbBoard.getWeakSquares());
 		searchPosition();
 		thPool.shutdown();
 	}
